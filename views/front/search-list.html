@@ -1,0 +1,139 @@
+﻿<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <%-include("_include/_headerInfo",{h_tit:"搜索"})%>
+    <style>
+        .list-container .search-list {
+            padding-top: 0;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- 头部导航栏 start -->
+    <%-include("_include/_header", {curr: 10})%>
+    <!-- 头部导航栏 end -->
+
+    <!-- 列表-头部 -->
+    <%-include("_include/list-header")%>
+
+
+    <!-- 列表-标签 -->
+    <div class="tag-list-wrap">
+        <div class="tag-list">
+            <ul class="level-1 clearfix">
+                <li><a href="javascript:;">全部资源</a></li>
+            </ul>
+        </div>
+    </div>
+
+    <!-- 列表-内容部分 -->
+    <div class="list-container" style="padding: 40px 0">
+        <ul class="search-list plot_list" id="plot_list">
+
+        </ul>
+    </div>
+
+    <!-- 底部信息 start-->
+    <%-include("_include/_footer")%>
+    <!-- 底部信息 end -->
+
+    <!-- 引入列表模板 -->
+    <%-include("_include/waterfull-list")%>
+
+
+
+<script>
+
+    var parentVal = tools.getUrlParams('parentVal');
+    var keywords = tools.getUrlParams('keywords');
+
+
+    var DAQ = {
+        init: function () {
+            $('.search-input').val(keywords);
+            var text = '';
+            switch (parentVal) {
+                case 'datum':
+                    text = '资料';
+                    $('nav').data('curr', 1)
+                    break;
+                case 'picture':
+                    text = '图库';
+                    $('nav').data('curr', 2)
+                    break;
+                case 'views':
+                    text = '视野';
+                    $('nav').data('curr', 3)
+                    break;
+                case 'afflatus':
+                    text = '有料';
+                    $('nav').data('curr', 4)
+                    break;
+                default:
+                    text = '全部资源';
+            }
+            $('.level-1 a').text(text);
+            this.getDataList();
+        },
+        getDataList: function () {
+            var _this = this;
+            $('.list-container ul').empty();
+            $.ajax({
+                type: 'get',
+                url: '/member/getListDatas',
+                data: {
+                    parentVal: parentVal,
+                    keywords: keywords
+                },
+                success: function (result) {
+                    if (result.code === 0) {
+                        if (result.datas && result.datas.length > 0) {
+                            var dataList = result.datas;
+                            dataList.forEach(function (item) {
+                                if (item.w > 500) {
+                                    item.imgW = 500;
+                                    item.imgH = Math.ceil(item.h/(item.w/500));
+                                } else {
+                                    item.imgW = item.w;
+                                    item.imgH = item.h;
+                                }
+                                item.sty = 'style=height:'+(item.imgH/item.imgW*333)+'px';
+                                var codeName = item.codeName;
+                                switch (codeName) {
+                                    case '视频':
+                                    case 'PPT':
+                                        item.href = 'video-detail.html?id=' + item.id;
+                                        break;
+                                    case '电子期刊':
+                                        item.href = 'periodical-detail.html?id=' + item.id;
+                                        break;
+                                    case '音频':
+                                        item.href = 'music-detail.html?id=' + item.id;
+                                        break;
+                                    default:
+                                        item.href = 'datum-detail.html?id=' + item.id;
+                                }
+                            });
+                            $('#waterfullListTmp2').tmpl({list: dataList}).appendTo('#plot_list');
+                            $('.plot_list').find('img').lazyload({effect: "fadeIn", threshold: 10});
+                            waterfall('plot_list','item1',true);
+//                            $('.plot_list').daqImg({rowHeight: 320});
+                            tools.footerFixed();
+                        } else {
+                            $('.list-container').append('<p class="no-data">暂无数据！</p>');
+                            tools.footerFixed();
+                        }
+                    }
+                }
+            })
+        }
+    }
+
+    $(function () {
+        DAQ.init();
+    })
+</script>
+
+</body>
+</html>

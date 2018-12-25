@@ -1,0 +1,643 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <%-include("../_include/include-head",{tit:"用户管理"})%>
+</head>
+<body>
+
+<div class="resource-list-container">
+    <div class="daq-crumb clearfix mt-20">
+        <span>您当前在的位置：UED资源共享平台管理系统</span>
+        <i class="crumb-sign crumb-mg">-</i>
+        <a href="user-list.html">用户管理</a>
+        <i class="crumb-sign crumb-mg">-</i>
+        <span>新增</span>
+    </div>
+    <p class="demo-title"></p>
+    <form action="" id="form-msg">
+        <div class="form-item-table mt-22">
+            <table cellpadding="0" cellspacing="0" width="100%">
+                <tr>
+                    <td class="form-tab-label">
+                        <label class="form-label"><i class="form-require">*</i>姓名：</label>
+                    </td>
+                    <td>
+                        <div class="form-table-edit clearfix">
+                            <div class="daq-inp-rule wid-358 fl">
+                                <input type="text" name="username" autocomplete="off" class="form-resource "
+                                       placeholder="请输入姓名"/>
+                            </div>
+                        </div>
+                    </td>
+                </tr>
+                <tr>
+                    <td class="form-tab-label">
+                        <label class="form-label"><i class="form-require">*</i>密码：</label>
+                    </td>
+                    <td>
+                        <div class="form-table-edit clearfix">
+                            <div class="daq-inp-rule wid-358 fl">
+                                <input type="password" name="password" autocomplete="off" style="display: none;"/>
+                                <input type="password" name="password" autocomplete="off" class="form-resource"
+                                       id="password" placeholder="请输入密码"/>
+                            </div>
+                        </div>
+                    </td>
+                </tr>
+                <tr>
+                    <td class="form-tab-label">
+                        <label class="form-label">职位：</label>
+                    </td>
+                    <td>
+                        <div class="form-table-edit clearfix">
+                            <div id="jobSelect" class="daq-select wid-218 fl">
+                                <select name="user-job">
+
+                                </select>
+                            </div>
+                        </div>
+                    </td>
+                </tr>
+                <tr>
+                    <td class="form-tab-label">
+                        <label class="form-label"><i class="form-require">*</i>入职时间：</label>
+                    </td>
+                    <td>
+                        <div class="form-table-edit clearfix">
+                            <p class="daq-inp-rule daq-inp-date wid-228 fl">
+                                <input class="user-time" id="start" name="startTime" placeholder="请选择日期"/>
+                                <i class="sysfont">&#xe630;</i>
+                            </p>
+                        </div>
+                    </td>
+                </tr>
+                <tr>
+                    <td class="form-tab-label">
+                        <label class="form-label">电话号码：</label>
+                    </td>
+                    <td>
+                        <div class="form-table-edit clearfix">
+                            <div class="daq-inp-rule wid-358 fl">
+                                <input type="text" name="phone" autocomplete="off" class="form-resource "
+                                       placeholder="请输入电话号码" onkeyup="this.value=this.value.replace(/[^0-9-]+/,'');"/>
+                            </div>
+                        </div>
+                    </td>
+                </tr>
+                <tr>
+                    <td class="form-tab-label">
+                        <label class="form-label">企业邮箱：</label>
+                    </td>
+                    <td>
+                        <div class="form-table-edit clearfix">
+                            <div class="daq-inp-rule wid-358 fl">
+                                <input type="text" name="email" class="form-resource " placeholder="请输入企业邮箱"/>
+                            </div>
+                        </div>
+                    </td>
+                </tr>
+                <tr>
+                    <td class="form-tab-label">
+                        <label class="form-label">是否启用：</label>
+                    </td>
+                    <td>
+                        <div class="form-table-edit clearfix">
+                            <div id="radio" class="clearfix choose-box">
+                                <input type="radio" name="a.sex" checked value="1" title="启用"/>
+                                <input type="radio" name="a.sex" value="-1" title="禁用"/>
+                            </div>
+                        </div>
+                    </td>
+                </tr>
+                <tr>
+                    <td class="form-tab-label">
+                        <label class="form-label">个人头像：</label>
+                    </td>
+                    <td>
+                        <div class="form-table-edit clearfix">
+                            <div class="clearfix daq-upload daq-upload-square mt-10">
+                                <div id="squarePicker">
+                                    <i class="sysfont"></i>
+                                </div>
+                                <!--用来存放图片item-->
+                                <div id="squareList" class="uploader-list"></div>
+                            </div>
+                        </div>
+                    </td>
+                </tr>
+                <tr>
+                    <td class="form-tab-label"></td>
+                    <td>
+                        <div class="form-table-edit">
+                            <button class="daq-btn" type="submit">确认保存</button>
+                            <button type="button" class="daq-btn" id="afreshBtn">重新编辑</button>
+                        </div>
+                    </td>
+                </tr>
+            </table>
+        </div>
+    </form>
+</div>
+
+
+<!--弹框-成功-->
+<script type="text/template" id="popUpSuccess">
+    <p class="mb-icon mb-success"><i class="sysfont"></i></p>
+    <p class="mb-ask">新增成功！</p>
+</script>
+
+<!--弹框-失败-->
+<script type="text/template" id="popUpFail">
+    <p class="mb-icon mb-fail"><i class="sysfont"></i></p>
+    <p class="mb-ask">新增失败！</p>
+</script>
+
+
+<script>
+    $(function () {
+
+        // 获取所有职位
+        $.ajax({
+            type: 'get',
+            url: '/admin/member/getJobTypes',
+            success: function (result) {
+                if (result.code === 0) {
+                    var options = '';
+                    var dataList = result.datas;
+                    if (dataList && dataList.length > 0) {
+                        for (var i = 0; i < dataList.length; i++) {
+                            options += '<option value="' + dataList[i].name + '">' + dataList[i].name + '</option>'
+                        }
+                    }
+                    $('select[name="user-job"]').append(options);
+                    // 实例化职位的下拉选择器
+                    $("#jobSelect").daqSelect({
+                        callback: function (data) {
+//                            console.log(data)
+                        }
+                    });
+                }
+            }
+        })
+
+        // 实例化入职时间
+        laydate.render({
+            elem: '#start',
+            value: new Date(),
+            done: function (value, date) {
+                $(this.elem).blur()
+            }
+        });
+
+        var status = 1;
+        // 实例化禁用选择框
+        $("#radio").daqRadio({
+            callback: function (data, obj) {
+                status = data
+            }
+        });
+
+        /****************上传头像*****************/
+        var $list = $("#squareList"), //存放选中图片的列表
+            thumbnailWidth = 148,
+            thumbnailHeight = 148;
+        // 初始化Web Uploader
+        var squareUploader = WebUploader.create({
+            // 选完文件后，是否自动上传。
+            auto: true,
+            // swf文件路径
+            swf: 'http://filealiyun.geeker.com.cn/ued/webupload/js/Uploader.swf',
+            // 文件接收服务端。
+            server: '/upload',
+            //设置文件上传域的name
+            fileVal: 'Filedata',
+            //文件上传参数表
+            formData: {
+                path: 'test'
+            },
+            // 选择文件的按钮。可选。
+            // 内部根据当前运行是创建，可能是input元素，也可能是flash.
+            pick: {
+                id: '#squarePicker',
+                multiple: false  //设置是否支持多文件上传
+            },
+            // 只允许选择图片文件。
+            accept: {
+                title: 'Images',
+                extensions: 'gif,jpg,jpeg,bmp,png',
+                mimeTypes: 'image/jpg,image/jpeg,image/png'
+            }
+        });
+        // 当有文件添加进来的时候
+        squareUploader.on('fileQueued', function (file) {
+            squareUploader.refresh(); // 当文件上传结构加载出来后执行该命令，刷新一下文件上传结构，防止上传按钮宽高1px问题导致点不到问题
+            var $li = $(
+                    '<div id="' + file.id + '" class="file-item thumbnail">' +
+                    '<img/>' +
+                    '<label class="drag-label" ></label>' +
+                    '<p class="upload-operate"><i class="sysfont prev"></i><i class="sysfont delete"></i><i class="sysfont next"></i></p>' +
+                    '</div>'
+                ),
+                $img = $li.find('img');
+            // $list为容器jQuery实例
+            $list.append($li);
+            // 创建缩略图
+            // 如果为非图片文件，可以不用调用此方法。
+            // thumbnailWidth x thumbnailHeight 为 100 x 100
+            squareUploader.makeThumb(file, function (error, src) {
+                if (error) {
+                    $img.replaceWith('<span>不能预览</span>');
+                    return;
+                }
+                $img.attr('src', src);
+            }, thumbnailWidth, thumbnailHeight);
+        });
+        // 文件上传过程中创建进度条实时显示。
+        squareUploader.on('uploadProgress', function (file, percentage) {
+            var $li = $('#' + file.id),
+                $percent = $li.find('.upload-circle');
+
+            // 避免重复创建
+            if (!$percent.length) {
+                $percent = $('<p class="upload-circle"><canvas id="canvas"></canvas></p>').appendTo($li);
+            }
+            var circle = {
+                parent: $li.find('#canvas'),
+                width: 64,
+                radius: 30,
+                arc: 4,
+                percent: Math.floor(percentage * 100),
+                color: ['#d2d8e3', '#20a0ff'], //[底色，进度色]
+                textColor: '#8590a0', //文字渲染颜色
+                textSize: '14px', //文字渲染字体大小
+                animated: false  //是否以动画的方式绘制 默认false
+            };
+            // 捕获 IE7,8下不支持canvas抛出的异常
+            try {
+                $("#canvas").daqCircle(circle);
+            }
+            catch (err) {
+            }
+        });
+        // 文件上传成功，给item添加成功class, 用样式标记上传成功。
+        squareUploader.on('uploadSuccess', function (file, response) {
+            var $li = $('#' + file.id);
+            //encodeURI(response.datas.url) 把图片原始访问地址赋值给变量,encodeURI防止图片有特殊字符
+            $li.attr("imgUrl", encodeURI(response.url)).find(".circle-process").remove();
+            $li.find(".upload-circle").html("<i class='sysfont upload-circ-success'></i>");
+        });
+        // 文件上传失败，显示上传出错。
+        squareUploader.on('uploadError', function (file) {
+            var $li = $('#' + file.id),
+                $error = $li.find('div.error');
+
+            // 避免重复创建
+            if (!$error.length) {
+                $error = $('<div class="error"></div>').appendTo($li);
+            }
+            $error.text('上传失败');
+        });
+        // 完成上传完了，成功或者失败，先删除进度条。
+        squareUploader.on('uploadComplete', function (file) {
+            var $li = $('#' + file.id);
+            $li.find('.upload-circ-success,.upload-circle').remove();
+            $li.find('.drag-label').css('display', 'block');
+            //点击删除上传的文件
+            $li.on("click", ".upload-operate i.delete", function () {
+                $(this).parents(".file-item").remove();
+                squareUploader.removeFile(file, true);
+            });
+            //给上传文件列表添加hover事件
+            $(".uploader-list").on('mouseover', '.file-item', function () {
+                $(this).find(".drag-label").css('display', 'none');
+                $(this).find(".upload-operate").stop().animate({'bottom': '0'}, 50);
+            });
+            $(".uploader-list").on('mouseout', '.file-item', function () {
+                $(this).find(".drag-label").css('display', 'block');
+                $(this).find(".upload-operate").stop().animate({'bottom': '-30px'}, 50);
+            });
+            //点击切换图片列表展示位置 next切换
+            $(".upload-operate .next").on("click", function () {
+                var $that = $(this).parents(".file-item");
+                var len = $(".uploader-list .file-item").length - 1;
+                var index = $that.index(".uploader-list .file-item");
+                if (len > 0 && index < len) {
+                    index++;
+                    $that.insertAfter($(".uploader-list .file-item").eq(index));
+                } else {
+                    return;
+                }
+            });
+            //点击切换图片列表展示位置 prev切换
+            $(".upload-operate .prev").on("click", function () {
+                var $that = $(this).parents(".file-item");
+                var len = $(".uploader-list .file-item").length - 1;
+                var index = $that.index(".uploader-list .file-item");
+                if (len > 0) {
+                    index--;
+                    $that.insertBefore($(".uploader-list .file-item").eq(index));
+                } else {
+                    return;
+                }
+            });
+            //点击显示放大图片
+            $li.on("click", "img", function () {
+                var sourceUrl = $(this).parent(".file-item").attr("imgUrl");
+                var datas;
+                var html = '<div class=" pd-20 clearfix">' +
+                    '<div class="cropper-img fl">' +
+                    '<img id="js_jcrop" src="' + sourceUrl + '" alt="" />' +
+                    '</div>' +
+                    '<div class="cropper-show">' +
+                    '<div class="img-preview" style="width: 200px; height: 150px;"></div>' +
+                    '<p class="mt-20 cropper-tips">选择裁剪比例</p>' +
+                    '<p class="mt-10 cropper-btn">' +
+                    '<button class="daq-btn-line btn-mini blue-line" data-method="setAspectRatio" data-option="1">1:1</button>' +
+                    '<button class="daq-btn-line btn-mini blue-line btn-curr" data-method="setAspectRatio" data-option="1.3333333333">4:3</button>' +
+                    '<button class="daq-btn-line btn-mini blue-line" data-method="setAspectRatio" data-option="1.7777777777">16:9</button>' +
+                    '</p>' +
+                    '</div>' +
+                    '</div>'
+                $.daqDialog({
+                    title: '图片裁剪',
+                    content: html,
+                    mask: true,
+                    width: 800,
+                    height: 550,
+                    model: 'fadeInDown',
+                    buttons: [
+                        {
+                            text: '确定',
+                            callback: function () {
+                                $.ajax({
+                                    type: 'post',
+                                    url: '/admin/member/cut',
+                                    data: {
+                                        url: sourceUrl,
+                                        x: datas.x,
+                                        y: datas.y,
+                                        height: datas.height,
+                                        width: datas.width
+                                    },
+                                    success: function (result) {
+                                        if (result.code === 0) {}
+                                    }
+                                })
+                            }
+                        },
+                        {
+                            text: '取消'
+                        }
+                    ],
+                    callback: function () {
+                        var $image = $('.cropper-img > img'),
+                            options = {
+                                aspectRatio: 16 / 9,
+                                preview: '.img-preview',
+                                crop: function (data) {
+                                    datas = {
+                                        x: Math.round(data.x),
+                                        y: Math.round(data.y),
+                                        height: Math.round(data.height),
+                                        width: Math.round(data.width),
+                                        rotate: Math.round(data.rotate)
+                                    }
+                                }
+                            };
+
+                        $image.on({
+                            'build.cropper': function (e) {
+                                console.log(e.type);
+                            },
+                            'built.cropper': function (e) {
+                                console.log(e.type);
+                            },
+                            'dragstart.cropper': function (e) {
+                                console.log(e.type, e.dragType);
+                            },
+                            'dragmove.cropper': function (e) {
+                                console.log(e.type, e.dragType);
+                            },
+                            'dragend.cropper': function (e) {
+                                console.log(e.type, e.dragType);
+                            },
+                            'zoomin.cropper': function (e) {
+                                console.log(e.type);
+                            },
+                            'zoomout.cropper': function (e) {
+                                console.log(e.type);
+                            }
+                        }).cropper(options);
+
+
+                        // Methods
+                        $(document.body).on('click', '[data-method]', function () {
+                            var data = $(this).data(),
+                                $target,
+                                result;
+                            $(this).addClass('btn-curr').siblings().removeClass('btn-curr');
+                            if (data.method) {
+
+                                data = $.extend({}, data); // Clone a new one
+
+                                if (typeof data.target !== 'undefined') {
+                                    $target = $(data.target);
+
+                                    if (typeof data.option === 'undefined') {
+                                        try {
+                                            data.option = JSON.parse($target.val());
+                                        } catch (e) {
+                                            console.log(e.message);
+                                        }
+                                    }
+                                }
+                                result = $image.cropper(data.method, data.option);
+
+                            }
+                        }).on('keydown', function (e) {
+
+                            switch (e.which) {
+                                case 37:
+                                    e.preventDefault();
+                                    $image.cropper('move', -1, 0);
+                                    break;
+
+                                case 38:
+                                    e.preventDefault();
+                                    $image.cropper('move', 0, -1);
+                                    break;
+
+                                case 39:
+                                    e.preventDefault();
+                                    $image.cropper('move', 1, 0);
+                                    break;
+
+                                case 40:
+                                    e.preventDefault();
+                                    $image.cropper('move', 0, 1);
+                                    break;
+                            }
+
+                        });
+                    }
+                });
+            });
+            $(window).resize(function () {
+                imgWH();
+            });
+            //动态设置放大图片的垂直居中显示
+            function imgWH() {
+                //取得图片原始尺寸，并设置最大宽高显示；
+                var winH = $(window).height(),
+                    oldWid = file._info.width,
+                    oldHei = file._info.height,
+                    scale = oldWid / oldHei; //宽高之比
+                if (oldWid > 1000) {
+                    oldWid = 1000;
+                    oldHei = oldWid / scale;
+                    if (oldHei > 650) {
+                        oldHei = 650;
+                    }
+                } else if (oldHei > 650) {
+                    oldHei = 650;
+                    oldWid = oldHei * scale;
+                    if (oldWid > 1000) {
+                        oldWid = 1000;
+                    }
+                }
+                //根据计算的宽高设置预览图片的宽高
+                $(".cover img").css({'width': oldWid, 'height': oldHei, 'margin-top': (winH - oldHei) / 2});
+            }
+
+            //点击移除预览图
+            $(document.body).on("click", ".cover", function () {
+                $(this).remove();
+            })
+        });
+
+        //为id为form-msg的表单添加验证
+        $("#form-msg").validate({
+            debug: true, // 如果这个参数为true，那么表单不会提交，只进行检查，调试时十分方便
+            focusInvalid: true, //当为false时，验证无效时，没有焦点响应
+            focusCleanup: false, //被验证的元素获得焦点时移除错误信息
+            rules: {
+                username: "required",
+                password: "required",
+                startTime: "required",
+            },
+            messages: {
+                username: "请输入姓名",
+                password: "请输入密码",
+                startTime: "请选择入职时间",
+            },
+            showErrors: function (errorMap, errorList) {
+                // 遍历错误列表
+                for (var obj in errorMap) {
+                    // 自定义错误提示效果
+                    var $parent = $('input[name="' + obj + '"]').parents(".daq-inp-rule");
+                    $parent.addClass('error-active');
+                }
+                // 此处注意，一定要调用默认方法，这样保证提示消息的默认效果
+                this.defaultShowErrors();
+
+            },
+            // 验证成功的处理
+            success: function (element) {
+                var $parent = $(element).siblings(".daq-inp-rule");
+                $parent.removeClass('error-active');
+                // 获取span元素的值保存到变量spanText
+                var spanText = $(element).parents().siblings("span").text();
+                // 截取"*"后面的字符
+                var spanTexts = spanText.split("*")[1];
+                // 判断当前节点下是否有图标i
+                var isTrue = $(element).parents().siblings("span").children("i").length;
+                // 判断有删除图标的输入框，设置当验证成功后用户鼠标再次移入输入框的时候
+                if ($parent.find(".resource-delete").length > 0) {
+                    $parent.on("mouseenter mouseleave", function (event) {
+                        if (event.type == "mouseenter") {
+                            // 获取删除按钮图标对象，并显示
+                            var $inpClose = $(this).find(".resource-delete");
+                            $inpClose.stop().show();
+                            // 删除按钮hover事件
+                            $inpClose.hover(function () {
+                                $(this).css({"color": "#20a0ff"});
+                            }, function () {
+                                $(this).css({"color": "#b6c0cf"});
+                            });
+                            // 当用户点击的删除按钮的会后
+                            $inpClose.click(function () {
+                                // 清空输入框和提示的文字
+                                $(this).siblings("input").val("").siblings("label").html("");
+                            });
+                        } else if (event.type == "mouseleave") {
+                            // 显示删除按钮图标
+                            $(this).find(".resource-delete").stop().hide();
+                        }
+                    })
+                }
+            },
+            // 设置失去焦点的情况下验证
+            onfocusout: function (element) {
+                $(element).valid();
+                var $parent = $(element).parents(".daq-inp-rule");
+            },
+            // 修改错误提示文字位置
+            errorPlacement: function (error, element) {
+                // 错误提示图标
+                error.appendTo(element.parents(".form-table-edit"));
+            },
+            // jQuery表单提交
+            submitHandler: function (form) {
+                var data = {};
+                data.username = $('input[name="username"]').val();
+                data.password = $('#password').val();
+                data.position = $('#jobSelect li.select-li-active').text();
+                data.phone = $('input[name="phone"]').val();
+                data.email = $('input[name="email"]').val();
+                data.status = status;
+                data.avatar = $('#squareList>div').attr('imgurl');
+
+                $.ajax({
+                    type: 'post',
+                    url: '/admin/member/add',
+                    data: data,
+                    success: function (result) {
+                        if (result.code === 0) {
+                            var content = $("#popUpSuccess");
+                            $.daqDialog({
+                                title: '成功',
+                                content: content.html(),
+                                mask: true,
+                                width: 400,
+                                height: 250,
+                                model: 'fadeInDown',
+                                closeFn: function () {
+                                    window.location.href = 'list.html';
+                                }
+                            });
+                        } else {
+                            var content = $("#popUpFail");
+                            $.daqDialog({
+                                title: '失败',
+                                content: content.html(),
+                                mask: true,
+                                width: 400,
+                                height: 250,
+                                model: 'fadeInDown'
+                            });
+                        }
+                    }
+                })
+            }
+
+        });
+
+        // 重新编辑
+        $('body').on('click', '#afreshBtn', function () {
+            window.location.reload();
+        })
+
+    })
+</script>
+</body>
+</html>

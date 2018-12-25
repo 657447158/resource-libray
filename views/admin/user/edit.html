@@ -1,0 +1,291 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <%-include("../_include/include-head",{tit:"账号管理"})%>
+</head>
+<body>
+
+<div class="resource-list-container">
+    <div class="daq-crumb clearfix mt-20">
+        <span>您当前在的位置：UED资源共享平台管理系统</span>
+        <i class="crumb-sign crumb-mg">-</i>
+        <a href="user-list.html">账号管理</a>
+        <i class="crumb-sign crumb-mg">-</i>
+        <span>编辑</span>
+    </div>
+    <p class="demo-title"></p>
+    <form action="" id="form-msg">
+
+    </form>
+</div>
+
+<!-- 表单模板 -->
+<script type="text/template" id="formTmp">
+    <div class="form-item-table mt-22">
+        <table cellpadding="0" cellspacing="0" width="100%">
+            <tr>
+                <td class="form-tab-label">
+                    <label class="form-label"><i class="form-require">*</i>用户名：</label>
+                </td>
+                <td>
+                    <div class="form-table-edit clearfix">
+                        <div class="daq-inp-rule wid-358 fl">
+                            <input type="text" name="username" autocomplete="off" class="form-resource " placeholder="请输入姓名" value="${data.name}" />
+                        </div>
+                    </div>
+                </td>
+            </tr>
+            <tr>
+                <td class="form-tab-label">
+                    <label class="form-label">密码：</label>
+                </td>
+                <td>
+                    <div class="form-table-edit clearfix">
+                        <div class="daq-inp-rule wid-358 fl">
+                            <input type="password" name="password" autocomplete="off" class="form-resource " placeholder="不填默认不修改密码" value="" />
+                        </div>
+                    </div>
+                </td>
+            </tr>
+            <tr>
+                <td class="form-tab-label">
+                    <label class="form-label">昵称：</label>
+                </td>
+                <td>
+                    <div class="form-table-edit clearfix">
+                        <div class="daq-inp-rule wid-358 fl">
+                            <input type="text" name="nickname" autocomplete="off" class="form-resource " placeholder="请输入用户昵称" value="${data.NickName}" />
+                        </div>
+                    </div>
+                </td>
+            </tr>
+            <tr>
+                <td class="form-tab-label">
+                    <label class="form-label"><i class="form-require">*</i>所属角色：</label>
+                </td>
+                <td>
+                    <div class="form-table-edit clearfix">
+                        <div id="jobSelect" class="daq-select wid-218 fl">
+                            <select name="user-job">
+
+                            </select>
+                        </div>
+                    </div>
+                </td>
+            </tr>
+
+            <tr>
+                <td class="form-tab-label">
+                    <label class="form-label">是否启用：</label>
+                </td>
+                <td>
+                    <div class="form-table-edit clearfix">
+                        <div id="radio" class="clearfix choose-box">
+                            <input type="radio" name="a.sex" value="0" title="启用" {{if data.status==0}}checked{{/if}}/>
+                            <input type="radio" name="a.sex" value="1" title="禁用" {{if data.status==1}}checked{{/if}}/>
+                        </div>
+                    </div>
+                </td>
+            </tr>
+
+            <tr>
+                <td class="form-tab-label"></td>
+                <td>
+                    <div class="form-table-edit">
+                        <button class="daq-btn" type="submit">确认保存</button>
+                        <button type="button" class="daq-btn" id="afreshBtn">重新编辑</button>
+                    </div>
+                </td>
+            </tr>
+        </table>
+    </div>
+</script>
+
+
+<!--弹框-成功-->
+<script type="text/template" id="popUpSuccess">
+    <p class="mb-icon mb-success"><i class="sysfont"></i></p>
+    <p class="mb-ask">保存成功！</p>
+</script>
+
+<!--弹框-失败-->
+<script type="text/template" id="popUpFail">
+    <p class="mb-icon mb-fail"><i class="sysfont"></i></p>
+    <p class="mb-ask">保存失败！</p>
+</script>
+
+
+<script>
+
+    var status = 0;
+    var roleCode;
+
+    $(function() {
+
+
+        var id = tools.getUrlParams('id');
+
+        // 获取详情
+        $.ajax({
+            type: 'get',
+            url: '/admin/user/getDetails?id=' + id,
+            success: function (result) {
+                if (result.code === 0) {
+                    if (result.data) {
+                        $('#formTmp').tmpl({data: result.data}).appendTo('#form-msg');
+                        //给上传文件列表添加hover事件
+                        $(".uploader-list").on('mouseover','.file-item',function(){
+                            $(this).find(".drag-label").css('display','none');
+                            $(this).find(".upload-operate").stop().animate({ 'bottom': '0'},50);
+                        });
+                        $(".uploader-list").on('mouseout','.file-item',function(){
+                            $(this).find(".drag-label").css('display','block');
+                            $(this).find(".upload-operate").stop().animate({ 'bottom': '-30px'},50);
+                        });
+                        // 点击删除文件
+                        $(".uploader-list").on("click",".upload-operate i.delete",function(){
+                            $('#squareList').empty();
+                        });
+                        formInit(result.data);
+                    }
+                }
+            }
+        })
+
+
+        //为id为form-msg的表单添加验证
+        $("#form-msg").validate({
+            debug: true, // 如果这个参数为true，那么表单不会提交，只进行检查，调试时十分方便
+            focusInvalid: true, //当为false时，验证无效时，没有焦点响应
+            focusCleanup: false, //被验证的元素获得焦点时移除错误信息
+            rules: {
+                username: "required",
+            },
+            messages: {
+                username: "请输入姓名",
+            },
+            showErrors : function(errorMap, errorList) {
+                // 遍历错误列表
+                for(var obj in errorMap) {
+                    // 自定义错误提示效果
+                    var $parent = $('input[name="' + obj + '"]').parents(".daq-inp-rule");
+                    $parent.addClass('error-active');
+                }
+                // 此处注意，一定要调用默认方法，这样保证提示消息的默认效果
+                this.defaultShowErrors();
+
+            },
+            // 验证成功的处理
+            success: function (element) {
+                var $parent = $(element).siblings(".daq-inp-rule");
+                $parent.removeClass('error-active');
+                // 获取span元素的值保存到变量spanText
+                var spanText = $(element).parents().siblings("span").text();
+                // 截取"*"后面的字符
+                var spanTexts = spanText.split("*")[1];
+                // 判断当前节点下是否有图标i
+                var isTrue = $(element).parents().siblings("span").children("i").length;
+            },
+            // 设置失去焦点的情况下验证
+            onfocusout: function (element) {
+                $(element).valid();
+                var $parent = $(element).parents(".daq-inp-rule");
+            },
+            // 修改错误提示文字位置
+            errorPlacement: function (error,element) {
+                // 错误提示图标
+                error.appendTo(element.parents(".form-table-edit"));
+            },
+            // jQuery表单提交
+            submitHandler:function(form){
+                var data = {};
+                data.id = id;
+                data.name = $('input[name="username"]').val();
+                data.password = $('input[name="password"]').val();
+                data.NickName = $('input[name="nickname"]').val();
+                data.roleCode = roleCode;
+                data.status = status;
+                $.ajax({
+                    type: 'post',
+                    url: '/admin/user/update',
+                    data: data,
+                    success: function (result) {
+                        if (result.code === 0) {
+                            var content = $("#popUpSuccess");
+                            $.daqDialog({
+                                title: '成功',
+                                content: content.html(),
+                                mask: true,
+                                width: 400,
+                                height: 250,
+                                model:'fadeInDown',
+                                closeFn: function () {
+                                    top.document.location.href = '/admin';
+                                }
+                            });
+                        } else {
+                            var content =  $("#popUpFail");
+                            $.daqDialog({
+                                title: '失败',
+                                content: content.html(),
+                                mask: true,
+                                width: 400,
+                                height: 250,
+                                model:'fadeInDown'
+                            });
+                        }
+                    }
+                })
+            }
+
+        });
+
+        // 重新编辑
+        $('body').on('click', '#afreshBtn', function () {
+            window.location.reload();
+        })
+
+        // 表单元素初始化
+        function formInit(data) {
+            // 实例化禁用选择框
+            radio = $("#radio").daqRadio({
+                value: data.status,
+                callback: function (data, obj) {
+                    status = data
+                }
+            });
+
+            // 获取角色列表
+            $.ajax({
+                type: 'get',
+                url: '/admin/role/getListDatas',
+                success: function (result) {
+                    if (result.code === 0) {
+                        var options = '';
+                        var dataList = result.datas;
+                        if (dataList && dataList.length > 0) {
+                            for (var i = 0; i < dataList.length; i++) {
+                                if (data.roleCode === dataList[i].code) {
+                                    roleCode = dataList[i].code;
+                                    options += '<option selected value="'+ dataList[i].code +'">'+ dataList[i].name +'</option>'
+                                } else {
+                                    options += '<option value="'+ dataList[i].code +'">'+ dataList[i].name +'</option>'
+                                }
+                            }
+                        }
+                        $('select[name="user-job"]').append(options);
+                        // 实例化职位的下拉选择器
+                        $("#jobSelect").daqSelect({
+                            callback: function (data) {
+                                roleCode = data.code;
+                            }
+                        });
+                    }
+                }
+            })
+        }
+
+    })
+</script>
+</body>
+</html>

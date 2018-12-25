@@ -1,0 +1,300 @@
+﻿<!DOCTYPE html>
+<html class="h100">
+<head lang="zh-CN">
+    <title>UED-后台管理系统-系统首页</title>
+    <%-include ../_include/include-head%>
+</head>
+<body>
+<%-include ../_include/include-top%>
+<div class="home_cont">
+    <%-include("../_include/include-left",{_curr:"material"})%>
+    <div class="h_main fr">
+        <p class="adress_nav">
+            <span>您当前的位置：</span><span>UED资源共享平台管理系统</span>-<a href="/admin/list-interface">资源管理</a>-<span>新增资源</span>
+        </p>
+        <div class="audit_body">
+            <div class="edit_cont">
+                <form method="post" id="face_form">
+                    <input type="hidden" id="codeName" name="codeName"/>
+                    <input type="hidden" id="imgs_tab" name="imgs_tab" value=""/>
+                    <input type="hidden" id="erwm" name="erwm" value=""/>
+                    <input type="hidden" id="coverImg" name="coverImg" value=""/>
+                    <input type="hidden" id="download" name="download" value=""/>
+                    <input type="hidden" id="upload_num" name="upload_num" value="0"/>
+                    <table cellpadding="0" cellspacing="0" class="tabTable">
+                        <tbody>
+                        <tr>
+                            <td class="name">界面名称：</td>
+                            <td class="kuang">
+                                <div>
+                                    <input type="text" class="long_input" id="title" name="title"/>
+                                </div>
+                            </td>
+                            <td class="name">界面类型：</td>
+                            <td class="kuang">
+                                <div>
+                                    <select class="long_input" name="codeId" id="codeId">
+                                        <% codes.forEach(function(code){ %>
+                                        <option value="<%- code.id %>"><%- code.name %></option>
+                                        <% }) %>
+                                    </select>
+                                </div>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td class="name">编号：</td>
+                            <td class="kuang">
+                                <div>
+                                    <input type="text" class="long_input" id="numbered" name="numbered"/>
+                                </div>
+                            </td>
+                            <td class="name">存放位置：</td>
+                            <td class="kuang">
+                                <div>
+                                    <input type="text" class="long_input" id="place" name="place"/>
+                                </div>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td class="name">简短描述：</td>
+                            <td class="kuang">
+                                <div>
+                                    <input type="text" class="long_input" id="intro" name="intro"/>
+                                </div>
+                            </td>
+
+                            <td class="name">网站地址：</td>
+                            <td class="kuang">
+                                <div>
+                                    <input type="text" class="long_input" id="url" name="url"/>
+                                </div>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td class="name">文件生成时间：</td>
+                            <td class="kuang">
+                                <div>
+                                    <input type="text" class="long_input" id="format" name="format" value="<%-locals.moment(Date.now()).format('YYYY-MM-DD')%>"/>
+                                </div>
+                            </td>
+                            <td class="name">排序：</td>
+                            <td class="kuang">
+                                <div>
+                                    <input type="text" class="long_input" id="size" name="size" value="0"/>
+                                </div>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td class="name">图片打开方式：</td>
+                            <td colspan="3" class="sc_pictuer">
+                                <div>
+                                    <select class="long_input" name="imgOpen" id="imgOpen">
+                                        <option value="_self">本窗口打开</option>
+                                        <option value="_blank">新窗口打开</option>
+                                    </select>
+                                </div>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td class="name">二维码：</td>
+                            <td colspan="3" class="sc_pictuer">
+                                <div class="pic_cont clearfix">
+                                    <div id="erw_img" class="webuploader-container" tag="0">
+                                        <div class="webuploader-pick">上传图片</div>
+                                        <div id="rt_rt_1adqfe9m78qj1mp3u2rhej10ia1"
+                                             style="position: absolute; top: 0px; left: 0px; width: 126px; height: 38px; overflow: hidden; bottom: auto; right: auto;">
+                                            <input type="file" name="erwm" class="webuploader-element-invisible" accept="image/*"><label
+                                                    style="opacity: 0; width: 100%; height: 100%; display: block; cursor: pointer; background-color: rgb(255, 255, 255); background-position: initial initial; background-repeat: initial initial;"></label>
+                                        </div>
+                                    </div>
+                                </div>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td class="name">封面图：</td>
+                            <td colspan="3" class="sc_pictuer">
+                                <div class="pic_cont clearfix">
+                                    <div id="cover_img" class="webuploader-container" tag="0">
+                                        <div class="webuploader-pick">上传图片</div>
+                                        <div id="rt_rt_1adqfe9m78qj1mp3u2rhej10ia1">
+                                            <input type="file" name="coverImg" class="webuploader-element-invisible" accept="image/*"><label ></label>
+                                        </div>
+                                    </div>
+                                </div>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td class="name">界面图片：</td>
+                            <td colspan="3" class="sc_pictuer">
+                                <div class="pic_cont clearfix">
+                                    <div id="face_img" class="webuploader-container" tag="0">
+                                        <div class="webuploader-pick">上传图片</div>
+                                        <div id="rt_rt_1adqfe9m78qj1mp3u2rhej10ia1"
+                                             style="position: absolute; top: 0px; left: 0px; width: 126px; height: 38px; overflow: hidden; bottom: auto; right: auto;">
+                                            <input type="file" name="file" class="webuploader-element-invisible"
+                                                   multiple="multiple" accept="image/*"><label
+                                                    style="opacity: 0; width: 100%; height: 100%; display: block; cursor: pointer; background-color: rgb(255, 255, 255); background-position: initial initial; background-repeat: initial initial;"></label>
+                                        </div>
+                                    </div>
+                                </div>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td class="name">界面图片集合：</td>
+                            <td colspan="3" class="sc_pictuer">
+                                <div class="pic_cont clearfix">
+                                    <div id="download_file" class="webuploader-container" tag="0">
+                                        <div class="webuploader-pick">上传文件</div>
+                                        <div id="rt_rt_1adqfe9m78qj1mp3u2rhej10ia1"
+                                             style="position: absolute; top: 0px; left: 0px; width: 126px; height: 38px; overflow: hidden; bottom: auto; right: auto;">
+                                            <input type="file" name="file" class="webuploader-element-invisible"
+                                                   multiple="multiple" accept="image/*"><label
+                                                    style="opacity: 0; width: 100%; height: 100%; display: block; cursor: pointer; background-color: rgb(255, 255, 255); background-position: initial initial; background-repeat: initial initial;"></label>
+                                        </div>
+                                    </div>
+                                </div>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td class="name">界面描述：</td>
+                            <td colspan="3" class="edit">
+                                  <textarea name="content" id="content" class="long_input" style="height:200px;"></textarea>
+                            </td>
+                        </tr>
+                        </tbody>
+                        <tfoot>
+                        <tr class="oper_tr">
+                            <td class="name "><p class="oper_p"></p></td>
+                            <td class="kuang" colspan="3">
+                                <p class="oper_p">
+                                    <input type="button" class="oper_btn" onclick="submiteCk()" value="确认保存"/>
+                                    <input type="reset" class="oper_btn" value="重新编辑"/>
+                                </p>
+                            </td>
+                        </tr>
+                        </tfoot>
+                    </table>
+                </form>
+            </div>
+
+        </div>
+    </div>
+</div>
+</body>
+</html>
+<script src="/js/jquery-1.8.3.min.js"></script>
+<script type="text/javascript" src="/js/webuploader.html5only.min.js"></script>
+<script type="text/javascript" src="/js/diyUpload.js"></script>
+<script src="/js/method.js"></script>
+<script>
+    $(function () {
+        //界面图片上传
+        $('#face_img').diyUpload({
+            url: '/admin/upload',
+            success: function (data) {
+                var img_ipt = $("#imgs_tab").val();
+                if (img_ipt == "") {
+                    img_ipt +=data.url;
+                } else {
+                    img_ipt += "," + data.url;
+                }
+                $("#imgs_tab").val(img_ipt);
+                var tag = parseInt($('#upload_num').val()) + 1;
+                $("#upload_num").val(tag);
+                var sort=$("#fileBox_"+data.fieldsId).index();
+                $.post("/admin/uploadImg",{tbName:'articles',type:'list',url: data.url,sort:sort},function(data){ });
+            },
+            error: function (err) {
+                console.info(err);
+            },
+            buttonText : '上传文件',
+            chunked:true,
+            // 分片大小
+            chunkSize:90000 * 1024,
+            fileSizeLimit:90000 * 1024,
+            fileSingleSizeLimit:90000 * 1024,
+            accept: {
+                    title:"Images",
+                    extensions:"gif,jpg,jpeg,bmp,png",
+                    mimeTypes:"image/jpeg"
+            },
+            compress:false
+        });
+        //二维码图片上传
+        $('#erw_img').diyUpload({
+            url: '/admin/upload',
+            success: function (data) {
+                $("#erwm").val(data.url);
+                var tag = parseInt($('#upload_num').val()) + 1;
+                $("#upload_num").val(tag);
+            },
+            error: function (err) {
+                console.info(err);
+            },
+            fileNumLimit:1
+        });
+        //界面封面图上传
+        $('#cover_img').diyUpload({
+            url: '/admin/upload',
+            success: function (data) {
+                $("#coverImg").val(data.url);
+                var tag = parseInt($('#upload_num').val()) + 1;
+                $("#upload_num").val(tag);
+                console.info(data);
+            },
+            error: function (err) {
+                console.info(err);
+            },
+            fileNumLimit:1
+        });
+        //界面图片集合上传.rar
+        $('#download_file').diyUpload({
+            url: '/admin/upload',
+            success: function (data) {
+                $("#download").val(data.url);
+                var tag = parseInt($('#upload_num').val()) + 1;
+                $("#upload_num").val(tag);
+                console.info(data);
+            },
+            error: function (err) {
+                alert(err);
+                console.info(err);
+            },
+            buttonText : '上传文件',
+            chunked:true,
+            // 分片大小
+            chunkSize:9000000 * 1024,
+            fileNumLimit:1,
+            fileSizeLimit:9000000 * 1024,
+            fileSingleSizeLimit:9000000 * 1024,
+            accept: {}
+        });
+        /*界面类型赋值 start*/
+        $("#codeName").val($("#codeId option[value='" + $("#codeId").val() + "']").text());
+        $("#codeId").change(function () {
+            var _val = $(this).val();
+            $("#codeName").val($("#codeId option[value='" + _val + "']").text());
+        });
+        /*界面类型赋值 end*/
+
+        winHFE();
+    });
+    $(window).resize(function () {
+        winHFE();
+    })
+    function submiteCk() {
+        $(".diyButton .diyStart").click();
+        if($(".fileBoxUl li").length==$("#upload_num").val()){
+            $("#face_form").submit();
+        } else{
+            var $_faceInterval = setInterval(function () {
+
+                if ($(".fileBoxUl li").length==$("#upload_num").val()) {
+                    $("#face_form").submit();
+                    clearInterval($_faceInterval);
+                }
+            }, 200);
+            $_faceInterval;
+        }
+    }
+</script>

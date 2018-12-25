@@ -1,0 +1,1830 @@
+﻿<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <link rel="stylesheet" href="http://filealiyun.geeker.com.cn/ued/geekUI-system/css/base/daq-system.min.css"/>
+    <%-include("_include/_headerInfo",{h_tit:"个人中心-上传文件"})%>
+</head>
+<body>
+
+    <!-- 头部导航栏 start -->
+    <%-include("_include/_header", {curr: 9})%>
+    <!-- 头部导航栏 end -->
+
+    <!-- 列表-头部 -->
+    <div class="per-header">
+        <%-include("_include/per-head-info")%>
+    </div>
+    <div class="per-ct-container">
+        <div class="tag-list-title">作品编辑</div>
+    </div>
+    <!-- 作品编辑区域 start -->
+    <div class="production-wrap">
+
+    </div>
+    <!-- 作品编辑区域 end -->
+
+
+    <!-- 底部信息 start-->
+    <%-include("_include/_footer")%>
+    <!-- 底部信息 end -->
+
+
+    <%-include("_include/production-al")%>
+    <%-include("_include/production-ar")%>
+    <%-include("_include/production-pic")%>
+    <%-include("_include/production-datum")%>
+    <%-include("_include/production-material")%>
+    <%-include("_include/production-audio")%>
+    <%-include("_include/production-ppt")%>
+
+<!-- 作品新增、编辑-框架 -->
+<script type="text/template" id="productionTmp">
+    <div class="content-wrap">
+        <!-- 作品类型 start -->
+        <div class="pro-type">
+            <div class="content-title">作品类型</div>
+            <div class="content-ct">
+                <div class="form-item">
+                    <label><span class="red">*&nbsp;</span>作品名称：</label>
+                    {{if data}}
+                    <input type="text" name="production-name" placeholder="请输入作品名称" value="${data.title}" />
+                    {{else}}
+                    <input type="text" name="production-name" placeholder="请输入作品名称" />
+                    {{/if}}
+                </div>
+                <div class="form-item type-select">
+                    <label class="fl"><span class="red">*&nbsp;</span>作品类型：</label>
+                    <div id="select1" class="daq-select fl daq-type-select">
+                        <select name="select1">
+                        </select>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <!-- 作品类型 end -->
+
+        <!-- 作品信息 start -->
+        <div class="pro-info none">
+            <div class="content-title">作品信息</div>
+            <div class="content-ct" id="productionInfo">
+
+            </div>
+        </div>
+        <!-- 作品信息 end -->
+
+        <!-- 版权保护 start -->
+        <div class="pro-copyright none">
+            <div class="content-title">版权保护</div>
+            <div class="content-ct">
+                <div class="form-item">
+                    <label class="fl"><span class="red">*&nbsp;</span>时间戳认证：</label>
+                    <div id="select7" class="daq-select fl">
+                        <select name="select10">
+                            <option value="">请选择</option>
+                            <option value="1">已认证</option>
+                            <option value="2">未认证</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="form-item">
+                    <label><span class="red">*&nbsp;</span>作者姓名：</label>
+                    <input type="text" name="author-name" placeholder="请输入作者姓名" />
+                </div>
+            </div>
+        </div>
+        <!-- 版权保护 end -->
+
+        <!-- 确认编辑 -->
+        <div class="pro-confirm none clearfix">
+            {{if data}}
+            <a class="confirm-btn fl" href="javascript:;" data-id="${data.id}">确认编辑</a>
+            {{else}}
+            <a class="confirm-btn fl" href="javascript:;">确认新增</a>
+            {{/if}}
+        </div>
+    </div>
+</script>
+
+<!-- 成功确认 -->
+<script type="text/template" id="popUpFive">
+    <p class="mb-icon mb-success"><i class="sysfont"></i></p>
+    <p class="mb-ask">操作成功！</p>
+</script>
+
+<!--失败确认内容-->
+<script type="text/template" id="popUpSix">
+    <p class="mb-icon mb-fail"><i class="sysfont"></i></p>
+    <p class="mb-ask">操作失败</p>
+</script>
+
+<!--确认删除内容-->
+<script type="text/template" id="popUpOne">
+    <p class="mb-icon"><i class="sysfont"></i></p>
+    <p class="mb-ask">是否要删除该作品？</p>
+</script>
+
+
+<script>
+
+    var KE,
+        codeName,
+        codeId,
+        proSource,
+        uploadFileSrc,
+        sourceSrc,
+        format,
+        fileFormat,
+        fieldsSize,
+        coverImgSize,
+        fileName,
+        sourceName,
+        regionId,
+        scenicId,
+        scenic,
+        timestamp,
+        level2Text,
+        level3Code,
+        level4Scort,
+        level4Arr,
+        hasChildrenFlag = false,         // 当此值为true时，表示菜单层级超过3层，需在作品信息里新增作品分类，选取更细的菜单
+        duration = 1000,                 // 延时
+        id                               // 修改作品时传入的作品ID
+    ;
+
+    /*
+    * showList:                 具体加载某个列表模板
+    * getMenus:                 动态创建作品类型下拉框
+    * createProductSource:      创建作品来源下拉框
+    * createTypeLevel1:         创建作品类型下的作品类型的下拉框(#select1)
+    * createTypeLevel2:         创建作品信息下的作品类型的下拉框
+    * show**Tmp:                加载**列表
+    * uploadImg:                图片上传实例化
+    * uploadFile:               附件上传实例化
+    * uploadSource:              视频上传实例化
+    * KindEditor:               富文本实例化
+    * getType:                  获取作品类型下拉数据
+    * hasChildren:              作品类型对应菜单是否有子菜单
+    * getFormat:                格式实例化
+    * getScenic:                获取景区数据
+    * **Msg:                    错误、成功、失败弹窗
+    * confirmEditor:            确认保存按钮事件
+    * deleteMyfile:             删除文件列表中的单个文件
+    * deleteAccessory:          删除暂存附件
+    * createSelectByScort:      根据codeName循环创建下拉框（修改信息时用）
+    * getDetail:                获取文件详情
+    * */
+    var DAQ = {
+        init: function () {
+            this.method();
+            this.confirmEditor();
+        },
+        method: function () {
+            var _this = this;
+            var id = tools.getUrlParams('id');
+            if (id) {
+                _this.getDetail(id)
+            } else {
+                this.renderFrame();
+            }
+            // 关闭编辑弹窗
+            $('body').on('click', '.pro-close', function () {
+                $('.production-bg').remove()
+            });
+
+            // 删除文件
+            $('body').on('click', '.file-close-btn', function () {
+                var id = $(this).data('id');
+                var content1 = $("#popUpOne");
+                $.daqDialog({
+                    title: '删除提示',
+                    content: content1.html(),
+                    mask: true,
+                    width: 450,
+                    height: 260,
+                    model: 'fadeInDown',
+                    buttons: [
+                        {
+                            text: '确定',
+                            callback: function () {
+                                _this.deleteMyfile(id);
+                            }
+                        },
+                        {
+                            text: '取消',
+                            callback: function () {
+                            }
+                        }
+                    ],
+                    callback: function () {
+                    }
+                })
+            });
+
+            // 删除暂存附件
+            $('body').on('click', '.delete-file', function () {
+                var id = $(this).data('id');
+                _this.deleteAccessory(id);
+            });
+        },
+        renderFrame: function () {
+            var _this = this
+            $('#productionTmp').tmpl({}).appendTo('.production-wrap');
+            _this.getType();
+            $('#select7').daqSelect({
+                value: '',
+                callback: function (data) {
+                    timestamp = data.code;
+                }
+            })
+            tools.footerFixed();
+        },
+        showList: function (text, detail) {
+            var _this = this;
+            KE = null;
+            $('.pro-info').removeClass('none');
+            $('.pro-confirm').removeClass('none');
+            switch (text) {
+                case '案例':
+                    _this.showALTmp(detail);
+                    break;
+                case '模板':
+                    _this.showDatumTmp(detail);
+                    break;
+                case '视频':
+                case '音频':
+                case '电子期刊':
+                    _this.showAudioTmp(detail);
+                    break;
+                case 'PPT':
+                    _this.showPPTTmp(detail);
+                    break;
+                case 'AR':
+                case '文创':
+                    _this.showARTmp(detail);
+                    break;
+                case '素材':
+                    _this.showMaterialTmp(detail);
+                    break;
+                default:
+                    _this.showDatumTmp(detail);
+            }
+
+        },
+        getMenus: function (id, level) {
+            if (level > 3 && !hasChildrenFlag) {
+                $('.pro-info').removeClass('none');
+                return;
+            }
+            var _this = this;
+            $.ajax({
+                type: 'get',
+                url: '/member/getMenusList',
+                data: {
+                    id: id
+                },
+                success: function (result) {
+                    if (result.code === 0) {
+                        var dataList = result.datas;
+                        if (dataList && dataList.length > 0) {
+                            // 有子菜单
+                            var options = '<option value="">请选择</option>';
+                            for (var i = 0; i < dataList.length; i++) {
+                                options += '<option value="'+ dataList[i].id +'">'+ dataList[i].name +'</option>';
+                            }
+                            var html = '<div id="select'+level+'" class="daq-select fl daq-type-select">' +
+                                '<select name="select'+level+'">' +
+                                options +
+                                '</select>' +
+                                '</div>'
+                            if (hasChildrenFlag) {
+                                if (level == 4) {
+                                    $('.type-select-2').remove();
+                                    var formItemHtml = '<div class="form-item type-select-2">' +
+                                        '<label class="fl"><span class="red">*&nbsp;</span>作品分类：</label>' +
+                                        '</div>';
+                                    $(formItemHtml).insertBefore('.form-item-keywords');
+                                }
+                                $('.type-select-2').append(html);
+                            } else {
+                                $('.type-select').append(html);
+                            }
+                            tools.footerFixed();
+                            $('#select'+level).daqSelect({
+                                value: '',
+                                callback: function (dataLevel) {
+                                    if (level < 4) {
+                                        hasChildrenFlag = false;
+                                    }
+                                    var text = dataLevel.text;
+                                    var code = dataLevel.code;
+                                    $('#select'+level).nextAll().remove();
+                                    if (level <= 3) {
+                                        $('.pro-info').addClass('none');
+                                        $('.pro-copyright').addClass('none');
+                                        $('.pro-confirm').addClass('none');
+                                    }
+                                    if (level == 2) {
+                                        _this.hasChildren({id: code}, function (result) {
+                                            if (result.code === 0) {
+                                                // 有子菜单
+                                                level2Text = text;
+                                                _this.getMenus(dataLevel.code, level+1);
+                                            } else {
+                                                hasChildrenFlag = false;
+                                                _this.showList(text);
+                                                tools.footerFixed();
+                                            }
+                                        })
+                                    } else {
+                                        _this.hasChildren({id: code}, function (resutl) {
+                                            if (resutl.code === 0) {
+                                                // 有子菜单
+                                                level3Code = code;
+                                                hasChildrenFlag = true;
+                                                if (hasChildrenFlag && level > 3) {
+                                                    // 有子菜单且菜单层级大于3级，则继续添加下拉框。
+                                                    _this.getMenus(dataLevel.code, level+1)
+                                                } else {
+                                                    _this.showList(level2Text);
+                                                    tools.footerFixed();
+                                                }
+                                            } else {
+                                                if (level < 4) {
+                                                    hasChildrenFlag = false;
+                                                    _this.showList(level2Text);
+                                                    tools.footerFixed();
+                                                }
+                                            }
+                                        })
+                                    }
+                                }
+                            })
+                        } else {
+                            // 没有子菜单了
+                            hasChildrenFlag = false;
+                            $('.pro-info').removeClass('none');
+                            tools.footerFixed();
+                        }
+                    } else {
+                        hasChildrenFlag = false;
+                    }
+                }
+            })
+        },
+        createProductSource: function (data) {
+            // 作品来源
+            $("#selectSource").daqSelect({
+                value: data ? data.source : '',
+                success: function () {
+                    if (data) {
+                        if (data.source == 1) {
+                            $('.pro-copyright').removeClass('none');
+                        } else {
+                            $('.pro-copyright').addClass('none');
+                        }
+                    }
+                    $('#select7').daqSelect({
+                        value: data ? data.timestamp : '',
+                        success: function () {
+                            if (data) {
+                                $('input[name="author-name"]').val(data.author);
+                            }
+                        },
+                        callback: function (value) {
+
+                        }
+                    });
+                },
+                callback: function (value) {
+                    proSource = value.code;
+                    // 如果选择的是原创，则显示版权保护
+                    if (value.code == 1) {
+                        $('.pro-copyright').removeClass('none');
+                    } else {
+                        $('.pro-copyright').addClass('none');
+                    }
+                }
+            });
+        },
+        createTypeLevel1: function (scort) {
+            var _this = this;
+            $("#select1").daqSelect({
+                value: scort,
+                callback: function (dataLevel1) {
+                    hasChildrenFlag = false;
+                    if (!dataLevel1.code) {
+                        $('.pro-info').addClass('none');
+                        $('.pro-copyright').addClass('none');
+                        $('.pro-confirm').addClass('none');
+                        $('#select1').nextAll().remove();
+                        tools.footerFixed();
+                        return;
+                    }
+                    var level = 2;
+                    var params = {
+                        id: dataLevel1.code
+                    };
+                    if (!params.id) {
+                        $('.pro-info').addClass('none');
+                        return;
+                    }
+                    _this.hasChildren(params, function (result) {
+                        if (result.code === 0) {
+                            // 有子菜单
+                            $('.pro-info').addClass('none');
+                            $('.pro-copyright').addClass('none');
+                            $('.pro-confirm').addClass('none');
+                            $('#select1').nextAll().remove();
+                            _this.getMenus(params.id, level)
+                        } else {
+                            // 没有子菜单
+                            $('.pro-info').removeClass('none');
+                            $('#select1').nextAll().remove();
+                            $('.pro-confirm').removeClass('none');
+                            _this.showPicTmp();
+                            tools.footerFixed();
+                        }
+                    })
+                }
+            })
+        },
+        createTypeLevel2: function () {
+            var _this = this;
+            if (!hasChildrenFlag) return;
+            _this.getMenus(level3Code, 4)
+        },
+        showALTmp: function (data) {
+            var _this = this;
+            $('#productionInfo').empty();
+            $('#proAlTmp').tmpl({data: data}).appendTo('#productionInfo');
+            _this.createProductSource(data);
+            _this.createTypeLevel2();
+            var coverImg = (data && data.coverImg) ? data.coverImg : '';
+            _this.uploadImg(coverImg);
+            _this.uploadFile();
+            _this.getFormat(data);
+            _this.KindEditor();
+        },
+        showARTmp: function (data) {
+            var _this = this;
+            $('#productionInfo').empty();
+            $('#proARTmp').tmpl({data: data}).appendTo('#productionInfo');
+            _this.createProductSource(data);
+            _this.createTypeLevel2();
+            var coverImg = (data && data.coverImg) ? data.coverImg : '';
+            _this.uploadImg(coverImg);
+            _this.KindEditor();
+        },
+        showDatumTmp: function (data) {
+            var _this = this;
+            $('#productionInfo').empty();
+            $('#proDatumTmp').tmpl({data: data}).appendTo('#productionInfo');
+            _this.createProductSource(data);
+            _this.createTypeLevel2();
+            var coverImg = (data && data.coverImg) ? data.coverImg : '';
+            _this.uploadImg(coverImg);
+            _this.uploadFile();
+            _this.KindEditor();
+        },
+        showPicTmp: function (data) {
+            var _this = this;
+            var defaults = [];
+            var cityObj;
+            if (data && data.regionsId) {
+                regionId = data.regionsId;
+                scenicId = data.scenicId;
+                scenic = data.scenic;
+                cityObj = tools.getCityObj(data.regionsId);
+                if (!$.isEmptyObject(cityObj)) {
+                    if (regionId == 110000 || regionId == 120000 || regionId == 310000 || regionId == 500000 || regionId == 710000 || regionId == 810000 || regionId == 820000) {
+                        defaults = [{region: regionId, name: cityObj.name}]
+                    } else {
+                        var provinceObj = {
+                            region: cityObj.provinceRegion,
+                            name: cityObj.provinceName
+                        }
+                        defaults.push(provinceObj);
+                        var cityObj = {
+                            region: cityObj.cityRegion,
+                            name: cityObj.cityName
+                        }
+                        defaults.push(cityObj);
+                    }
+                }
+                _this.getScenic(regionId, function (result) {
+                    if (result.datas && result.datas.length > 0) {
+                        $('select[name="select-scenic"]').empty();
+                        $('select[name="select-scenic"]').next().remove();
+                        $('#select-scenic .daq-select-ul').remove();
+                        var html = '<option value="">请选择景区</option>';
+                        for (var i = 0, dataList = result.datas; i < dataList.length; i++) {
+                            html += '<option value="'+ dataList[i].id +'">'+ dataList[i].name +'</option>'
+                        }
+                        $('select[name="select-scenic"]').append(html);
+                        $('#select-scenic').removeClass('none');
+                        $("#select-scenic").daqSelect({
+                            value: data.scenicId,
+                            callback: function (data) {
+                                scenicId = data.code;
+                                scenic = data.text;
+                            }
+                        });
+                    }
+                })
+            }
+            $('#productionInfo').empty();
+            $('#proPicTmp').tmpl({data: data}).appendTo('#productionInfo');
+            _this.createProductSource(data);
+            _this.createTypeLevel2();
+            // 地区选择
+            $('#js-cityPicker').daqCitySelect({
+                dist: false, // 不显示区县
+                defaults: defaults,
+                callback: function (obj) {
+                    if (obj[obj.length - 1].value == '') {
+                        $('select[name="select-scenic"]').empty();
+                        $('select[name="select-scenic"]').next().remove();
+                        $('#select-scenic').addClass('none');
+                    }
+                    regionId = obj[obj.length - 1].value;
+                    _this.getScenic(regionId, function (result) {
+                        if (result.datas && result.datas.length > 0) {
+                            $('select[name="select-scenic"]').empty();
+                            $('select[name="select-scenic"]').next().remove();
+                            $('#select-scenic .daq-select-ul').remove();
+                            var html = '<option value="">请选择景区</option>';
+                            for (var i = 0, dataList = result.datas; i < dataList.length; i++) {
+                                html += '<option value="'+ dataList[i].id +'">'+ dataList[i].name +'</option>'
+                            }
+                            $('select[name="select-scenic"]').append(html);
+                            $('#select-scenic').removeClass('none');
+                            $("#select-scenic").daqSelect({
+                                value: '',
+                                callback: function (data) {
+                                    scenicId = data.code;
+                                    scenic = data.text;
+                                }
+                            });
+                        } else {
+                            if (regionId === '110100') {
+                                // 处理直辖市的特殊情况
+
+                            } else {
+                                $('select[name="select-scenic"]').empty();
+                                $('select[name="select-scenic"]').next().remove();
+                                $('#select-scenic').addClass('none');
+                            }
+
+                        }
+                    })
+                }
+            });
+            var coverImg = (data && data.coverImg) ? data.coverImg : '';
+            _this.uploadImg(coverImg);
+//            _this.uploadMultipleImg();
+        },
+        showMaterialTmp: function (data) {
+            var _this = this;
+            $('#productionInfo').empty();
+            $('#proMaterialTmp').tmpl({data: data}).appendTo('#productionInfo');
+            _this.createProductSource(data);
+            _this.createTypeLevel2();
+            _this.getFormat(data);
+            var coverImg = (data && data.coverImg) ? data.coverImg : '';
+            _this.uploadImg(coverImg);
+            _this.uploadFile();
+        },
+        showAudioTmp: function (data) {
+            var _this = this;
+            $('#productionInfo').empty();
+            $('#proAudioTmp').tmpl({data: data}).appendTo('#productionInfo');
+            _this.createProductSource(data);
+            _this.createTypeLevel2();
+            var coverImg = (data && data.coverImg) ? data.coverImg : '';
+            _this.uploadImg(coverImg);
+            _this.uploadFile();
+        },
+        showPPTTmp: function (data) {
+            var _this = this;
+            $('#productionInfo').empty();
+            $('#proPPTTmp').tmpl({data: data}).appendTo('#productionInfo');
+            _this.createProductSource(data);
+            _this.createTypeLevel2();
+            var coverImg = (data && data.coverImg) ? data.coverImg : '';
+            _this.uploadImg(coverImg);
+            _this.uploadFile();
+            _this.uploadSource();
+            _this.KindEditor();
+        },
+        uploadImg: function (coverImg) {
+            var datas = {
+                url: coverImg
+            }
+            uploadImg(datas.url, '#logoBox');
+            function uploadImg(url, obj) {
+
+                var btnObj = $(obj);
+                // 如果有默认值，则回显
+                if (url) {
+                    var name = url.substring(url.lastIndexOf("/") + 1, url.length);
+                    var defaults = '<div class="media-pic-preview" title="' + name + '"><img src="' + url + '" />' +
+                        '<div class="box-mask media-show-pic">' +
+                        '<p class="media-operate"><i class="sysfont js-img-enlarge"></i></p>' +
+                        '<p class="pics-item-name">' + name + '</p>' +
+                        '</div>' +
+                        '<span class="media-show-close"></span></div>';
+                    btnObj.siblings('.upload-default-box').addClass('upload-show-box').html(defaults);
+                    btnObj.addClass('btn-green').html('<i class="sysfont mr-5"></i>重新上传');
+                }
+                // 初始化WebUploader
+                var imgUploader = WebUploader.create({
+                    // 选完文件后，是否自动上传。
+                    auto: true,
+                    // swf文件路径
+                    swf: 'http://filealiyun.geeker.com.cn/ued/webupload/js/Uploader.swf',
+                    // 文件接收服务端。
+                    server: '/upload',
+                    //设置文件上传域的name
+                    fileVal: 'Filedata',
+                    //文件上传参数表
+                    formData: {
+                        path: 'test/img'
+                    },
+                    // 选择文件的按钮。可选。
+                    // 内部根据当前运行是创建，可能是input元素，也可能是flash.
+                    pick: {
+                        id: btnObj,
+                        multiple: false  //设置是否支持多文件上传
+                    },
+//                    fileSingleSizeLimit: 2*1024*1024,
+                    // 只允许选择图片文件。
+                    accept: {
+                        title: 'Images',
+                        extensions: 'gif,jpg,jpeg,bmp,png',
+                        mimeTypes: 'image/jpg,image/jpeg,image/bmp,image/png'
+                    },
+                    compress:false
+                });
+                imgUploader.on('fileQueued', function () {
+                    imgUploader.refresh(); // 当文件上传结构加载出来后执行该命令，刷新一下文件上传结构，防止上传按钮宽高1px问题导致点不到问题
+                    $.daqMessage({
+                        icon: {
+                            text: ''
+                        },
+                        text: '上传中！',
+                        skin: 1,
+                        time: ''
+                    });
+                });
+                imgUploader.on('error', function (file) {
+                    if (file == 'Q_TYPE_DENIED') {
+                        $.daqMessage({
+                            icon: {
+                                text: ''
+                            },
+                            text: '不支持改文件类型！',
+                            skin: 1,
+                            time: 2000
+                        });
+                    } else if (file == 'Q_EXCEED_NUM_LIMIT') {
+                        $.daqMessage({
+                            icon: {
+                                text: ''
+                            },
+                            text: '超出文件上传的数量限制！',
+                            skin: 1,
+                            time: 2000
+                        });
+                    } else if (file == "F_DUPLICATE") {
+                        $.daqMessage({
+                            icon: {
+                                text: ''
+                            },
+                            text: '该文件已上传！',
+                            skin: 1,
+                            time: 5000
+                        });
+                    } else if (file == 'Q_EXCEED_SIZE_LIMIT' || file == 'F_EXCEED_SIZE') {
+                        $.daqMessage({
+                            icon: {
+                                text: ''
+                            },
+                            text: '文件大小超出限制！',
+                            skin: 1,
+                            time: 2000
+                        });
+                    }
+                });
+                // 文件上传成功，给item添加成功class, 用样式标记上传成功。
+                imgUploader.on('uploadSuccess', function (file, response) {
+                    coverImgSize = response.fieldsSize;
+                    $('.daq-feedback').remove();
+                    $.daqMessage({
+                        icon: {
+                            text: ''
+                        },
+                        text: '上传成功！',
+                        skin: 1,
+                        time: 2000
+                    });
+                    var datas = response;
+                    if (datas) {
+                        var showDom = '<div class="media-pic-preview" title="' + file.name + '"><img src="' + response.url + '" />' +
+                            '<div class="box-mask media-show-pic">' +
+                            '<p class="media-operate"><i class="sysfont js-img-enlarge"></i></p>' +
+                            '<p class="pics-item-name">' + file.name + '</p>' +
+                            '</div>' +
+                            '<span class="media-show-close"></span></div>';
+                        btnObj.siblings('.upload-default-box').addClass('upload-show-box').html(showDom);
+                        btnObj.addClass('btn-green').find('.webuploader-pick').html('<i class="sysfont mr-5"></i>重新上传');
+                    }
+                });
+
+                // 文件上传失败，显示上传出错。
+                imgUploader.on('uploadError', function (file) {
+                    $.daqMessage({
+                        icon: {
+                            text: ''
+                        },
+                        text: '上传失败！',
+                        skin: 1,
+                        time: 2000
+                    });
+                });
+
+                // 图片预览
+                btnObj.siblings('.upload-default-box').on('click', '.js-img-enlarge', function () {
+                    var el = $(this).parents('.media-pic-preview').find('img');
+                    $(this).parents('.media-pic-preview').daqPreviewImg({
+                        imgEl: el,
+                        title: '.pics-item-name'
+                    });
+                })
+                // 图片hover事件
+                btnObj.siblings('.upload-default-box').on("mouseenter mouseleave", function (event) {
+                    if (event.type == "mouseenter") {
+                        $(this).find('.box-mask').stop().animate({"height": "100%"}, 50
+                        ).find('.media-operate').stop().show();
+                        $(this).find('.pics-item-name').stop().hide();
+                    } else if (event.type == "mouseleave") {
+                        $(this).find('.box-mask').stop().animate({"height": "26px"}, 50).find('.media-operate').stop().hide();
+                        $(this).find('.pics-item-name').stop().show();
+                    }
+                })
+                // 图片删除
+                btnObj.siblings('.upload-default-box').on('click', '.media-show-close', function () {
+                    var files = imgUploader.getFiles();  // 获取已上传的文件对象
+                    var name = $(this).parents('.media-pic-preview').find('.pics-item-name').text();
+                    $(files).each(function(i, v) { // 遍历已上传对象找到与当前删除的对象匹配的删除改文件，防止再次上传提示该文件已上传
+                        var now = v.name;
+                        if (now == name) {
+                            imgUploader.removeFile($(this));
+                        }
+                    })
+                    var showDom = '<i class="sysfont upload-dft-icon"></i><p class="upload-tips">支持JPG和PNG格式图片不超过2M</p>';
+                    btnObj.siblings('.upload-default-box').removeClass('upload-show-box').html(showDom);
+                    btnObj.removeClass('btn-green').find('.webuploader-pick').html('<i class="sysfont mr-5"></i>点击上传');
+                })
+            }
+        },
+        uploadMultipleImg: function () {
+            /****************方框上传图片*****************/
+            var $list=$("#squareList"), //存放选中图片的列表
+                thumbnailWidth = 148,
+                thumbnailHeight = 148;
+            // 初始化Web Uploader
+            var squareUploader = WebUploader.create({
+                // 选完文件后，是否自动上传。
+                auto: true,
+                // swf文件路径
+                swf: 'http://filealiyun.geeker.com.cn/ued/webupload/js/Uploader.swf',
+                // 文件接收服务端。
+                server: '/upload',
+                //设置文件上传域的name
+                fileVal: 'Filedata',
+                //文件上传参数表
+                formData: {
+                    path: 'test'
+                },
+                // 选择文件的按钮。可选。
+                // 内部根据当前运行是创建，可能是input元素，也可能是flash.
+                pick: {
+                    id: '#squarePicker',
+                    multiple: false  //设置是否支持多文件上传
+                },
+                // 只允许选择图片文件。
+                accept: {
+                    title: 'Images',
+                    extensions: 'gif,jpg,jpeg,bmp,png',
+                    mimeTypes: 'image/jpg,image/jpeg,image/png'
+                }
+            });
+            // 当有文件添加进来的时候
+            squareUploader.on( 'fileQueued', function( file ) {
+                squareUploader.refresh(); // 当文件上传结构加载出来后执行该命令，刷新一下文件上传结构，防止上传按钮宽高1px问题导致点不到问题
+                var $li = $(
+                        '<div id="' + file.id + '" class="file-item thumbnail">' +
+                        '<img/>' +
+                        '<label class="drag-label" ></label>' +
+                        '<p class="upload-delete"><i class="sysfont big"></i><i class="sysfont delete"></i></p>' +
+                        '</div>'
+                    ),
+                    $img = $li.find('img');
+                // $list为容器jQuery实例
+                $list.append( $li );
+                // 创建缩略图
+                // 如果为非图片文件，可以不用调用此方法。
+                // thumbnailWidth x thumbnailHeight 为 100 x 100
+                squareUploader.makeThumb( file, function( error, src ) {
+                    if ( error ) {
+                        $img.replaceWith('<span>不能预览</span>');
+                        return;
+                    }
+                    $img.attr( 'src', src );
+                }, thumbnailWidth, thumbnailHeight );
+            });
+            // 文件上传过程中创建进度条实时显示。
+            squareUploader.on( 'uploadProgress', function( file, percentage ) {
+                var $li = $( '#'+file.id ),
+                    $percent = $li.find('.upload-circle');
+                // 避免重复创建
+                if ( !$percent.length ) {
+                    $percent = $('<p class="upload-circle"><canvas id="canvas" width="64px" height="64px"></canvas></p>').appendTo( $li );
+                }
+                var circle = {
+                    parent: $li.find('#canvas'),
+                    width: 64,
+                    radius: 30,
+                    arc: 4,
+                    percent: Math.floor(percentage * 100),
+                    color: ['#d2d8e3', '#20a0ff'], //[底色，进度色]
+                    textColor: '#8590a0', //文字渲染颜色
+                    textSize: '14px', //文字渲染字体大小
+                    animated: false  //是否以动画的方式绘制 默认false
+                };
+                // 捕获 IE7,8下不支持canvas抛出的异常
+                try {
+                    $("#canvas").daqCircle(circle);
+                }
+                catch (err) { }
+            });
+            // 文件上传成功，给item添加成功class, 用样式标记上传成功。
+            squareUploader.on( 'uploadSuccess', function( file, response ) {
+                var $li = $( '#'+file.id );
+                //encodeURI(response.datas.url) 把图片原始访问地址赋值给变量,encodeURI防止图片有特殊字符
+                $li.attr("imgUrl",encodeURI(response.url)).find(".circle-process").remove();
+                $li.find(".upload-circle").html("<i class='sysfont circle-success'></i>");
+            });
+            // 文件上传失败，显示上传出错。
+            squareUploader.on( 'uploadError', function( file ) {
+                var $li = $( '#'+file.id ),
+                    $error = $li.find('div.error');
+                // 避免重复创建
+                if ( !$error.length ) {
+                    $error = $('<div class="error"></div>').appendTo( $li );
+                }
+                $error.text('上传失败');
+            });
+            // 完成上传完了，成功或者失败，先删除进度条。
+            squareUploader.on( 'uploadComplete', function( file ) {
+                var $li = $( '#'+file.id );
+                $li.find('.circle-success,.upload-circle').remove();
+                $li.find('.drag-label').css('display','block');
+                //点击删除上传的文件
+                $li.on("click",".upload-delete i.delete",function(){
+                    $(this).parents(".file-item").remove();
+                    squareUploader.removeFile(file,true);
+                });
+                //给上传文件列表添加hover事件
+                $(".uploader-list").on('mouseover','.file-item',function(){
+                    $(this).find(".drag-label").css('display','none');
+                    $(this).find(".upload-delete").css('display','block');
+                });
+                $(".uploader-list").on('mouseout','.file-item',function(){
+                    $(this).find(".drag-label").css('display','block');
+                    $(this).find(".upload-delete").css('display','none');
+                });
+                //点击显示放大图片
+                $li.on("click",".upload-delete i.big",function(){
+                    var sourceUrl = $(this).parents(".file-item").attr("imgUrl");
+                    var cover = '<p class="cover"><img src="'+ sourceUrl +'" /></p>';
+                    $(document.body).append(cover);
+                    imgWH();
+                });
+                $(window).resize(function(){
+                    imgWH();
+                });
+                //动态设置放大图片的垂直居中显示
+                //动态设置放大图片的垂直居中显示
+                function imgWH(){
+                    //取得图片原始尺寸，并设置最大宽高显示；
+                    var winH = $(window).height(),
+                        oldWid = file._info.width,
+                        oldHei = file._info.height,
+                        scale = oldWid / oldHei; //宽高之比
+                    if( oldWid > 1000){
+                        oldWid = 1000;
+                        oldHei = oldWid / scale;
+                        if(oldHei > 650){
+                            oldHei =  650;
+                        }
+                    }else if(oldHei > 650){
+                        oldHei = 650;
+                        oldWid = oldHei * scale;
+                        if(oldWid > 1000){
+                            oldWid = 1000;
+                        }
+                    }
+                    //根据计算的宽高设置预览图片的宽高
+                    $(".cover img").css({'width': oldWid, 'height': oldHei, 'margin-top': (winH - oldHei)/2});
+                }
+                //点击遮罩层移除图片展示
+                $(document.body).on("click",".cover",function(){
+                    $(this).remove();
+                });
+            });
+        },
+        uploadFile: function () {
+            var $list=$("#fileList");   //存放选中图片的列表
+            // 初始化Web Uploader
+            var uploader = WebUploader.create({
+                // 选完文件后，是否自动上传。
+                auto: true,
+                // swf文件路径
+                swf: 'http://filealiyun.geeker.com.cn/ued/webupload/js/Uploader.swf',
+                // 文件接收服务端。
+                server: '/upload',
+                // 设置文件上传域的name
+                fileVal: 'Filedata',
+                // 文件上传请求的参数表，每次发送都会发送此对象中的参数。
+                formData: {
+                    path: 'test' // 表示文件上传到服务器上的文件夹名
+                },
+                // 选择文件的按钮。可选。
+                // 内部根据当前运行是创建，可能是input元素，也可能是flash.
+                pick: {
+                    id: '#filePicker'
+                },
+                fileNumLimit: 1, // 限制上传文件总数量
+//                accept: {
+//                    title: '视频上传',  //文字描述
+//                    extensions: 'mp4',     //允许的文件后缀，不带点，多个用逗号分割。,jpg,png,
+//                    mimeTypes: 'video/*,audio/*,application/*',      //多个用逗号分割,
+//                }
+            });
+            // 上传的文件根据限制的错误类型提示
+            uploader.on( 'error', function(file){
+                if (file == 'Q_TYPE_DENIED') {
+                    $.daqMessage({
+                        icon: {
+                            text: ''
+                        },
+                        text: '不支持改文件类型！',
+                        skin: 1,
+                        time: 2000
+                    });
+                } else if (file == 'Q_EXCEED_NUM_LIMIT') {
+                    $.daqMessage({
+                        icon: {
+                            text: ''
+                        },
+                        text: '超出文件上传的数量限制！',
+                        skin: 1,
+                        time: 2000
+                    });
+                } else if (file == "F_DUPLICATE") {
+                    $.daqMessage({
+                        icon: {
+                            text: ''
+                        },
+                        text: '该文件已上传！',
+                        skin: 1,
+                        time: 5000
+                    });
+                } else if (file == 'Q_EXCEED_SIZE_LIMIT' || file == 'F_EXCEED_SIZE') {
+                    $.daqMessage({
+                        icon: {
+                            text: ''
+                        },
+                        text: '文件大小超出限制！',
+                        skin: 1,
+                        time: 2000
+                    });
+                }
+            });
+            // webuploader事件.当选择文件后，文件被加载到文件队列中，触发该事件。等效于 uploader.onFileueued = function(file){...} ，类似js的事件定义。
+            uploader.on( 'fileQueued', function(file) {
+                uploader.refresh(); // 当文件上传结构加载出来后执行该命令，刷新一下文件上传结构，防止上传按钮宽高1px问题导致点不到问题
+                var $li = $(
+                    '<div id="' + file.id + '" class="file-item"><i class="sysfont upload-folder fl"></i>' +
+                    '<span class="fl">' + file.name + '</span>' +
+                    '<i class="sysfont upload-success"></i>' + //完成后的图标
+                    '</div>'
+                );
+                // $list为容器jQuery实例
+                $list.append( $li );
+                // 判断文件类型显示不同的图标
+                if(file.type.indexOf("image") < 0){
+                    $( '#'+file.id ).find(".upload-folder").html("");
+                }else{
+                    $( '#'+file.id ).find(".upload-folder").html("");
+                }
+            });
+            // 文件上传过程中创建进度条实时显示。
+            uploader.on( 'uploadProgress', function( file, percentage ) {
+                var $li = $( '#'+file.id ),
+                    $percent = $list.find('.progress span');
+                // 避免重复创建
+                if ( !$percent.length ) {
+                    $percent = $('<div class="progress"><p class="progress-p">' +
+                        '<span></span>' + //表示进度
+                        '</p><label>'+ Math.ceil(percentage * 100) +'%</label></div>')
+                        .appendTo( $li )
+                        .find('span');
+                }
+                //显示当前进度
+                $percent.css( 'width', percentage * 100 + '%' );
+                //进度条模块总宽度
+                var progressWid = $li.find(".progress").outerWidth(),
+                    //显示当前进度百分比数值的宽度
+                    labelWid = $li.find(".progress label").outerWidth();
+                //进度条的宽度
+                $li.find(".progress-p").width(progressWid - labelWid);
+            });
+            // 文件上传成功，给item添加成功class, 用样式标记上传成功。
+            uploader.on( 'uploadSuccess', function( file, response ) {
+                if (response.error == 0) {
+                    uploadFileSrc = response.url;
+                    format = response.format;
+                    fieldsSize = response.fieldsSize;
+                    fileName = file.name;
+                    var $li = $( '#'+file.id );
+                    $li.addClass('upload-state-done');
+                    $li.find(".upload-success").addClass("success");
+                    //移除进度百分比数值,并重新计算滚动条宽度
+                    $li.find(".progress label").remove();
+                    $li.find(".progress-p").css("width","100%");
+                }
+            });
+            // 文件上传失败，显示上传出错。
+            uploader.on( 'uploadError', function( file ) {
+                var $li = $( '#'+file.id ),
+                    $error = $li.find('div.error');
+                // 避免重复创建
+                if ( !$error.length ) {
+                    $error = $('<div class="error"></div>').appendTo( $li );
+                }
+                $error.text('上传失败');
+            });
+            // 完成上传完了，成功或者失败，先删除进度条。
+            uploader.on( 'uploadComplete', function( file ) {
+                var $li = $( '#'+file.id );
+                $( '#'+file.id ).find('.progress').remove();
+                //点击删除上传的文件
+                $li.on("click",".upload-success",function(){
+                    $(this).parents(".file-item").remove();
+                    uploader.removeFile(file,true);
+                    uploadFileSrc = '';
+                    format = '';
+                    fieldsSize = 0;
+                    fileName = '';
+                });
+            });
+            //给上传文件列表添加hover事件
+            $(".uploader-list").on('mouseenter mouseleave','.file-item',function(event){
+                if(event.type == 'mouseenter') {
+                    $(this).find(".upload-success").addClass("delete").html("");
+                } else if(event.type == 'mouseleave') {
+                    $(this).find(".upload-success").removeClass("delete").html("");
+                }
+            });
+        },
+        uploadSource: function () {
+            var $list=$("#sourceList");   //存放选中图片的列表
+            // 初始化Web Uploader
+            var uploader = WebUploader.create({
+                // 选完文件后，是否自动上传。
+                auto: true,
+                // swf文件路径
+                swf: 'http://filealiyun.geeker.com.cn/ued/webupload/js/Uploader.swf',
+                // 文件接收服务端。
+                server: '/upload',
+                // 设置文件上传域的name
+                fileVal: 'Filedata',
+                // 文件上传请求的参数表，每次发送都会发送此对象中的参数。
+                formData: {
+                    path: 'test' // 表示文件上传到服务器上的文件夹名
+                },
+                // 选择文件的按钮。可选。
+                // 内部根据当前运行是创建，可能是input元素，也可能是flash.
+                pick: {
+                    id: '#sourcePicker'
+                },
+                fileNumLimit: 1,  // 限制上传文件总数量
+                fileSingleSizeLimit: 100*1024*1024 // 限制单个文件大小
+            });
+            // 上传的文件根据限制的错误类型提示
+            uploader.on( 'error', function(file){
+                if (file == 'Q_TYPE_DENIED') {
+                    $.daqMessage({
+                        icon: {
+                            text: ''
+                        },
+                        text: '不支持改文件类型！',
+                        skin: 1,
+                        time: 2000
+                    });
+                } else if (file == 'Q_EXCEED_NUM_LIMIT') {
+                    $.daqMessage({
+                        icon: {
+                            text: ''
+                        },
+                        text: '超出文件上传的数量限制！',
+                        skin: 1,
+                        time: 2000
+                    });
+                } else if (file == "F_DUPLICATE") {
+                    $.daqMessage({
+                        icon: {
+                            text: ''
+                        },
+                        text: '该文件已上传！',
+                        skin: 1,
+                        time: 5000
+                    });
+                } else if (file == 'Q_EXCEED_SIZE_LIMIT' || file == 'F_EXCEED_SIZE') {
+                    $.daqMessage({
+                        icon: {
+                            text: ''
+                        },
+                        text: '文件大小超出限制！',
+                        skin: 1,
+                        time: 2000
+                    });
+                }
+            });
+            // webuploader事件.当选择文件后，文件被加载到文件队列中，触发该事件。等效于 uploader.onFileueued = function(file){...} ，类似js的事件定义。
+            uploader.on( 'fileQueued', function(file) {
+                uploader.refresh(); // 当文件上传结构加载出来后执行该命令，刷新一下文件上传结构，防止上传按钮宽高1px问题导致点不到问题
+                var $li = $(
+                    '<div id="' + file.id + '" class="file-item"><i class="sysfont upload-folder fl"></i>' +
+                    '<span class="fl">' + file.name + '</span>' +
+                    '<i class="sysfont upload-success"></i>' + //完成后的图标
+                    '</div>'
+                );
+                // $list为容器jQuery实例
+                $list.append( $li );
+                // 判断文件类型显示不同的图标
+                if(file.type.indexOf("image") < 0){
+                    $( '#'+file.id ).find(".upload-folder").html("");
+                }else{
+                    $( '#'+file.id ).find(".upload-folder").html("");
+                }
+            });
+            // 文件上传过程中创建进度条实时显示。
+            uploader.on( 'uploadProgress', function( file, percentage ) {
+                var $li = $( '#'+file.id ),
+                    $percent = $list.find('.progress span');
+                // 避免重复创建
+                if ( !$percent.length ) {
+                    $percent = $('<div class="progress"><p class="progress-p">' +
+                        '<span></span>' + //表示进度
+                        '</p><label>'+ Math.ceil(percentage * 100) +'%</label></div>')
+                        .appendTo( $li )
+                        .find('span');
+                }
+                //显示当前进度
+                $percent.css( 'width', percentage * 100 + '%' );
+                //进度条模块总宽度
+                var progressWid = $li.find(".progress").outerWidth(),
+                    //显示当前进度百分比数值的宽度
+                    labelWid = $li.find(".progress label").outerWidth();
+                //进度条的宽度
+                $li.find(".progress-p").width(progressWid - labelWid);
+            });
+            // 文件上传成功，给item添加成功class, 用样式标记上传成功。
+            uploader.on( 'uploadSuccess', function( file, response ) {
+                if (response.error == 0) {
+                    sourceSrc = response.url;
+                    sourceName = file.name;
+                    var $li = $( '#'+file.id );
+                    $li.addClass('upload-state-done');
+                    $li.find(".upload-success").addClass("success");
+                    //移除进度百分比数值,并重新计算滚动条宽度
+                    $li.find(".progress label").remove();
+                    $li.find(".progress-p").css("width","100%");
+                }
+            });
+            // 文件上传失败，显示上传出错。
+            uploader.on( 'uploadError', function( file ) {
+                var $li = $( '#'+file.id ),
+                    $error = $li.find('div.error');
+                // 避免重复创建
+                if ( !$error.length ) {
+                    $error = $('<div class="error"></div>').appendTo( $li );
+                }
+                $error.text('上传失败');
+            });
+            // 完成上传完了，成功或者失败，先删除进度条。
+            uploader.on( 'uploadComplete', function( file ) {
+                var $li = $( '#'+file.id );
+                $( '#'+file.id ).find('.progress').remove();
+                //点击删除上传的文件
+                $li.on("click",".upload-success",function(){
+                    $(this).parents(".file-item").remove();
+                    uploader.removeFile(file,true);
+                    uploadFileSrc = '';
+                    format = '';
+                    fieldsSize = 0;
+                    fileName = '';
+                });
+            });
+            //给上传文件列表添加hover事件
+            $(".uploader-list").on('mouseenter mouseleave','.file-item',function(event){
+                if(event.type == 'mouseenter') {
+                    $(this).find(".upload-success").addClass("delete").html("");
+                } else if(event.type == 'mouseleave') {
+                    $(this).find(".upload-success").removeClass("delete").html("");
+                }
+            });
+        },
+        KindEditor: function () {
+            // 编辑器
+            KE = KindEditor.create($('#ssjs'),{
+                resizeType: 0,
+                uploadJson: '/upload',
+                width: '900px',
+                height: '500px'
+            });
+            KE.sync();
+        },
+        getType: function (params) {
+            var _this = this;
+            var option = {};
+            if (params) {
+                option.id = params.scort[params.level];
+                option.level = params.level;
+            }
+            $.ajax({
+                type: 'get',
+                url: '/member/getTypeList',
+                data: option,
+                success: function (result) {
+                    if (result.code === 0) {
+                        if (result.datas && result.datas.length > 0) {
+                            var dataList = result.datas;
+                            var html = '<option value="">请选择</option>';
+                            for (var i = 0; i < dataList.length; i++) {
+                                html += '<option value="'+ dataList[i].id +'">'+ dataList[i].name +'</option>';
+                            }
+                            $('#select1 select').append(html);
+                            _this.createTypeLevel1(option.id);
+                        }
+                    }
+                }
+            })
+        },
+        hasChildren: function (params, callback) {
+            $.ajax({
+                type: 'get',
+                url: '/member/isThisTypeHasChildren',
+                data: {
+                    id: params.id,
+                },
+                success: function (result) {
+                    callback(result);
+                }
+            })
+        },
+        getFormat: function (data) {
+            $.ajax({
+                type: 'get',
+                url: '/member/getFormatList',
+                success: function (result) {
+                    if (result.code === 0) {
+                        if (result.datas && result.datas.length > 0) {
+                            var dataList = result.datas;
+                            var html = '';
+                            for (var i = 0; i < dataList.length; i++) {
+                                if (!data) {
+                                    if (i === 0) {
+                                        html += '<input type="radio" checked name="format" value="'+ dataList[i].name +'"  title="'+ dataList[i].name +'"/>'
+                                    } else {
+                                        html += '<input type="radio" name="format" value="'+ dataList[i].name +'"  title="'+ dataList[i].name +'"/>'
+                                    }
+                                } else {
+                                    if (data.format === dataList[i].name) {
+                                        html += '<input type="radio" checked name="format" value="'+ dataList[i].name +'"  title="'+ dataList[i].name +'"/>'
+                                    } else {
+                                        html += '<input type="radio" name="format" value="'+ dataList[i].name +'"  title="'+ dataList[i].name +'"/>'
+                                    }
+                                }
+
+                            }
+                            $("#radio").append(html)
+                        }
+                    }
+                    $("#radio").daqRadio({
+                        callback: function (data) {
+                            fileFormat = data;
+                        }
+                    });
+                }
+            })
+        },
+        getScenic: function (regionId, callback) {
+            $.ajax({
+                type: 'get',
+                url: '/member/getScenicList',
+                data: {
+                    regionId: regionId
+                },
+                success: function (result) {
+                    if (result.code === 0) {
+                        callback(result)
+                    }
+                }
+            })
+        },
+        errMsg: function (text) {
+            $.daqMessage({
+                icon: {
+                    text: ''
+                },
+                text: text,
+                skin: 2,
+                time: 2000
+            });
+        },
+        successMsg: function (callback) {
+            var successCt = $("#popUpFive");
+            $.daqDialog({
+                title: '成功提示',
+                iconfont: '',
+                content: successCt.html(),
+                mask: true,
+                width: 400,
+                height: 250,
+                model: 'fadeInDown',
+                closeFn: callback,
+                callback: function () {
+                    setTimeout(function () {
+                        callback()
+                    }, duration)
+                }
+            });
+        },
+        failedMsg: function (callback) {
+            var content6 = $("#popUpSix");
+            $.daqDialog({
+                title: '失败提示',
+                iconfont: '',
+                content: content6.html(),
+                mask: true,
+                width: 400,
+                height: 250,
+                model: 'fadeInDown',
+                closeFn: callback
+            })
+        },
+        deleteMyfile: function (id) {
+            var _this = this;
+            $.ajax({
+                type: 'post',
+                url: '/member/deleteMyfile',
+                data: {
+                    id: id
+                },
+                success: function (result) {
+                    if (result.code === 0) {
+                        _this.successMsg(function () {
+                            window.location.reload()
+                        });
+                    } else {
+                        _this.failedMsg();
+                    }
+                }
+            })
+        },
+        deleteAccessory: function (id) {
+            var _this = this;
+            $.ajax({
+                type: 'post',
+                url: '/member/deleteAccessory',
+                data: {
+                    id: id
+                },
+                success: function (result) {
+                    if (result.code === 0) {
+                        _this.successMsg(function () {
+                            $('#fileList').empty();
+                        })
+                    }
+                }
+            })
+        },
+        createSelectByScort: function (scort, detail, callback) {
+            var _this = this;
+            $.ajax({
+                type: 'get',
+                url: '/member/getTypeLevelList?id='+ scort[scort.length - 1],
+                success: function (result) {
+                    if (result.code === 0) {
+                        var deep = result.data.deep;
+                        var scorts = result.data.scorts;
+                        var menus = result.data.menus;
+                        if (menus && menus.length > 0) {
+                            // 先添加第一个下拉框
+                            var options = '<option value="">请选择</option>';
+                            for (var i = 0; i < menus.length; i++) {
+                                options += '<option value="'+ menus[i].id +'">'+ menus[i].name +'</option>';
+                            }
+                            $('select[name="select1"]').append(options);
+                            // 创建第一个类型下拉选框
+                            _this.createTypeLevel1(scorts[0]);
+
+                            createSelect(scorts[0], menus, 2);
+                            function createSelect (scort, arr, level, newArr) {
+                                if (level > 3) {
+                                    level4Scort = scort;
+                                    level4Arr = newArr;
+                                    return;
+                                }
+                                var childArry = [];
+                                if (newArr) {
+                                    childArry = newArr
+                                } else {
+                                    childArry = getChildren(scort, arr);
+                                }
+                                if (childArry.length === 0) {
+                                    return
+                                }
+                                var options = '<option value="">请选择</option>';
+                                for (var i = 0; i < childArry.length; i++) {
+                                    options += '<option value="'+ childArry[i].id +'">'+ childArry[i].name +'</option>';
+                                }
+                                var html = '<div id="select'+level+'" class="daq-select fl daq-type-select">' +
+                                    '<select name="select'+level+'">' +
+                                    options +
+                                    '</select>' +
+                                    '</div>'
+                                $('.type-select').append(html);
+                                $('#select'+level).daqSelect({
+                                    value: scorts[level-1],
+                                    callback: function (dataLevel) {
+                                        if (level < 4) {
+                                            hasChildrenFlag = false;
+                                        }
+                                        var text = dataLevel.text;
+                                        var code = dataLevel.code;
+                                        $('#select'+level).nextAll().remove();
+                                        if (level <= 3) {
+                                            $('.pro-info').addClass('none');
+                                            $('.pro-copyright').addClass('none');
+                                            $('.pro-confirm').addClass('none');
+                                        }
+                                        if (level == 2) {
+                                            _this.hasChildren({id: code}, function (result) {
+                                                if (result.code === 0) {
+                                                    // 有子菜单
+                                                    level2Text = text;
+                                                    _this.getMenus(dataLevel.code, level+1);
+                                                } else {
+                                                    hasChildrenFlag = false;
+                                                    _this.showList(text, detail);
+                                                }
+                                            })
+                                        } else {
+                                            _this.hasChildren({id: code}, function (resutl) {
+                                                if (resutl.code === 0) {
+                                                    // 有子菜单
+                                                    level3Code = code;
+                                                    hasChildrenFlag = true;
+                                                    if (hasChildrenFlag && level > 3) {
+                                                        // 有子菜单且菜单层级大于3级，则继续添加下拉框。
+                                                        _this.getMenus(dataLevel.code, level+1)
+                                                    } else {
+                                                        _this.showList(level2Text, detail);
+                                                        var formItemHtml = '<div class="form-item type-select-2">' +
+                                                            '<label class="fl"><span class="red">*&nbsp;</span>作品分类：</label>' +
+                                                            '</div>';
+                                                        $(formItemHtml).insertBefore('.form-item-keywords');
+                                                    }
+                                                } else {
+                                                    if (level < 4) {
+                                                        hasChildrenFlag = false;
+                                                        _this.showList(level2Text, detail);
+                                                    }
+                                                }
+                                            })
+                                        }
+                                    }
+                                });
+                                var newscort = scorts[level-1];
+                                var newchildArry = getChildren(newscort, childArry);
+                                scort = scorts[level];
+                                if (newchildArry.length > 0) {
+                                    for (var i = 0; i < newchildArry.length; i++) {
+                                        if (scort == newchildArry[i].id) {
+                                            createSelect(scort, [], level+1, newchildArry);
+                                            return;
+                                        }
+                                    }
+                                }
+                            }
+                            function getChildren(scort, arr) {
+                                var newArray = new Array();
+                                for (var i in arr) {
+                                    if (arr[i].id == scort) {
+                                        newArray = arr[i].children;
+                                    }
+                                }
+                                return newArray;
+                            }
+
+                            if (callback && $.isFunction(callback)) {
+                                callback()
+                            }
+                        }
+                    }
+                }
+            })
+        },
+        getDetail: function (id) {
+            var _this = this;
+            $.ajax({
+                type: 'get',
+                url: '/member/getProductionDetail?id=' + id,
+                success: function (result) {
+                    if (result.code === 0) {
+                        if (result.data) {
+                            var data = result.data;
+                            $('#productionTmp').tmpl({data: data}).appendTo('.production-wrap');
+                            var scorts = data.scort;
+                            var parentVal = data.parentVal;
+                            codeName = data.codeName;
+                            codeId = data.codeId;
+                            uploadFileSrc = data.download;
+                            sourceSrc = data.sourceSrc;
+                            format = data.format;
+                            fieldsSize = data.size;
+                            fileName = data.fileName;
+                            sourceName = data.sourceName;
+                            proSource = data.source;
+                            timestamp = data.timestamp;
+                            $('.pro-info').removeClass('none');
+                            $('.pro-confirm').removeClass('none');
+                            // 循环创建作品类型下拉框
+                            _this.createSelectByScort(scorts, data, function () {
+                                if (parentVal === 'datum') {
+                                    _this.showDatumTmp(data);
+                                } else if (parentVal === 'picture') {
+                                    _this.showPicTmp(data);
+                                } else {
+                                    tools.getCodeNameById(scorts[1], function (name) {
+                                        codeName = name;
+                                        switch (codeName) {
+                                            case '案例':
+                                                _this.showALTmp(data);
+                                                break;
+                                            case '模板':
+                                                _this.showDatumTmp(data);
+                                                break;
+                                            case '视频':
+                                            case '音频':
+                                            case '电子期刊':
+                                                _this.showAudioTmp(data);
+                                                break;
+                                            case 'PPT':
+                                                _this.showPPTTmp(data);
+                                                break;
+                                            case 'AR':
+                                            case '文创':
+                                                _this.showARTmp(data);
+                                                break;
+                                            case '素材':
+                                                _this.showMaterialTmp(data);
+                                                break;
+                                            default:
+                                                _this.showDatumTmp(data)
+                                        }
+                                        if (scorts.length > 3) {
+                                            // 需要加入作品分类下拉框
+                                            var formItemHtml = '<div class="form-item type-select-2">' +
+                                                '<label class="fl"><span class="red">*&nbsp;</span>作品分类：</label>' +
+                                                '</div>';
+                                            $(formItemHtml).insertBefore('.form-item-keywords');
+
+                                            createSelect(level4Scort, level4Arr, 4);
+                                            function createSelect (scort, arr, level, newArr) {
+                                                if (level <= 3) return;
+                                                var childArry = [];
+                                                if (newArr) {
+                                                    childArry = newArr
+                                                } else {
+                                                    childArry = arr
+                                                }
+                                                var options = '<option value="">请选择</option>';
+                                                for (var i = 0; i < childArry.length; i++) {
+                                                    options += '<option value="'+ childArry[i].id +'">'+ childArry[i].name +'</option>';
+                                                }
+                                                var html = '<div id="select'+level+'" class="daq-select fl daq-type-select">' +
+                                                    '<select name="select'+level+'">' +
+                                                    options +
+                                                    '</select>' +
+                                                    '</div>'
+                                                $('.type-select-2').append(html);
+                                                $('#select'+level).daqSelect({
+                                                    value: scorts[level-1],
+                                                    callback: function (dataLevel) {
+                                                        if (level < 4) {
+                                                            hasChildrenFlag = false;
+                                                        }
+                                                        var text = dataLevel.text;
+                                                        var code = dataLevel.code;
+                                                        $('#select'+level).nextAll().remove();
+                                                        _this.hasChildren({id: code}, function (resutl) {
+                                                            if (resutl.code === 0) {
+                                                                // 有子菜单
+                                                                level3Code = code;
+                                                                hasChildrenFlag = true;
+                                                                if (hasChildrenFlag && level > 3) {
+                                                                    // 有子菜单且菜单层级大于3级，则继续添加下拉框。
+                                                                    _this.getMenus(dataLevel.code, level+1)
+                                                                } else {
+                                                                    _this.showList(level2Text, data);
+                                                                }
+                                                            } else {
+                                                                if (level < 4) {
+                                                                    hasChildrenFlag = false;
+                                                                    _this.showList(level2Text, data);
+                                                                }
+                                                            }
+                                                        })
+                                                    }
+                                                });
+                                                var newscort = scorts[level-1];
+                                                var newchildArry = getChildren(newscort, childArry);
+                                                scort = scorts[level];
+                                                if (newchildArry.length > 0) {
+                                                    for (var i = 0; i < newchildArry.length; i++) {
+                                                        if (scort == newchildArry[i].id) {
+                                                            createSelect(scort, [], level+1, newchildArry);
+                                                            return;
+                                                        }
+                                                    }
+                                                }
+                                            }
+                                            function getChildren(scort, arr) {
+                                                var newArray = new Array();
+                                                for (var i in arr) {
+                                                    if (arr[i].id == scort) {
+                                                        newArray = arr[i].children;
+                                                    }
+                                                }
+                                                return newArray;
+                                            }
+                                        }
+                                    })
+                                }
+                            })
+                            tools.footerFixed();
+                        }
+                    }
+                }
+            })
+        },
+        confirmEditor: function () {
+            var _this = this;
+            $('body').on('click', '.confirm-btn', function () {
+                var id = $(this).data('id');
+                var typeSelect = $('.daq-type-select').last().find('.daq-select-ul .select-li-active');
+                codeName = typeSelect.text();
+                codeId = typeSelect.data('value');
+                var params = {
+                    userId: userInfo.id,
+                    userName: userInfo.name,
+                    title: $('input[name="production-name"]').val(),
+                    codeName: codeName,
+                    codeId: codeId,
+                    source: proSource,
+                    keyWord: $('input[name="production-keyword"]').val(),
+                    coverImg: $('.media-pic-preview img').attr('src'),
+                    uploadFileSrc: uploadFileSrc,
+                    sourceSrc: sourceSrc,
+                    format: format,
+                    fieldsSize: fieldsSize,
+                    fileName: fileName,
+                    sourceName: sourceName,
+                    proContent: KE ? KE.html() : '',
+                    regionsId: regionId,
+                    scenicId: scenicId,
+                    scenic: scenic
+                }
+                if (params.keyWord && params.keyWord.charAt(params.keyWord.length - 1) == ';') {
+                    params.keyWord = params.keyWord.slice(0, -1);
+                }
+                if (id) {
+                    params.id = id;
+                }
+                if (fileFormat) {
+                    params.format = fileFormat;
+                }
+                if (proSource == 1) {
+                    // 作品来源是原创 则增加版权保护信息
+                    params.timestamp = timestamp;
+                    params.author = $('input[name="author-name"]').val();
+                }
+                /*
+                 * 判断必填项
+                 * */
+                if (!params.title) {
+                    _this.errMsg('请输入作品名称！');
+                    return;
+                }
+                if (!params.codeName) {
+                    _this.errMsg('请选择作品类型！');
+                    return;
+                }
+                if (!params.source) {
+                    _this.errMsg('请选择作品来源！');
+                    return;
+                }
+
+                if (codeName === '图库') {
+                    if (!params.regionsId) {
+                        _this.errMsg('请选择地区！');
+                        return;
+                    }
+                    if (!params.scenicId || !params.scenic) {
+                        _this.errMsg('请选择景区！');
+                        return;
+                    }
+                    params.uploadFileSrc = params.coverImg;
+                    params.fieldsSize = coverImgSize;
+                }
+                if (!params.keyWord) {
+                    _this.errMsg('请输入作品关键字！');
+                    return;
+                }
+                if (params.codeName != '图库' && params.codeName != '图片') {
+                    if (!params.coverImg) {
+                        _this.errMsg('请上传作品预览图！');
+                        return;
+                    }
+                }
+                if ($('.form-item-file').find('.red').length > 0) {
+                    if (!params.uploadFileSrc) {
+                        _this.errMsg('请上传作品附件！');
+                        return;
+                    }
+                }
+                if ($('.form-item-video').find('.red').length > 0) {
+                    if (!params.sourceSrc) {
+                        _this.errMsg('请上传视频！');
+                        return;
+                    }
+                }
+                if (KE && !params.proContent) {
+                    _this.errMsg('请输入作品内容！');
+                    return;
+                }
+                if (params.source == 1) {
+                    if (!params.timestamp) {
+                        _this.errMsg('请选择时间戳认证！');
+                        return;
+                    }
+                    if (!params.author) {
+                        _this.errMsg('请输入作者姓名！');
+                        return;
+                    }
+                }
+                $.ajax({
+                    type: 'post',
+                    url: '/member/upsertProduction',
+                    data: params,
+                    success: function (result) {
+                        if (result.code === 0) {
+                            _this.successMsg(function () {
+                                $('.production-bg').remove();
+                                window.location.href = 'per-center-upload.html';
+                            });
+                        } else {
+                            _this.failedMsg();
+                        }
+                    }
+                })
+
+            })
+        }
+    }
+
+    $(function () {
+        DAQ.init();
+    })
+
+
+</script>
+
+</body>
+</html>

@@ -1,0 +1,191 @@
+﻿<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <%-include("_include/_headerInfo",{h_tit:"视野"})%>
+</head>
+<body>
+
+    <!-- 头部导航栏 start -->
+    <%-include("_include/_header", {curr: 3})%>
+    <!-- 头部导航栏 end -->
+    <div class="detail-header"></div>
+    <!-- 列表-头部 -->
+
+
+
+
+    <!-- 列表-内容部分 -->
+    <div class="detail-container">
+
+    </div>
+
+    <!-- 底部信息 start-->
+    <%-include("_include/_footer")%>
+    <!-- 底部信息 end -->
+
+
+
+<!-- 详情模板 -->
+<script type="text/template" id="detailTmp">
+    <div class="ct-wrap">
+        <div class="user-box">
+            <span class="img-box"><img src="${data.avatar}" alt="" /></span>
+            <div class="info">
+                <p class="title">${data.title}</p>
+                <p><span>作者：${data.userName}</span><span>浏览次数：${data.browse}次</span><span>格式：${data.format}</span><span>大小：${(data.size / 1024 / 1024).toFixed(2)}Mb</span><span>上传时间：${data.createdAt}</span><span>来源：${data.source || '未知'}</span></p>
+            </div>
+        </div>
+        <div class="content-box">
+            <div class="music-box">
+                <span class="img-box">
+                    <img class="rotate-360 rotate-pause" src="${data.coverImg}" alt="">
+                </span>
+                <i class="pointer"></i>
+                <div class="music-control">
+                    <a href="javascript:;" class="icon-play" data-duration="" data-second="0" data-minute="0" data-time=""></a>
+                    <span class="time-s">0:00</span>
+                    <div class="music-bar">
+                        <img src="/images/member/shengbo-detail.png" alt="">
+                        <i class="bg-color"></i>
+                        <i class="move-color"></i>
+                        <audio src="${data.download}"></audio>
+                    </div>
+                    <span class="time-e">0:00</span>
+                </div>
+            </div>
+
+            {{if data.download}}
+            <div class="download-wrap"><i class="iconfont">&#xE104;</i><a class="download-btn" href="${data.download}" download="${data.title}">附件：${data.title}.${data.download.split('.')[1].toLowerCase()}</a></div>
+            {{/if}}
+        </div>
+    </div>
+    <div class="tags-box">
+        <span>标签：</span>
+        {{each(i,item) data.keyWord}}
+        <a href="javascript:;">${item}</a>
+        {{/each}}
+    </div>
+</script>
+
+
+<script>
+
+    var id = tools.getUrlParams('id');
+    var timer = null;
+
+    var DAQ = {
+        init: function () {
+            this.getDetail();
+        },
+        method: function () {
+
+            // 获取音频时长
+            var audioEle = document.getElementsByTagName('audio')[0];
+            audioEle.onloadedmetadata = function () {
+                var duration = parseInt(audioEle.duration);
+                $('.icon-play').attr('data-duration', duration).attr('data-time', duration);
+                var minute = parseInt(duration / 60);
+                var second = parseInt((duration / 60 - minute) * 60);
+                if (second < 10) {
+                    second = '0' + second
+                }
+                var time  = minute + ':' + second;
+                $('.time-e').text(time)
+            }
+
+            $('body').on('click', '.icon-play', function () {
+                var $this = $(this);
+                var duration = $this.attr('data-duration') * 1000;
+                if ($this.hasClass('icon-pause')) {
+                    // 当前为播放状态
+                    $this.removeClass('icon-pause');
+                    $('.rotate-360').addClass('rotate-pause');
+                    $('.move-color').stop();
+                    clearInterval(timer);
+                    audioEle.pause();
+                } else {
+                    // 当前为停止状态
+                    $this.addClass('icon-pause');
+                    $('.rotate-360').removeClass('rotate-pause');
+                    $('.move-color').animate({
+                        width: '100%'
+                    }, duration, function () {
+                        $this.removeClass('icon-pause');
+                        $('.rotate-360').addClass('rotate-pause');
+                        $('.time-s').text('0:00');
+                        $this.attr('data-second', 0);
+                        $this.attr('data-minute', 0);
+                        $('.move-color').css('width', 0);
+                        clearInterval(timer);
+                    });
+                    timer = setInterval(function () {
+                        var second = $this.attr('data-second');
+                        var minute = $this.attr('data-minute');
+                        var tmpTime = $this.attr('data-duration');
+                        second++;
+                        tmpTime--;
+                        if (second < 10) {
+                            second = '0' + second
+                        }
+                        if (second == 60) {
+                            minute++;
+                            second = 0;
+                        }
+                        // 将分秒更新至play上面的data属性上
+                        $this.attr('data-second', second);
+                        $this.attr('data-minute', minute);
+                        $this.attr('data-duration', tmpTime);
+                        $('.time-s').text(minute + ':' + second);
+                    }, 1000)
+                    audioEle.play();
+                }
+            })
+
+        },
+        getDetail: function () {
+            var _this = this;
+            $.ajax({
+                type: 'get',
+                url: '/member/getProductionDetail',
+                data: {
+                    id: id,
+                    browse: 1
+                },
+                success: function (result) {
+                    if (result.code === 0) {
+                        if (result.data) {
+                            var data = result.data;
+                            var arr = data.keyWord.split(';');
+                            data.keyWord = [];
+                            for (var i = 0; i < arr.length; i++) {
+                                if (arr[i] != ';' && arr[i] != '') {
+                                    data.keyWord.push(arr[i])
+                                }
+                            }
+                            data.createdAt = data.createdAt.split('T')[0];
+                            if (!data.format) {
+                                data.format = data.download.split('.')[1];
+                            }
+                            if (result.data.source == 1) {
+                                result.data.source = '原创'
+                            } else if (result.data.source == 2) {
+                                result.data.source = '网络'
+                            } else if (result.data.source == 3) {
+                                result.data.source = '第三方授权'
+                            }
+                            $('#detailTmp').tmpl({data: result.data}).appendTo('.detail-container');
+                            _this.method();
+                        }
+                    }
+                }
+            })
+        }
+    }
+
+    $(function () {
+        DAQ.init();
+    })
+</script>
+
+</body>
+</html>

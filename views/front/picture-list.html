@@ -1,0 +1,316 @@
+﻿<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <%-include("_include/_headerInfo",{h_tit:"图库"})%>
+</head>
+<body>
+
+    <!-- 头部导航栏 start -->
+    <%-include("_include/_header", {curr: 2})%>
+    <!-- 头部导航栏 end -->
+
+    <!-- 列表-头部 -->
+    <%-include("_include/list-header")%>
+
+
+    <!-- 列表-标签 -->
+    <div class="tag-list-wrap">
+        <div class="tag-list">
+            <ul class="level-1 clearfix">
+                <li><a href="picture-list.html">图库</a></li>
+            </ul>
+        </div>
+    </div>
+    <div class="tag-list-wrap">
+        <div class="tag-list">
+            <ul class="level-2 clearfix">
+
+            </ul>
+        </div>
+    </div>
+
+    <!-- 列表-内容部分 -->
+    <div class="list-container">
+        <div class="waterfull-list-wrap">
+            <ul class="plot_list clearfix" id="plot_list">
+
+            </ul>
+        </div>
+        <p class="tc"></p>
+    </div>
+
+    <!-- 底部信息 start-->
+    <%-include("_include/_footer")%>
+    <!-- 底部信息 end -->
+
+    <!-- 引入列表模板 -->
+    <%-include("_include/waterfull-list")%>
+
+<!-- 地区列表模板 -->
+<script type="text/template" id="regionListTmp">
+    {{each list}}
+    <li data-level="${level}" data-region="${region}" data-name="${name}"><a href="javascript:;">${name}<span class="num">${total}</span></a></li>
+    {{/each}}
+</script>
+
+
+<script>
+
+    var parentVal = 'picture';
+    var region = 100000;
+    var isScenic = false;
+    var scenicId;
+    var opt = {
+        level: 1,
+        coding: 100000,
+        isScenic: isScenic
+    }
+    var currentPage = 1;
+    var flag = true;
+
+
+    var DAQ = {
+        init: function () {
+            this.method();
+            this.getRegionList();
+            this.getDataList({region: region});
+        },
+        method: function () {
+            var _this = this;
+            /**
+             * 标签点选事件
+             * 不是最后一个层级的，移入均显示同级菜单
+             */
+            $('.level-2').on('click', 'li', function () {
+                var $this = $(this);
+                var $text = $this.data('name');
+                var $level = $this.data('level');
+                var $region = $this.data('region');
+                currentPage = 1;
+                flag = true;
+                region = $region;
+                var isScenic = false;
+                var html1 = '';
+                if ($level == 1 || $level == 2 || $level == 3) { // 省或直辖市
+                    // 处理tag level-1
+                    var list = $('.level-2 li');
+                    var tmpHmtl = '';
+                    for (var i = 0; i < list.length; i++) {
+                        tmpHmtl += '<a href="javascript:;" data-region="'+ list.eq(i).data('region') +'" data-level="'+ list.eq(i).data('level') +'" data-name="'+ list.eq(i).data('name') +'">'+ list.eq(i).data('name') +'</a>'
+                    }
+                    html1 = '<li class="sec" data-region="'+ $region +'">' +
+                        '<i class="iconfont right">&#xE119;</i>' +
+                        '<a class="second-code" href="javascript:;"><span>'+ $text +'</span><i class="iconfont down">&#xB206;</i></a>' +
+                        '<div class="hover-box">' +
+                        tmpHmtl +
+                        '</div>' +
+                        '</li>';
+                    if ($level == 1) {
+                        $('.level-1').find('.sec').remove();
+                        $('.level-1').find('.last').remove();
+                    }
+                    if ($level == 2) {
+                        $('.level-1').find('.last').remove();
+                    }
+                    // 处理tag level-2
+                    $('.level-2').empty();
+                    var params = {
+                        coding: $region,
+                        level: $this.data('level')
+                    }
+                    isScenic = false;
+                    _this.getRegionList(params);
+                } else { // 景区
+                    $('.level-1').find('.last').remove();
+                    html1 = '<li class="last">' +
+                        '<i class="iconfont right">&#xE119;</i>' +
+                        '<a href="javascript:;">'+ $text +'<i class="iconfont close">&#xE121;</i></a>' +
+                        '</li>';
+                    isScenic = true;
+                    scenicId = $level;
+                }
+                $('.level-1').append(html1);
+                var params = {
+                    region: $region,
+                    isScenic: isScenic,
+                    scenicId: $level
+                }
+                _this.getDataList(params)
+            })
+
+            $('.level-1').on('click', '.close', function () {
+                var $this = $(this);
+                var $region = $this.parents('li').prev().data('region');
+                var params = {
+                    pageSize: 30,
+                    region: $region
+                }
+                currentPage = 1;
+                flag = true;
+                $this.parents('li').remove();
+                _this.getDataList(params)
+            });
+
+            // hover-box点击选择事件
+            $('.level-1').on('click', '.hover-box a', function () {
+                var $this = $(this);
+                var $region = $this.data('region');
+                var $text = $this.data('name');
+                var typeFlag = ($this.data('type') == 0) ? true : false;
+                region = $region;
+                currentPage = 1;
+                flag = true;
+                if (typeFlag) {
+                    var html = '<li class="last">' +
+                        '<i class="iconfont right">&#xE119;</i>' +
+                        '<a href="javascript:;">'+ $text +'<i class="iconfont close">&#xE121;</i></a>' +
+                        '</li>';
+                    $('.level-1').find('.sec').remove();
+                    $('.level-1').find('.last').remove();
+                    $('.level-1').append(html);
+                } else {
+                    $this.parents('.sec').find('.second-code span').text($text);
+                }
+                var options = {
+                    coding: $region,
+                    level: $this.data('level')
+                }
+                var params = {
+                    region: $region,
+                    isScenic: false
+                }
+                $this.parents('.level-1').find('.last').remove();
+                $this.parents('li').next().remove();
+                _this.getRegionList(options);
+                _this.getDataList(params);
+            });
+
+            // 猛搓加载更多
+            $('.tc').on('click', '.more_a', function () {
+                var params = {
+                    pageSize: 30,
+                    currentPage: currentPage,
+                    region: region,
+                    isScenic: isScenic,
+                    scenicId: scenicId,
+                    empty: false
+                };
+                _this.getDataList(params);
+            })
+
+        },
+        getRegionList: function (params) {
+            if (!params) {
+                params = opt
+            }
+            $.ajax({
+                type: 'get',
+                url: '/member/getRegionList',
+                data: {
+                    level: params.level || opt.level,
+                    coding: params.coding || opt.coding,
+                    type: parentVal,
+                    isScenic: params.isScenic || opt.isScenic
+                },
+                success: function (result) {
+                    $('.level-2').empty();
+                    if (result.code === 0) {
+                        if (result.data) {
+                            var regionList = result.data.regions;
+                            var scenicList = result.data.scenic;
+                            if (regionList && regionList.length > 0) {
+                                $('#regionListTmp').tmpl({list: regionList}).appendTo('.level-2');
+                            }
+                            if (scenicList && scenicList.length > 0) {
+                                $('#regionListTmp').tmpl({list: scenicList}).appendTo('.level-2');
+                            }
+                            if ((!regionList && !scenicList) || (regionList.length == 0 && scenicList.length == 0 )) {
+                                $('.level-2').append('<p class="no-data1">暂无数据</p>');
+                            }
+                        } else {
+                            $('.level-2').append('<p class="no-data1">暂无数据</p>');
+                        }
+                    }
+                }
+            })
+        },
+        getDataList: function (params) {
+            if (!flag) return;
+            flag = false;
+            var _this= this;
+            if (params.empty !== false) {
+                $('#plot_list').empty();
+            }
+            $.ajax({
+                type: 'get',
+                url: '/member/getListDatas',
+                data: {
+                    parentVal: parentVal,
+                    codesId: params.ids,
+                    pageSize: 30,
+                    currentPage: params.currentPage || 1,
+                    region: params.region,
+                    isScenic: params.isScenic || false,
+                    scenicId: params.scenicId
+                },
+                success: function (result) {
+                    currentPage += 1;
+                    if (result.code === 0) {
+                        if (result.page) {
+                            if (result.page.totalPage == result.page.currentPage) { // 最后一页啦
+                                $('.tc').html('<p class="no-more">别再往下拉了，已经到底啦！</p>');
+                                flag = false;
+                            } else {
+                                $('.tc').html('<a class="c_bg more_a" href="javascript:;" data-page="'+ currentPage +'">猛戳后可以加载更多</a>');
+                                flag = true
+                            }
+                        }
+                        if (result.datas && result.datas.length > 0) {
+                            var dataList = result.datas;
+                            dataList.forEach(function (item) {
+                                item.loginFlag = loginFlag;
+                                if (item.w > 500) {
+                                    item.imgW = 500;
+                                    item.imgH = Math.ceil(item.h/(item.w/500));
+                                } else {
+                                    item.imgW = item.w;
+                                    item.imgH = item.h;
+                                }
+                            });
+                            $('#waterfullListTmp').tmpl({list: dataList}).appendTo('#plot_list');
+                            $('#plot_list').find('img').lazyload({effect: "fadeIn", threshold: 10});
+                            $('#plot_list').daqImg({rowHeight: 320});
+
+                            $(window).scroll(function () {
+                                var scrollTop = $(this).scrollTop();
+                                var scrollHeight = $(document).height();
+                                var windowHeight = $(this).height();
+                                if(scrollTop + windowHeight > scrollHeight - 50){
+                                    var params = {
+                                        parentVal: parentVal,
+                                        pageSize: 30,
+                                        currentPage: currentPage,
+                                        region: region,
+                                        isScenic: isScenic,
+                                        scenicId: scenicId,
+                                        empty: false
+                                    };
+                                    _this.getDataList(params);
+                                }
+                            })
+                        } else {
+                            $('.list-container').append(tools.NO_DATA);
+                        }
+                    }
+                }
+            })
+        }
+    }
+
+    $(function () {
+        DAQ.init();
+    })
+</script>
+
+</body>
+</html>

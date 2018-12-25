@@ -1,0 +1,158 @@
+﻿<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <%-include("_include/_headerInfo",{h_tit:"个人中心-我要上传"})%>
+</head>
+<body>
+
+    <!-- 头部导航栏 start -->
+    <%-include("_include/_header", {curr: 9})%>
+    <!-- 头部导航栏 end -->
+
+    <!-- 列表-头部 -->
+    <div class="per-header">
+        <%-include("_include/per-head-info")%>
+    </div>
+    <div class="per-list-container">
+        <div class="tag-list-wrap">
+            <ul>
+                <li><a href="per-center-upload.html">我要上传</a></li>
+                <li class="curr"><a href="per-center-already.html">我已上传</a></li>
+                <li><a href="per-center-collect.html">我的收藏</a></li>
+                <li><a href="per-center-download.html">我的下载</a></li>
+                <li><a href="per-center-info.html">个人信息</a></li>
+            </ul>
+        </div>
+        <ul class="sub-tag-list">
+            <li><a class="curr" href="javascript:;">全部</a><span>/</span></li>
+            <li><a href="javascript:;" data-status="2">已通过</a><span>/</span></li>
+            <li><a href="javascript:;" data-status="1">待审核</a><span>/</span></li>
+            <li><a href="javascript:;" data-status="3">未通过</a></li>
+        </ul>
+        <ul class="files-list plot_list" id="plot_list">
+
+        </ul>
+    </div>
+
+
+
+    <!-- 底部信息 start-->
+    <%-include("_include/_footer")%>
+    <!-- 底部信息 end -->
+    <%-include("_include/waterfull-list")%>
+
+<script>
+
+    var isbool = true;          // 触发开关，防止多次调动
+    var currentPage = 1;
+    var totalPage = 1;
+    var status = '';
+
+
+    var DAQ = {
+        init: function () {
+            this.getDataList();
+            this.method()
+        },
+        method: function () {
+            var _this = this;
+            $('.sub-tag-list').on('click', 'a', function () {
+                $(window).scrollTop(0)
+                var $this = $(this);
+                status = $this.data('status') || '';
+                $('.sub-tag-list a').removeClass('curr');
+                $this.addClass('curr');
+                $('.files-list').empty();
+                currentPage = 1;
+                totalPage = 1;
+                isbool = true;
+                $('.per-list-container').find('.no-more').remove();
+                _this.getDataList();
+            })
+        },
+        getDataList: function () {
+            if (totalPage < currentPage) { // 最后一页啦
+                $('.per-list-container').append('<div class="no-more">别再往下拉了，已经到底啦！</div>');
+                return
+            }
+            var _this = this;
+            var id = userInfo.id;
+            $.ajax({
+                type: 'get',
+                url: '/member/getAlreadyProduction',
+                data: {
+                    id: id,
+                    status: status,
+                    pageSize: 10,
+                    currentPage: currentPage || 1
+                },
+                success: function (result) {
+                    isbool = true;
+                    if (result.code === 0) {
+                        currentPage += 1;
+                        if (result.datas && result.datas.length > 0) {
+                            var dataList = result.datas;
+                            totalPage = result.page.totalPage;
+                            dataList.forEach(function (item) {
+                                if (item.w > 500) {
+                                    item.imgW = 500;
+                                    item.imgH = Math.ceil(item.h/(item.w/500));
+                                } else {
+                                    item.imgW = item.w;
+                                    item.imgH = item.h;
+                                }
+                                item.sty = 'style=height:'+(item.imgH/item.imgW*333)+'px';
+                                item.edit = true;
+                                item.del = true;
+                                var codeName = item.codeName;
+                                switch (codeName) {
+                                    case '视频':
+                                    case 'PPT':
+                                        item.href = 'video-detail.html?id=' + item.id;
+                                        break;
+                                    case '电子期刊':
+                                        item.href = 'periodical-detail.html?id=' + item.id;
+                                        break;
+                                    case '音频':
+                                        item.href = 'music-detail.html?id=' + item.id;
+                                        break;
+                                    case '图库':
+                                        item.href = 'picture-detail.html?id=' + item.id;
+                                        break;
+                                    default:
+                                        item.href = 'datum-detail.html?id=' + item.id;
+                                }
+                            });
+                            $('#waterfullListTmp2').tmpl({list: dataList}).appendTo('#plot_list');
+                            $('.plot_list').find('img').lazyload({effect: "fadeIn", threshold: 10});
+                            waterfall('plot_list','item1',true);
+                            tools.footerFixed();
+                            $(window).scroll(function () {
+                                var scrollTop = $(this).scrollTop();
+                                var scrollHeight = $(document).height();
+                                var windowHeight = $(this).height();
+                                if(scrollTop + windowHeight > scrollHeight - 50 && isbool){
+                                    isbool = false;
+                                    _this.getDataList();
+                                }
+                            })
+                        } else {
+                            $('.files-list').append('<p class="no-data">暂无数据！</p>');
+                            tools.footerFixed();
+                        }
+                    }
+                }
+            })
+        }
+    }
+
+
+    $(function () {
+        DAQ.init();
+    })
+
+
+</script>
+
+</body>
+</html>

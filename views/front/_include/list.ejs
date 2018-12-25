@@ -1,0 +1,29 @@
+﻿<script type="text/template" id="listTmp">
+    <div class="list-wrap">
+        <ul>
+            {{each list}}
+            <li class="list-box hover">
+                <div class="hover-box hover">
+                    {{if download}}
+                        {{if loginFlag}}
+                        <a class="iconfont icon-download" data-id="${id}" href="${download}" download="${title}">&#xC1112;</a>
+                        {{else}}
+                        <a class="iconfont icon-download" data-id="${id}" href="javascript:;">&#xC1112;</a>
+                        {{/if}}
+                    {{/if}}
+                    {{if love}}
+                    <a href="javascript:;" class="iconfont collect icon-collect" data-id="${id}" data-love="0">&#xC1111;</a>
+                    {{else}}
+                    <a href="javascript:;" class="iconfont collect icon-collect" data-id="${id}" data-love="1">&#xC1110;</a>
+                    {{/if}}
+                </div>
+                <a href="datum-detail.html?id=${id}" target="_blank">
+                    <i><img src="${coverImg}" alt=""/></i>
+                    <p>${title}</p>
+                </a>
+            </li>
+            {{/each}}
+        </ul>
+        <div class="page" id="pagination"></div>
+    </div>
+</script>

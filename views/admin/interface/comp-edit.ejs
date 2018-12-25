@@ -1,0 +1,193 @@
+﻿<!DOCTYPE html>
+<html class="h100">
+<head lang="zh-CN">
+    <title>UED-后台管理系统-系统首页</title>
+
+    <%-include("../_include/include-head",{tit:"组件审核"})%>
+    <link href="/js/lib/tinymce/skins/lightgray/content.min.css" type="text/css" rel="stylesheet">
+    <link href="/js/lib/tinymce/plugins/codesample/css/prism.css" type="text/css" rel="stylesheet">
+</head>
+<body>
+<%-include ../_include/include-top%>
+<div class="home_cont">
+    <%-include("../_include/include-left",{_curr:"material"})%>
+    <div class="h_main fr">
+        <p class="adress_nav">
+            <span>您当前的位置：</span><span>UED资源共享平台管理系统</span>-<a href="/admin/list-comp">组件管理</a>-<span>组件审核</span>
+        </p>
+        <div class="audit_body">
+            <div class="edit_cont">
+                <table cellpadding="0" cellspacing="0" class="tabTable">
+                    <tbody>
+                    <tr>
+                        <td class="name">组件名称：</td>
+                        <td class="kuang">
+                            <div>
+                                <input type="text" class="long_input" id="title" name="title" value="<%- title %>" readonly/>
+                            </div>
+                        </td>
+                        <td class="name">组件类型：</td>
+                        <td class="kuang">
+                            <div>
+                                <input class="long_input" name="codeId" id="codeId" data-id="<%- codeId || '' %>" value="<%- codeName || '未知' %>" readonly/>
+                            </div>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td class="name">编号：</td>
+                        <td class="kuang">
+                            <div>
+                                <input type="text" class="long_input" id="numbered" name="numbered" value="<%- Id %>" readonly/>
+                            </div>
+                        </td>
+                        <td class="name">存放位置：</td>
+                        <td class="kuang">
+                            <div>
+                                <input type="text" class="long_input" id="place" name="place" value="<%- download %>" readonly/>
+                            </div>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td class="name">简短描述：</td>
+                        <td class="kuang">
+                            <div>
+                                <input type="text" class="long_input" id="intro" name="intro" value="<%- intro %>" readonly/>
+                            </div>
+                        </td>
+                        <td class="name">网站地址：</td>
+                        <td class="kuang">
+                            <div>
+                                <input type="text" class="long_input" id="url" name="url" value="<%- url %>" readonly/>
+                            </div>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td class="name">上传时间：</td>
+                        <td class="kuang">
+                            <div>
+                                <input type="text" class="long_input" id="format" name="format"
+                                       value="<%- locals.moment(createdAt).format('YYYY-MM-DD') %>" readonly/>
+                            </div>
+                        </td>
+                        <td class="name">关键字：</td>
+                        <td class="kuang">
+                            <div>
+                                <input type="text" class="long_input" id="size" name="size" value="<%- keyWord %>" readonly/>
+                            </div>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td class="name">组件图片：</td>
+                        <td colspan="3" class="sc_pictuer pic_list">
+                            <div class="pic_cont clearfix">
+                                <div class="parentFileBox">
+                                    <ul class="fileBoxUl">
+                                        <% if(coverImg){ %>
+                                        <li class="diyUploadHover edit_img">
+                                            <div class="viewThumb"><img src="<%- coverImg %>"></div>
+                                        </li>
+                                        <% } %>
+                                    </ul>
+                                </div>
+                            </div>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td class="name">文件列表：</td>
+                        <td colspan="3" class="sc_pictuer">
+                            <div class="pic_cont clearfix">
+                                <div class="parentFileBox">
+                                    <ul class="fileBoxUl">
+                                        <% for(var key in files) { %>
+                                        <%- key %> <br>
+                                        <% } %>
+                                    </ul>
+                                </div>
+                            </div>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td class="name">使用方法：</td>
+                        <td colspan="3" class="edit">
+                            <div name="content" id="content" class="long_input usage"><%- content %></div>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td class="name">预览效果：</td>
+                        <td colspan="3" class="edit">
+                            <iframe class="preview"
+                                    src="<%- download.split('.')[0] %>/index.html"></iframe>
+                        </td>
+                    </tr>
+                    </tbody>
+                    <%if(status !== 2){%>
+                    <tfoot>
+                    <tr class="oper_tr">
+                        <td class="name "><p class="oper_p"></p></td>
+                        <td class="kuang" colspan="3">
+                            <p id="review" class="oper_p">
+                                <input data-status="2" type="button" class="oper_btn" value="通过审核"/>
+                                <input data-status="3" type="reset" class="oper_btn" value="未通过审核"/>
+                            </p>
+                        </td>
+                    </tr>
+                    </tfoot>
+                    <%}%>
+                </table>
+                <!--</form>-->
+            </div>
+
+        </div>
+    </div>
+</div>
+
+</body>
+</html>
+<script src="/js/jquery-1.8.3.min.js"></script>
+<script type="text/javascript" src="/js/webuploader.html5only.min.js"></script>
+<script type="text/javascript" src="/js/diyUpload.js"></script>
+<script src="/js/method.js"></script>
+<script>
+    function countTableHeight() {
+        var winH = $("body").height();
+        $(".edit_cont").outerHeight(winH - $('.home_head').height() - $('.adress_nav').height());
+    }
+
+    $(window).resize(function () {
+        countTableHeight();
+    });
+
+    function review(params) {
+        tools.request({
+            type: 'post',
+            url: '/admin/component/review',
+            data: {
+                id: params.id,
+                status: params.status
+            }
+        }, function (result) {
+            if (!result.error) {
+                alert('操作成功');
+
+                //返回列表页
+                window.location.href = '/admin/list-interface';
+            } else {
+                alert('审核失败:' + result.msg);
+            }
+        })
+    }
+
+    $(function () {
+        countTableHeight();
+
+        var id = '<%- Id %>'
+        $('#review').on('click', '.oper_btn', function() {
+            var status = $(this).attr('data-status');
+
+            review({
+                id: id,
+                status: status
+            });
+        })
+    });
+</script>

@@ -1,0 +1,392 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>DAQSoft-UED部资源共享中心-资源管理</title>
+    <link rel="stylesheet" href="http://filealiyun.geeker.com.cn/ued/geekUI-system/css/base/frame.min.css"/>
+    <link rel="stylesheet" href="http://filealiyun.geeker.com.cn/ued/geekUI-system/css/base/daq-system.min.css"/>
+    <link rel="stylesheet" href="../../css/admin.globle.css"/>
+    <script src="http://filealiyun.geeker.com.cn/ued/js/jquery-1.8.3.min.js"></script>
+    <script src="http://filealiyun.geeker.com.cn/ued/laydate/v5.x/laydate.js"></script>
+    <script src="http://filealiyun.geeker.com.cn/ued/js/jquery.validate.js"></script>
+    <script src="http://filealiyun.geeker.com.cn/ued/geekUI-system/js/daq-system.min.js"></script>
+</head>
+<body>
+
+<div class="resource-list-container project-edit-container">
+    <div class="daq-crumb clearfix mt-20">
+        <span>您当前在的位置：UED资源共享平台管理系统</span>
+        <i class="crumb-sign crumb-mg">-</i>
+        <a href="project-list.html">项目管理</a>
+        <i class="crumb-sign crumb-mg">-</i>
+        <span>新增</span>
+    </div>
+    <p class="demo-title"></p>
+    <form action="" id="form-msg">
+        <div class="form-item-table mt-22">
+            <table cellpadding="0" cellspacing="0" width="100%">
+                <tr>
+                    <td class="form-tab-label">
+                        <label class="form-label">项目名称：</label>
+                    </td>
+                    <td>
+                        <div class="form-table-edit clearfix">
+                            <div id="select1" class="daq-select wid-198 fl mtr-5">
+                                <select name="select1">
+                                    <option value="">请选择</option>
+                                    <option value="1">黄金糕</option>
+                                    <option value="2">狮子头</option>
+                                    <option value="3">双皮奶</option>
+                                    <option value="4">烤茄子</option>
+                                    <option value="5">香豆腐</option>
+                                    <option value="6">霸王虾</option>
+                                </select>
+                            </div>
+                            <div id="select2" class="daq-select wid-198 fl mtr-5">
+                                <select name="select2">
+                                    <option value="">请选择</option>
+                                    <option value="1">黄金糕</option>
+                                    <option value="2">狮子头</option>
+                                    <option value="3">双皮奶</option>
+                                    <option value="4">烤茄子</option>
+                                    <option value="5">香豆腐</option>
+                                    <option value="6">霸王虾</option>
+                                </select>
+                            </div>
+                            <div class="daq-inp-rule wid-358 fl mt-5">
+                                <input type="text" name="title" class="form-resource" placeholder="请输入"/>
+                            </div>
+                        </div>
+                    </td>
+                </tr>
+                <tr>
+                    <td class="form-tab-label">
+                        <label class="form-label">负责人：</label>
+                    </td>
+                    <td>
+                        <div class="form-table-edit clearfix">
+                            <div class="daq-inp-rule wid-358 fl">
+                                <input type="text" name="title" class="form-resource" placeholder="请输入"/>
+                            </div>
+                        </div>
+                    </td>
+                </tr>
+                <tr>
+                    <td class="form-tab-label">
+                        <label class="form-label">当前进度：</label>
+                    </td>
+                    <td>
+                        <div class="form-table-edit clearfix">
+                            <div class="daq-inp-rule wid-358 fl">
+                                <input type="text" name="keywords" class="form-resource" placeholder="请输入" value="0"/>
+                            </div>
+                        </div>
+                    </td>
+                </tr>
+                <tr>
+                    <td class="form-tab-label">
+                        <label class="form-label">计划时间：</label>
+                    </td>
+                    <td>
+                        <div class="form-table-edit clearfix">
+                            <div class="daq-date">
+                                <input class="date" id="planStart" placeholder="请选择开始日期"/>
+                                <i class="sysfont date-icon">&#xe630;</i>
+                            </div>
+                            <i class="crumb-sign crumb-mg"> - </i>
+                            <div class="daq-date">
+                                <input class="date" id="planEnd" placeholder="请选择结束日期"/>
+                                <i class="sysfont date-icon">&#xe630;</i>
+                            </div>
+                        </div>
+                    </td>
+                </tr>
+                <tr>
+                    <td class="form-tab-label">
+                        <label class="form-label">实际时间：</label>
+                    </td>
+                    <td>
+                        <div class="form-table-edit clearfix">
+                            <div class="daq-date">
+                                <input class="date" id="reactStart" placeholder="请选择开始日期"/>
+                                <i class="sysfont date-icon">&#xe630;</i>
+                            </div>
+                            <i class="crumb-sign crumb-mg"> - </i>
+                            <div class="daq-date">
+                                <input class="date" id="reactEnd" placeholder="请选择结束日期"/>
+                                <i class="sysfont date-icon">&#xe630;</i>
+                            </div>
+                        </div>
+                    </td>
+                </tr>
+                <tr>
+                    <td class="form-tab-label">
+                        <label class="form-label">优先级：</label>
+                    </td>
+                    <td>
+                        <div class="form-table-edit clearfix">
+                            <div id="select3" class="daq-select wid-198 fl mtr-5">
+                                <select name="select3">
+                                    <option value="">请选择</option>
+                                    <option value="1">黄金糕</option>
+                                    <option value="2">狮子头</option>
+                                    <option value="3" disabled>双皮奶</option>
+                                    <option value="4">烤茄子</option>
+                                    <option value="5">香豆腐</option>
+                                    <option value="6">霸王虾</option>
+                                </select>
+                            </div>
+                        </div>
+                    </td>
+                </tr>
+                <tr>
+                    <td class="form-tab-label">
+                        <label class="form-label">状态：</label>
+                    </td>
+                    <td>
+                        <div class="form-table-edit clearfix">
+                            <div id="select4" class="daq-select wid-198 fl mtr-5">
+                                <select name="select4">
+                                    <option value="">请选择</option>
+                                    <option value="1">黄金糕</option>
+                                    <option value="2">狮子头</option>
+                                    <option value="3" disabled>双皮奶</option>
+                                    <option value="4">烤茄子</option>
+                                    <option value="5">香豆腐</option>
+                                    <option value="6">霸王虾</option>
+                                </select>
+                            </div>
+                        </div>
+                    </td>
+                </tr>
+                <tr>
+                    <td class="form-tab-label">
+                        <label class="form-label">备注：</label>
+                    </td>
+                    <td>
+                        <div class="form-table-edit clearfix">
+                            <div class="daq-inp-rule inp-textarea wid-658">
+                                <textarea ></textarea>
+                            </div>
+                        </div>
+                    </td>
+                </tr>
+                <tr>
+                    <td class="form-tab-label">
+                        <label class="form-label">执行人：</label>
+                    </td>
+                    <td>
+                        <div class="form-table-edit clearfix">
+                            <div id="select5" class="daq-select wid-198 fl mtr-5">
+                                <select name="select1">
+                                    <option value="">请选择</option>
+                                    <option value="1">黄金糕</option>
+                                    <option value="2">狮子头</option>
+                                    <option value="3" disabled>双皮奶</option>
+                                    <option value="4">烤茄子</option>
+                                    <option value="5">香豆腐</option>
+                                    <option value="6">霸王虾</option>
+                                </select>
+                            </div>
+                            <div id="select6" class="daq-select wid-198 fl mtr-5">
+                                <select name="select2">
+                                    <option value="">请选择</option>
+                                    <option value="1">黄金糕</option>
+                                    <option value="2">狮子头</option>
+                                    <option value="3" disabled>双皮奶</option>
+                                    <option value="4">烤茄子</option>
+                                    <option value="5">香豆腐</option>
+                                    <option value="6">霸王虾</option>
+                                </select>
+                            </div>
+                            <div class="daq-date mt-5">
+                                <input class="date" id="start" placeholder="请选择日期"/>
+                                <i class="sysfont date-icon">&#xe630;</i>
+                            </div>
+                        </div>
+                    </td>
+                </tr>
+                <tr>
+                    <td class="form-tab-label"></td>
+                    <td>
+                        <div class="form-table-edit">
+                            <button class="daq-btn" type="submit">确认保存</button>
+                            <button type="button" class="daq-btn">重新编辑</button>
+                        </div>
+                    </td>
+                </tr>
+            </table>
+        </div>
+    </form>
+</div>
+
+<script>
+    $(function() {
+
+        // 实例化下拉框
+        $("#select1").daqSelect({
+            value: 2,
+            callback: function (data) {
+//                console.log(data)
+            }
+        });
+        $("#select2").daqSelect({
+            value: 2,
+            callback: function (data) {
+//                console.log(data)
+            }
+        });
+        $("#select3").daqSelect({
+            value: 2,
+            callback: function (data) {
+//                console.log(data)
+            }
+        });
+        $("#select4").daqSelect({
+            value: 2,
+            callback: function (data) {
+//                console.log(data)
+            }
+        });
+        $("#select5").daqSelect({
+            value: 2,
+            callback: function (data) {
+//                console.log(data)
+            }
+        });
+        $("#select6").daqSelect({
+            value: 2,
+            callback: function (data) {
+//                console.log(data)
+            }
+        });
+
+        var planStart =  laydate.render({
+            elem: '#planStart',
+            change: function () {
+//                alert('sdxc')
+            },
+            done: function(value, date){
+                if(value !== ''){
+                    planEnd.config.min.year = date.year;
+                    planEnd.config.min.month = date.month-1;
+                    planEnd.config.min.date = date.date;
+                }else{
+                    planEnd.config.min.year = '';
+                    planEnd.config.min.month = '';
+                    planEnd.config.min.date = '';
+                }
+            }
+        });
+        var planEnd = laydate.render({
+            elem: '#planEnd',
+            change: function () {
+//                alert('asd')
+            },
+            done: function(value, date){
+                if (value !== ''){
+                    planStart.config.max.year = date.year;
+                    planStart.config.max.month = date.month-1;
+                    planStart.config.max.date = date.date;
+                } else {
+                    planStart.config.max.year = '';
+                    planStart.config.max.month = '';
+                    planStart.config.max.date = '';
+                }
+            }
+        });
+        var reactStart =  laydate.render({
+            elem: '#reactStart',
+            change: function () {
+//                alert('sdxc')
+            },
+            done: function(value, date){
+                if(value !== ''){
+                    reactEnd.config.min.year = date.year;
+                    reactEnd.config.min.month = date.month-1;
+                    reactEnd.config.min.date = date.date;
+                }else{
+                    reactEnd.config.min.year = '';
+                    reactEnd.config.min.month = '';
+                    reactEnd.config.min.date = '';
+                }
+            }
+        });
+        var reactEnd = laydate.render({
+            elem: '#reactEnd',
+            change: function () {
+//                alert('asd')
+            },
+            done: function(value, date){
+                if (value !== ''){
+                    reactStart.config.max.year = date.year;
+                    reactStart.config.max.month = date.month-1;
+                    reactStart.config.max.date = date.date;
+                } else {
+                    reactStart.config.max.year = '';
+                    reactStart.config.max.month = '';
+                    reactStart.config.max.date = '';
+                }
+            }
+        });
+        // 执行人-时间
+        var reactStart =  laydate.render({
+            elem: '#start',
+            change: function () {
+//                alert('sdxc')
+            }
+        });
+        //为id为form-msg的表单添加验证
+        $("#form-msg").validate({
+            debug: true, // 如果这个参数为true，那么表单不会提交，只进行检查，调试时十分方便
+            focusInvalid: true, //当为false时，验证无效时，没有焦点响应
+            focusCleanup: false, //被验证的元素获得焦点时移除错误信息
+            rules: {
+                title: "required", // 验证景区资源
+            },
+            messages: {
+                title: "请输入界面名称",
+            },
+            showErrors : function(errorMap, errorList) {
+                // 遍历错误列表
+                for(var obj in errorMap) {
+                    // 自定义错误提示效果
+                    var $parent = $('input[name="' + obj + '"]').parents(".daq-inp-rule");
+                    $parent.addClass('error-active');
+                }
+                // 此处注意，一定要调用默认方法，这样保证提示消息的默认效果
+                this.defaultShowErrors();
+
+            },
+            // 验证成功的处理
+            success: function (element) {
+                var $parent = $(element).siblings(".daq-inp-rule");
+                $parent.removeClass('error-active');
+                // 获取span元素的值保存到变量spanText
+                var spanText = $(element).parents().siblings("span").text();
+                // 截取"*"后面的字符
+                var spanTexts = spanText.split("*")[1];
+                // 判断当前节点下是否有图标i
+                var isTrue = $(element).parents().siblings("span").children("i").length;
+
+            },
+            // 设置失去焦点的情况下验证
+            onfocusout: function (element) {
+                $(element).valid();
+                var $parent = $(element).parents(".daq-inp-rule");
+            },
+            // 修改错误提示文字位置
+            errorPlacement: function (error,element) {
+                // 错误提示图标
+                error.appendTo(element.parents(".form-table-edit"));
+            },
+            // jQuery表单提交
+            submitHandler:function(form){
+//                console.log(form)
+//                alert('ss')
+            }
+        });
+    })
+</script>
+</body>
+</html>

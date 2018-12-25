@@ -1,0 +1,47 @@
+﻿<script type="text/template" id="proPicTmp">
+    <div class="form-item">
+        <label class="fl"><span class="red">*&nbsp;</span>作品来源：</label>
+        <div id="selectSource" class="daq-select fl">
+            <select name="selectSource">
+                <option value="">请选择作品来源</option>
+                <option value="1">原创</option>
+                <option value="2">网络</option>
+                <option value="3">第三方授权</option>
+            </select>
+        </div>
+    </div>
+    <div class="form-item form-item-keywords">
+        <label><span class="red">*&nbsp;</span>地区选择：</label>
+        <div id="js-cityPicker"></div>
+        <div id="select-scenic" class="daq-select fl none">
+            <select name="select-scenic">
+
+            </select>
+        </div>
+    </div>
+    <div class="form-item">
+        <label><span class="red">*&nbsp;</span>关键字：</label>
+        {{if data}}
+        <input type="text" name="production-keyword" placeholder='请输入作品关键字，每个关键字用";"分隔（英文符号）' value="${data.keyWord}" onkeyup="this.value = this.value.replace(/\；/g, ';')" />
+        {{else}}
+        <input type="text" name="production-keyword" placeholder='请输入作品关键字，每个关键字用";"分隔（英文符号）' onkeyup="this.value = this.value.replace(/\；/g, ';')" />
+        {{/if}}
+    </div>
+    <div class="form-item form-item-cover">
+        <label><span class="red">*&nbsp;</span>图片上传：</label>
+        <!--<div class=" clearfix daq-upload daq-upload-square mt-10 fl">-->
+            <!--<div id="squarePicker">-->
+                <!--<i class="sysfont"></i>-->
+            <!--</div>-->
+            <!--&lt;!&ndash;用来存放图片item&ndash;&gt;-->
+            <!--<div id="squareList" class="uploader-list"></div>-->
+        <!--</div>-->
+        <div class="fl">
+            <div class="upload-default-box">
+                <i class="sysfont upload-dft-icon"></i>
+                <p class="upload-tips">支持JPG和PNG等格式图片</p>
+            </div>
+            <a class="daq-btn btn-pad-52 media-btn mt-5" id="logoBox" type="button"><i class="sysfont mr-5"></i>点击上传</a>
+        </div>
+    </div>
+</script>

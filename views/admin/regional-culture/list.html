@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <%-include("../_include/include-head",{tit:"资源管理"})%>
+</head>
+<body>
+
+<div class="resource-list-container">
+    <div class="daq-crumb clearfix mt-20">
+        <span>您当前在的位置：UED资源共享平台管理系统</span>
+        <i class="crumb-sign crumb-mg">-</i>
+        <a href="list.html">地域文化</a>
+    </div>
+    <p class="demo-title"></p>
+    <div class="buttons mt-10 clearfix">
+        <!-- 类型选择框-S -->
+        <div id="select1" class="daq-select wid-198 fl mtr-5">
+            <select name="select1">
+                <option value="">全部</option>
+            </select>
+        </div>
+        <!-- 类型选择框-E -->
+        <div class="daq-inp-rule wid-158 mtr-5 fl">
+            <input type="text" id="username" placeholder="请输入上传人姓名"/>
+        </div>
+        <div class="daq-inp-rule wid-158 mtr-5 fl">
+            <input type="text" id="title" placeholder="请输入资源名称"/>
+        </div>
+        <button class="daq-btn mt-5 js_search"><span>搜索</span></button>
+        <!--<button class="daq-btn mt-5 js_editor"><span>编辑</span></button>-->
+        <!--<button class="daq-btn mt-5 js_audit"><span>审核</span></button>-->
+    </div>
+    <table id="table" class="daq-table daq-tab-pad mt-20"></table>
+</div>
+
+<script>
+    $(function () {
+
+        var parentVal = '';
+        var username = '';
+        var title = '';
+
+
+        // 实例化下拉框
+        $("#select1").daqSelect({
+            value: '',
+            success: function () {
+                getMenus();
+            },
+            callback: function (data) {
+                parentVal = data.code;
+                username = $.trim($('#username').val());
+                title = $.trim($('#title').val());
+                table.search({
+                    data: {
+                        username: username,
+                        title: title,
+                        parentVal: parentVal
+                    }
+                });
+            }
+        });
+
+        // 获取类型菜单
+        function getMenus () {
+            $.ajax({
+                type: 'get',
+                url: '/admin/regional/getMenusType',
+                data: {
+                    name: '地域文化'
+                },
+                success: function (result) {
+                    if (result.code === 0) {
+                        if (result.datas && result.datas.length > 0) {
+                            var html = '';
+                            var dataList = result.datas;
+                            for (var i = 0; i < dataList.length; i++) {
+                                html += '<li data-value="' + dataList[i].val + '">' + dataList[i].name + '</li>'
+                            }
+                            $('.daq-select-ul').append(html)
+                        }
+                    }
+                }
+            })
+        }
+
+
+        // 创建线上表格
+        var table = $("#table").daqDataTable({
+            url: "/admin/regional/getList",
+            columns: [
+                {
+                    field: 'codeName',
+                    title: '地名',
+                    className: 'wid-percent30'
+                },
+                {
+                    field: 'title',
+                    title: '文化',
+                    className: 'wid-percent30'
+                },
+                {
+                    field: 'userName',
+                    title: '上传人姓名',
+                    className: 'wid-percent8'
+                },
+                {
+                    field: 'createdAt',
+                    title: '上传时间',
+                    className: 'wid-percent20'
+                },
+                {
+                    field: 'id',
+                    title: '操作',
+                    className: 'wid-percent10',
+                    formatter: function (value, data) {
+                        return '<p class="btn-mg-5">' +
+                            '<a class="daq-btn daq-btn-cic btn-green btn-pad-small js_editor" href="javascript:;"><i class="sysfont"></i></a>' +
+                            '<a class="daq-btn daq-btn-cic btn-red btn-pad-small js_delete" href="javascript:;"><i class="sysfont"></i></a>' +
+                            '</p>';
+                    }
+                }],
+            limits: 2,
+            pageText: true,
+            checkbox: true,
+            mixColor: true,
+            callback: function (datas) {},
+            onClick: function (data) {}
+        });
+
+        //编辑数据
+        $(document).on('click', '.js_editor', function (e) {
+            e.stopPropagation();
+            var $this = $(this),
+                arr = table.getCheckedId();
+            if (arr.length <= 0) {
+                $.daqMessage({
+                    icon: {
+                        text: ''
+                    },
+                    text: '请选择要编辑的资源',
+                    skin: 1,
+                    time: 2000
+                });
+                return false;
+            };
+            var id = table.getEditorData(parseInt(arr[0])).id;
+            var url = 'edit.html?id=' + id;
+            window.location.href = url;
+        });
+
+        // 审核数据
+        $(document).on('click', '.js_audit', function (e) {
+            e.stopPropagation();
+            var $this = $(this),
+                arr = table.getCheckedId();
+            if (arr.length <= 0) {
+                $.daqMessage({
+                    icon: {
+                        text: ''
+                    },
+                    text: '请选择要审核的资源',
+                    skin: 1,
+                    time: 2000
+                });
+                return false;
+            }
+            ;
+            var id = table.getEditorData(parseInt(arr[0])).id;
+            var url = 'audit.html?id=' + id;
+            window.location.href = url;
+        });
+
+        //查询数据
+        $(document).on('click', '.js_search', function (e) {
+            e.stopPropagation();
+            username = $.trim($('#username').val());
+            title = $.trim($('#title').val());
+            table.search({
+                data: {
+                    username: username,
+                    title: title,
+                    parentVal: parentVal
+                }
+            });
+        });
+
+
+    });
+</script>
+</body>
+</html>

@@ -1,0 +1,108 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+    <%-include("_include/include-head",{tit:"后台首页"})%>
+</head>
+<body>
+<!--头部head S-->
+<div class="section-head section-head clearfix">
+    <p class="fl head-v3-logo"><img src="/images/admin/home_logo.png" alt="大旗软件.资源中心" /></p>
+    <ul class="fr head-user">
+        <li><a class="login-out" href="javascript:void(0);"><i class="sysfont head-user-icon">&#xe60d;</i></a></li>
+        <li>
+            <a href="javascript:void(0);"><i class="sysfont user-photo"></i><span class="head-user-name">admin</span><i class="sysfont head-user-arr"></i></a>
+            <ul class="head-user-lst">
+                <li><a href="javascript:void(0);">个人资料</a></li>
+                <li><a href="javascript:void(0);">修改密码</a></li>
+            </ul>
+        </li>
+    </ul>
+</div>
+<!--头部head E-->
+
+<div class="body-container nav-w200 section-v3">
+    <!--左侧导航栏 S-->
+    <div class="fl nav-side-box">
+        <p class=" side-close source-nav-close nav-side-close" data-close="0"><i class="sysfont"></i></p>
+        <!--菜单导航 S-->
+        <div id="nav" class="nav-side">
+
+        </div>
+    </div>
+    <!--左侧导航栏 E-->
+    <!--右侧内容栏 S-->
+    <div class="clearfix section-main">
+        <iframe class="section-iframe" id="indIframe" name="table" src="/admin/user/list.html" frameborder="0"></iframe>
+    </div>
+    <!--右侧内容栏 E-->
+</div>
+
+<script>
+
+    var adminInfo = '<%- JSON.stringify(adminInfo) %>';
+    adminInfo = JSON.parse(adminInfo);
+//    var permission = adminInfo.permission;
+//    var auditFlag = false;
+    if (adminInfo) {
+        $('.head-user-name').text(adminInfo.NickName)
+    }
+//    if (permission) {
+//        for (var i = 0; i < permission.length; i++) {
+//            if (permission[i] == 5) {
+//                auditFlag = true;
+//            }
+//        }
+//    }
+
+    $(function () {
+        if ($.isEmptyObject(adminInfo)) {
+            window.parent.location.href = '/admin/login.html'
+        }
+
+
+        // 动态计算内容区域的高度
+        function containerHeight() {
+            var winH = $(window).height(),
+                headH = $('.section-head').outerHeight(),
+                sideTopH = $('.side-close').outerHeight();
+            $('.body-container').height(winH - headH);
+            $('.nav-v3').height(winH - headH - sideTopH);
+
+        }
+        containerHeight();
+        $(window).resize(function () {
+            containerHeight();
+        });
+        // 生成nav导航菜单
+        $('#nav').daqNav({
+            url: '/admin/menuList',
+            shrink: true,
+            shrinkIcon: '',
+            callback: function (value) {
+                var url;
+                if (value != 'javascript:;') {
+                    url = value;
+                    $('#indIframe').attr('src', url);
+                }
+            }
+        })
+        // 退出登录
+        $('.login-out').click(function () {
+            $.ajax({
+                type: 'get',
+                url: '/admin/loginOut',
+                success: function (result) {
+                    if (result.code === 0) {
+                        window.location.href = 'admin/login.html'
+                    } else {
+                        alert('出错啦~~')
+                    }
+                }
+            })
+        })
+    })
+</script>
+
+
+</body>
+</html>

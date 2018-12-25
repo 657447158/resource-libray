@@ -1,0 +1,37 @@
+﻿<script type="text/template" id="musicListTmp">
+    <div class="list-wrap">
+        <ul>
+            {{each list}}
+            <li class="list-box music-list hover">
+                <div class="music-info">
+                    <a href="javascript:;" class="img-box">
+                        <img class="rotate-360 rotate-pause" src="${coverImg}" alt="${title}" />
+                    </a>
+                    <div class="info-box">
+                        <a href="javascript:;" class="title">${title}</a>
+                        <p class="format"><span>格式：MP3</span><span>来源：第三方</span></p>
+                        <div class="icons">
+                            <a href="javascript:;" class="iconfont download">&#xC1112;</a>
+                            <a href="javascript:;" class="iconfont shopping">&#xC1113;</a>
+                            <a href="javascript:;" class="iconfont collect">&#xC1110;</a>
+                        </div>
+                    </div>
+                </div>
+                <div class="music-control">
+                    <a href="javascript:;" class="icon-play"></a>
+                    <span class="time-s">0:00</span>
+                    <audio preload="none" crossorigin="anonumous" data-play="false" data-time="11">
+                        <source src="${src}">
+                    </audio>
+                    <a href="javascript:;" class="time-bar">
+                        <img src="/images/member/shengbo.png" alt="" />
+                        <i class="move-color"></i>
+                    </a>
+                    <span class="time-e">00:11</span>
+                </div>
+            </li>
+            {{/each}}
+        </ul>
+        <div class="page" id="pagination"></div>
+    </div>
+</script>

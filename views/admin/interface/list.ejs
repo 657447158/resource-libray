@@ -1,0 +1,207 @@
+﻿<!DOCTYPE html>
+<html class="h100">
+<head lang="zh-CN">
+    <%-include("../_include/include-head",{tit:"资源列表"})%>
+</head>
+<body data-type="audit">
+<%- include ../_include/include-top %>
+<div class="home_cont">
+    <%- include("../_include/include-left",{_curr:"material"}) %>
+    <div class="h_main fr">
+        <div class="list_tit">
+            <p>您当前的位置：UED资源共享平台管理系统-资源管理</p>
+        </div>
+
+        <div class="list_tit list_search">
+            <select class="type_sel" name="selCode" id="selCode">
+                <option value="">全部</option>
+                <% menus.forEach(function(menu){ var temp=""; if(selCode==menu.name){temp="selected='selected'"}%>
+                <option <%=temp%> value="<%= menu.name %>"><%= menu.name %></option>
+                <% }) %>
+            </select>
+            <span class="list_input"><input type="text" id="user" name="user" class="Wdatenobg"
+                                            placeholder="请输入上传人姓名" value="<%- search_user %>"/></span>
+            <span class="list_input"><input type="text" id="search" name="search" class="Wdatenobg"  placeholder="请输入类型名称" value="<%- search_name %>"/></span>
+            <a class="oper_btn" id="search_btn">搜索</a>
+            <a  onclick="editF('/admin/modifi-interface')" class="oper_btn " tag="/admin/modifi-interface" >编辑</a>
+            <a  onclick="editF('/admin/edit-interface',1)" class="oper_btn edit_btn" tag="/admin/edit-interface">审核</a>
+            <% if(locals._super == locals.session.user.name){ %>
+            <a class="oper_btn" onclick="delF('/admin/del-interface')" href="javascript:;">删除</a>
+            <% } %>
+        </div>
+
+        <div class="list_cont">
+            <table class="list_table">
+                <thead>
+                <tr>
+                    <th><input type="checkbox" name="ch"></th>
+                    <th>缩略图</th>
+                    <th class="tl">类型</th>
+                    <th  class="tl">名称</th>
+                    <th >排序</th>
+                    <th>收藏数</th>
+                    <th>下载次数</th>
+                    <th>浏览次数</th>
+                    <th>上传人姓名</th>
+                    <th>审核状态</th>
+                    <th>上传时间</th>
+                    <th>操作</th>
+                </tr>
+                </thead>
+                <tbody>
+                <% entitys.forEach(function(entity){ %>
+                <tr data-id="<%- entity.id %>" data-type="<%- entity.format %>">
+                    <td><input type="checkbox" name="chs" value="<%- entity.id %>"></td>
+                    <% if(entity.coverImg){ %>
+                    <td><img class="tb_img" src="<%- entity.coverImg %>" onerror="this.src='/images/admin/bad.jpg'"
+                             alt="<%- entity.title %>"/></td>
+                    <% }else{ %>
+                    <td><img class="tb_img" src="/images/admin/ued_bg.png" alt="<%- entity.title %>"/></td>
+                    <% } %>
+                    <td  class="tl"><%- entity.codeName %></td>
+                    <td class="tl"><%- entity.title %></td>
+                    <td ><%=entity.sort %></td>
+
+                    <td><%=entity.loveNum %></td>
+                    <td><%- entity.downNum %></td>
+                    <td><%- entity.browse %></td>
+                    <td><%- entity.userName %></td>
+
+                    <% if(entity.status == 1){ %>
+                    <td><span style="color:red;">未审核</span></td>
+                    <% }else if(entity.status == 2){ %>
+                    <td><span>通过审核</span></td>
+                    <% }else if(entity.status == 3){ %>
+                    <td>未通过</td>
+                    <% }else if(entity.status == 0){ %>
+                    <td>初始状态</td>
+                    <% } %>
+                    <td><%-locals.moment(entity.createdAt).format('YYYY-MM-DD HH:mm:ss') %></td>
+                    <td class="opera_td">
+                        <a class="iconfont" href="/admin/modifi-interface?id=<%=entity.id%>">&#xC1118;</a>
+                        <%if(entity.status == 1){%>
+                             <a class="iconfont" href="/admin/edit-interface?id=<%=entity.id%>">&#xC1121;</a>
+                        <%}%>
+                        <% if(locals._super == locals.session.user.name){ %>
+                        <a class="iconfont" href="javascript:;" onclick="delF('/admin/del-interface',<%=entity.id%>)">&#xC1119;</a>
+                        <% } %>
+                    </td>
+                </tr>
+                <% }) %>
+                </tbody>
+
+            </table>
+        </div>
+
+        <div class="list_foot clearfix">
+            <div class="fl list_info">
+                    <span>每页显示<select class="pageSelect" id="pageSel">
+                            <option>10</option>
+                            <option>30</option>
+                            <option>40</option>
+                            <option>50</option>
+                            <option>500</option>
+                    </select>条</span>
+                <span>共<%- totalcount %>条数据</span>
+                <span class="page_info" data-curr="<%- curr_page %>" data-sum="<%- pagecount %>">当前<span id="curr_page"><%- curr_page %></span>/<%- pagecount %>页</span>
+                <a class="refresh" id="refresh"><img src="/images/admin/refresh.png" alt="刷新列表"/>刷新列表</a>
+            </div>
+            <% if(pagecount > 1){ %>
+            <div class="list_info fr list_page">
+                <div id="pagination" class="fl"></div>
+                <span class="fl">跳转至<input type="text" class="listP_input allPage">页 <a class="page_btn "   href="javascript:;">go</a></span>
+
+            </div>
+            <% } %>
+        </div>
+    </div>
+</div>
+<script src="/js/method.js"></script>
+<script src="/js/jquery.pagination.js"></script>
+<script>
+
+    function listCode(page_num) {
+        $("#curr_page").html(page_num);
+        $.ajax({
+            type: 'get',
+            url: '/admin/list-interface',
+            data: {
+                page: page_num,
+                pagesize: $("#pageSel").val(),
+                search: $("#search").val(),
+                user: $('input[name="user"]').val(),
+                selCode:$("#selCode").val(),
+                type: 'json',
+                dtype: "'界面类型'"
+            },
+            success: function (data) {
+                $(".list_table tbody tr").remove();
+                var _htmlTR = '';
+                data.data.forEach(function (e) {
+                    _htmlTR += ' <tr data-id="' + e.id + '" data-type="' + e.format + '">';
+                    _htmlTR += '<td><input type="checkbox" name="chs" value="' + e.id + '"></td>';
+                    if (e.coverImg) {
+                        _htmlTR += '<td><img class="tb_img" src="' + e.coverImg + '" onerror="this.src=\'/images/admin/bad.jpg\'" alt="' + e.title + '"/></td>';
+                    } else {
+                        _htmlTR += '<td><img class="tb_img" src="/images/admin/ued_bg.png" alt="' + e.title + '"/></td>';
+                    }
+                    _htmlTR += '  <td  class="tl">' + e.codeName + '</td>';
+                    _htmlTR += '  <td  class="tl">' + e.title + '</td>';
+                    _htmlTR += '  <td  >' + e.sort + '</td>';
+
+                    _htmlTR += '  <td>' + e.loveNum + '</td>';
+                    _htmlTR += '  <td>' + e.downNum + '</td>';
+                    _htmlTR += '  <td>' + e.browse + '</td>';
+                    _htmlTR += '  <td>' + e.userName + '</td>';
+
+                    if(e.status == 1){
+                        _htmlTR += '<td><span style="color:red;">未审核</span></td>';
+                     }else if(e.status == 2){
+                        _htmlTR += '<td><span>通过审核</span></td>';
+                     }else if(e.status == 3){
+                        _htmlTR += '<td>未通过</td>';
+                     }else if(e.status == 0){
+                        _htmlTR += '<td>初始状态</td>';
+                     }
+
+                    _htmlTR += '  <td>' + new Date(e.createdAt).Format("yyyy-MM-dd hh:mm:ss") + '</td>';
+                    _htmlTR += '<td class="opera_td"><a class="iconfont" href="/admin/modifi-interface?id='+ e.id+'">&#xC1118;</a>';
+                    if(e.status == 1){
+                        _htmlTR +='<a class="iconfont" href="/admin/edit-interface?id='+ e.id+'">&#xC1121;</a>';
+                    }
+                    <% if(locals._super == locals.session.user.name){ %>
+                          _htmlTR +=' <a class="iconfont" href="javascript:;" onclick=delF("/admin/del-interface",'+ e.id+')>&#xC1119;</a>';
+                   <%}%>
+                    _htmlTR +=  '</td>';
+                    _htmlTR += '</tr>';
+
+                });
+                $(".list_table tbody").append(_htmlTR);
+            }
+        });
+    }
+    $(function () {
+
+        winHF();
+        $("#pageSel").val(<%- page_size %>);
+        $("#pagination").pagination($(".page_info").attr("data-sum"));
+        $("#selCode").change(function(){
+            tiaozhuan($("#pageSel").val());
+        });
+
+        document.onkeydown = function(e){
+            if(!e) e = window.event;//火狐中是 window.event
+            if((e.keyCode || e.which) == 13){
+                $("#search_btn").click();
+            }
+        }
+
+    });
+    $(window).resize(function () {
+        winHF();
+    });
+
+</script>
+</body>
+</html>
+

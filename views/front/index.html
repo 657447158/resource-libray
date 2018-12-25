@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <%-include("_include/_headerInfo",{h_tit:"首页"})%>
+</head>
+<body>
+
+    <!-- 头部导航栏 start -->
+    <%-include("_include/_header",{curr: 0})%>
+    <!-- 头部导航栏 end -->
+
+    <!-- 中间内容区域 start -->
+    <div class="container">
+        <!-- 首页banner start -->
+        <div class="js-banner" style="overflow: hidden;">
+            <ul class="slides">
+                <li><img src="/images/member/index-banner-01.jpg" alt="首页" /></li>
+                <li><img src="/images/member/index-banner-02.jpg" alt="首页" /></li>
+            </ul>
+        </div>
+        <!-- 首页banner end -->
+
+        <!-- 首页搜索框 start -->
+        <div class="search-box-wrap index-search">
+            <div class="search-box">
+                <div class="filter-box">
+                    <p class="clearfix"><a href="javascript:;">全部</a><i></i></p>
+                    <ul class="filter-box-hover" id="searchDownList">
+
+                    </ul>
+                </div>
+                <input type="password" style="position: absolute; top: -99999px;">
+                <input type="text" autocomplete="off" placeholder="0个资源等你发现..." class="search-input" id="searchInput" />
+                <a href="javascript:;" class="search-icon"></a>
+            </div>
+            <p class="slogan">在这里，我们鼓励创作与分享，但我们更在意每一次美好分享背后的努力与付出...</p>
+        </div>
+        <!-- 首页搜索框 end -->
+
+        <!-- 首页快捷菜单 start -->
+        <ul class="menu-list">
+            <li class="list-1">
+                <a href="afflatus-list.html?channelCode=al">
+                    <i class="icon"></i>
+                    <h3>案例赏析</h3>
+                    <span class="intro">多维度创作案例满足你的任何作图需求</span>
+                </a>
+            </li>
+            <li class="list-2">
+                <a href="picture-list.html">
+                    <i class="icon"></i>
+                    <h3>精选图库</h3>
+                    <span class="intro">海量图片供你所需翻倍提升效率</span>
+                </a>
+            </li>
+            <li class="list-3">
+                <a href="afflatus-list.html">
+                    <i class="icon"></i>
+                    <h3>优质图标</h3>
+                    <span class="intro">优质精选高效，在这里我们只出精品</span>
+                </a>
+            </li>
+            <li class="list-4">
+                <a href="afflatus-list.html?channelCode=wc">
+                    <i class="icon"></i>
+                    <h3>经典文创</h3>
+                    <span class="intro">创意集结地，只有你想不到没有你找不到</span>
+                </a>
+            </li>
+        </ul>
+        <!-- 首页快捷菜单 end -->
+    </div>
+    <!-- 中间内容区域 end -->
+
+    <!-- 底部信息 start-->
+    <%-include("_include/_footer")%>
+    <!-- 底部信息 end -->
+
+
+<!-- 搜索框下拉 -->
+<script type="text/template" id="searchDownTmp">
+    <li class="clearfix"><a href="javascript:;">全部</a><span>${total || 0}个资源</span></li>
+    {{each list}}
+    <li class="clearfix" data-val="${val}"><a href="javascript:;">${name}</a><span>${total || 0}个资源</span></li>
+    {{/each}}
+</script>
+
+
+
+
+<script>
+
+    var parentVal = '';
+
+    var DAQ = {
+        init: function () {
+            // 动态计算banner高度
+            var winH = $(window).height();
+            var menuListH = $('.menu-list').height();
+            var footerH = $('footer').height();
+
+            $('.js-banner').height(winH - menuListH - footerH)
+
+            $(window).resize(function () {
+                var winH = $(window).height();
+                $('.js-banner').height(winH - menuListH - footerH)
+            })
+
+            this.method();
+            this.getDatas();
+        },
+        method: function () {
+            // 首页banner轮播
+            $('.js-banner').flexslider({
+                slideshow: true,
+                animation: 'slide',
+                slideshowSpeed: 5000,
+                animationLoop: true,
+                controlNav: false,
+                directionNav: false
+            });
+
+            // 搜索框下拉点选事件
+            $('.search-box').on('click', 'li', function() {
+                var $this = $(this);
+                var $text = $this.find('a').text();
+                var $num = $this.find('span').text().split('个')[0];
+                parentVal = $this.data('val');
+                $('.filter-box>p>a').text($text);
+                $('#searchInput').attr('placeholder',$num+'个资源等你发现...');
+            });
+
+            // 首页搜索框点击事件
+            $('.index-search').on('click', '.search-icon', function () {
+                var $this = $(this);
+                var keywords = $this.prev().val();
+                if (!keywords) return;
+                window.location.href = 'search-list.html?parentVal='+ parentVal +'&keywords=' + keywords;
+            });
+            // 首页搜索框回车事件
+            $('.index-search').keyup(function(event){
+                if(event.keyCode == 13){
+                    $(".index-search .search-icon").trigger("click");
+                }
+            });
+        },
+        getDatas: function () {
+            // 获取资源库总资源个数
+            $.ajax({
+                type: 'get',
+                url: '/member/getTotalResource',
+                success: function (data) {
+                    if (data.code === 0) {
+                        $('#searchInput').attr('placeholder', data.total + '个资源等你发现...')
+                    }
+                }
+            })
+            // 获取资源类别
+            $.ajax({
+                type: 'get',
+                url: '/member/getMenusTypeAndCount',
+                success: function (result) {
+                    if (result.code === 0) {
+                        if (result.datas && result.datas.length > 0) {
+                            var dataList = result.datas;
+                            var total = 0;
+                            dataList.map(function (item) {
+                                total += item.total;
+                            })
+                            $('#searchDownTmp').tmpl({list: dataList, total: total}).appendTo('#searchDownList');
+                        } else {
+                            $('#searchDownList').append('<li class="no-data">暂无数据</li>');
+                        }
+                    }
+                }
+            })
+
+        }
+    };
+
+    $(function () {
+        DAQ.init();
+    })
+
+</script>
+</body>
+</html>

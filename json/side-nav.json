@@ -1,0 +1,95 @@
+{
+    "code": 0,
+    "msg": "请求成功",
+    "datas": [
+        {
+            "id": 1,
+            "icon": "&#xe6f0;",
+            "name": "系统首页",
+            "tag": "",
+            "url": "/admin/index.html",
+            "level": 1,
+            "status": 1
+        },
+        {
+            "id": 2,
+            "icon": "&#xe6df;",
+            "name": "资源管理",
+            "tag": "",
+            "url": "/admin/resource/list.html",
+            "level": 1,
+            "status": 1
+        },
+        {
+            "id": 3,
+            "icon": "&#xe6fe;",
+            "name": "系统设置",
+            "tag": "",
+            "url": "/admin/glossary/list.html",
+            "level": 1,
+            "status": 1
+        },
+        {
+            "id": 4,
+            "icon": "&#xe67e;",
+            "name": "用户管理",
+            "tag": "",
+            "url": "/admin/user/list.html",
+            "level": 1,
+            "status": 1
+        },
+        {
+            "id": 5,
+            "icon": "&#xe6da;",
+            "name": "景区列表",
+            "tag": "",
+            "url": "/admin/scenic/list.html",
+            "level": 1,
+            "status": 1
+        },
+        {
+            "id": 6,
+            "icon": "&#xe6fa;",
+            "name": "地域文化",
+            "tag": "",
+            "url": "/admin/regional-culture/list.html",
+            "level": 1,
+            "status": 1
+        },
+        {
+            "id": 7,
+            "icon": "&#xe6fa;",
+            "name": "设计导航",
+            "tag": "",
+            "url": "/admin/regional-culture/list.html",
+            "level": 1,
+            "status": 1
+        },
+        {
+            "id": 8,
+            "icon": "&#xe6fa;",
+            "name": "账号中心",
+            "tag": "",
+            "url": "",
+            "level": 1,
+            "status": 1,
+            "subMenus": [
+                {
+                    "icon": "&#xe6fa;",
+                    "id": 1,
+                    "level": 2,
+                    "url": "/admin/jurisdiction/list.html",
+                    "name": "角色管理",
+                    "status": 1
+                },
+                {
+                    "icon": "&#xe6fa;",
+                    "id": 2,
+                    "level": 2,
+                    "name": "用户管理",
+                    "status": 1
+                }
+            ]
+        }
+    ]
+}

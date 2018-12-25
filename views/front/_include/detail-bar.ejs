@@ -1,0 +1,50 @@
+﻿<script type="text/template" id="detailBarTmp">
+    <div class="detail-bar">
+        <ul>
+            {{if data.love}}
+            <li class="collect"><a href="javascript:;" class="iconfont icon-collect" data-id="${data.id}" data-love="0">&#xC1111;</a></li>
+            {{else}}
+            <li class="collect"><a href="javascript:;" class="iconfont icon-collect" data-id="${data.id}" data-love="1">&#xC1110;</a></li>
+            {{/if}}
+            {{if data.download}}
+                {{if loginFlag}}
+                <li class="download"><a class="iconfont icon-download" data-id="${data.id}" href="${data.download}" download="${data.title}">&#xC1112;</a></li>
+                {{else}}
+                <li class="download"><a class="iconfont icon-download" data-id="${data.id}" href="javascript:;">&#xC1112;</a></li>
+                {{/if}}
+            {{/if}}
+            {{if data.place}}
+            <li class="svn"><a href="javascript:;" class="iconfont icon-svn" data-id="${id}" data-place="${data.place}">&#xC1115;</a></li>
+            {{/if}}
+            {{if data.url.trim()}}
+            <li class="url"><a href="${data.url}" class="iconfont" data-id="${data.id}" target="_blank">&#xC1116;</a></li>
+            {{/if}}
+        </ul>
+    </div>
+
+    <ul class="side-bar">
+        <li class="side-bar-c1">
+            {{if data.love}}
+            <a href="javascript:;" class="iconfont icon-collect" data-id="${data.id}" data-love="0">&#xC1111;</a>
+            {{else}}
+            <a href="javascript:;" class="iconfont icon-collect" data-id="${data.id}" data-love="1">&#xC1110;</a>
+            {{/if}}
+        </li>
+        {{if data.download}}
+            <li class="side-bar-c2">
+                {{if loginFlag}}
+                <a class="iconfont" data-id="${data.id}" href="${data.download}" download="${data.title}">&#xC1112;</a>
+                {{else}}
+                <a class="iconfont" data-id="${data.id}" href="javascript:;">&#xC1112;</a>
+                {{/if}}
+            </li>
+        {{/if}}
+        {{if data.place}}
+        <li class="side-bar-c3"><a href="javascript:;" class="iconfont icon-svn" data-id="${id}" data-place="${data.place}">&#xC1115;</a></li>
+        {{/if}}
+        {{if data.url.trim()}}
+        <li class="side-bar-c4"><a href="${data.url}" data-id="${data.id}" target="_blank" class="iconfont">&#xC1116;</a></li>
+        {{/if}}
+        <li class="side-bar-c5 side-bar-top"><a href="javascript:;" class="iconfont">&#xC1127;</a></li>
+    </ul>
+</script>

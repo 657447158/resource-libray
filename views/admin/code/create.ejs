@@ -1,0 +1,125 @@
+﻿<!DOCTYPE html>
+<html class="h100">
+<head lang="zh-CN">
+
+  <%-include("../_include/include-head",{tit:"新增类型"})%>
+</head>
+<body>
+<%-include ../_include/include-top%>
+<div class="home_cont">
+
+  <%-include("../_include/include-left",{_curr:"system"})%>
+    <div class="h_main fr">
+        <p class="adress_nav">
+          <span>您当前的位置：</span><span>UED资源共享平台管理系统</span>-<a href="/admin/list-code">网站类型管理</a>-<span>新增类型</span>
+        </p>
+        <div class="audit_body">
+          <p class="edit_cont">
+            <form method="post" action="/admin/create-code">
+              <table cellpadding="0" cellspacing="0"  class="tabTable">
+                <tbody>
+                <tr>
+                  <td class="name">父级：</td>
+                  <td class="kuang">
+                    <p>
+                      <select class="long_input" name="parentId" id="parentId">
+                        <option data-sort="0" value="0">顶级名称</option>
+                          <%codes.forEach(function(code){%>
+                            <option data-sort="<%=code.sort%>" data-val="<%=code.val%>" value="<%=code.id%>"><%-code.name%></option>
+                          <%})%>
+                      </select>
+                    </p>
+
+                  </td>
+
+                </tr>
+                  <td class="name"><span  style="color:red;">*&nbsp;</span>名称：</td>
+                  <td class="kuang"  >
+                    <p>
+                      <input type="text" class="long_input" name="name" id="name"  />
+                    </p>
+                  </td>
+                </tr>
+
+          <tr>
+            <td class="name">是否为菜单：</td>
+            <td class="kuang" colspan="2">
+              <p>
+                 <label class="rad_lbl"><input type="radio" value="0" checked="checked" name="isMenu"  id="isMenu"/>否</label> <label class="rad_lbl"><input  name="isMenu" id="isMenu" type="radio" value="1"/>是</label>
+              </p>
+            </td>
+          </tr>
+          <tr class="Menu_td" style="display:none;">
+            <td class="name">菜单唯一标识：</td>
+            <td class="kuang" colspan="2">
+              <p>
+                <input type="text" class="long_input" name="val" id="val"/>
+              </p>
+            </td>
+          </tr>
+          <tr class="Menu_td" style="display:none;">
+            <td class="name">菜单ICON：</td>
+            <td class="kuang" colspan="2">
+              <p>
+                <input type="text" class="long_input" name="icon" id="icon" value=""/>
+              </p>
+            </td>
+          </tr>
+
+          <tr>
+            <td class="name">排序：</td>
+            <td class="kuang">
+              <p>
+                <input type="text" class="long_input" name="sort" id="sort" value="0"/>
+              </p>
+            </td>
+          </tr>
+                </tbody>
+                <tfoot>
+                  <tr class="oper_tr">
+                    <td class="name "><p class="oper_p"></p></td>
+                    <td class="kuang">
+                      <p class="oper_p">
+                        <input type="submit" class="oper_btn" value="确认保存"/>
+                        <input type="reset" class="oper_btn" value="重新编辑"/>
+                      </p>
+                    </td>
+                  </tr>
+                </tfoot>
+              </table>
+            </form>
+          </div>
+
+        </div>
+    </div>
+</div>
+
+</body>
+</html>
+<script src="/js/method.js"></script>
+<script>
+  $(function(){
+     winHFE();
+    $("#parentId").change(function(){
+      var _sort = $("#parentId option:selected").attr("data-sort");
+      $("#sort").val(parseInt(_sort)+1);
+    });
+    $(".rad_lbl").click(function(){
+      var _val= $(this).children("input").val();
+      if(_val==1){
+        $(".Menu_td").show();
+      }else{
+        $(".Menu_td").hide();
+      }
+    });
+
+  });
+
+  $(window).resize(function(){
+    winHFE();
+  })
+
+
+
+
+</script>

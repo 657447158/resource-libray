@@ -1,0 +1,719 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <%-include("../_include/include-head",{tit:"友情链接"})%>
+</head>
+<body>
+
+<div class="resource-list-container">
+    <div class="daq-crumb clearfix mt-20">
+        <span>您当前在的位置：UED资源共享平台管理系统</span>
+        <i class="crumb-sign crumb-mg">-</i>
+        <a href="links-list.html">友情链接</a>
+    </div>
+    <p class="demo-title"></p>
+    <div class="buttons mt-10 clearfix">
+        <div class="daq-inp-rule wid-158 mtr-5 fl">
+            <input type="text" placeholder="请输入名称"/>
+        </div>
+        <button class="daq-btn mt-5 js_serach"><span>搜索</span></button>
+        <button class="daq-btn mt-5 js_add"><span>新增</span></button>
+        <button class="daq-btn mt-5 js_editor"><span>编辑</span></button>
+    </div>
+    <table id="table" class="daq-table daq-tab-pad mt-20"></table>
+</div>
+
+
+<script type="text/template" id="js_delete_row">
+    <p class="mb-icon"><i class="sysfont"></i></p>
+    <p class="mb-ask">确定要删除这条数据吗？</p>
+</script>
+
+<!-- 新增 -->
+<script type="text/template" id="js_add_row">
+    <form action="" id="form_add">
+        <div class="form-item-globle clearfix">
+            <!-- 名称 -->
+            <div class="form-item mt-20 form-percent100">
+                <label class="form-label"><i class="form-require">*</i>名称：</label>
+                <div class="form-position">
+                    <div class="daq-inp-rule wid-348">
+                        <input type="text" name="name" placeholder="请输入名称"/>
+                    </div>
+                </div>
+            </div>
+            <!-- 地址 -->
+            <div class="form-item mt-20 form-percent100">
+                <label class="form-label"><i class="form-require">*</i>链接地址：</label>
+                <div class="form-position">
+                    <div class="daq-inp-rule wid-348">
+                        <input type="text" name="url" placeholder="请输入地址"/>
+                    </div>
+                </div>
+            </div>
+            <!-- 封面图 -->
+            <div class="form-item mt-20 form-percent100">
+                <label class="form-label">封面图：</label>
+                <div class="form-position">
+                    <div class="clearfix daq-upload daq-upload-square mt-10">
+                        <div id="squarePicker_add">
+                            <i class="sysfont">&#xe629;</i>
+                        </div>
+                        <!--用来存放图片item-->
+                        <div id="squareList_add" class="uploader-list"></div>
+                    </div>
+                </div>
+            </div>
+            <!-- 排序 -->
+            <div class="form-item mt-20 form-percent100">
+                <label class="form-label"><i class="form-require">*</i>排序：</label>
+                <div class="form-position">
+                    <div class="daq-inp-rule wid-348">
+                        <input type="text" name="sort" placeholder="请输入文字"/>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </form>
+</script>
+
+<!-- 编辑 -->
+<script type="text/template" id="js_editor_row">
+    <form action="">
+        <div class="form-item-globle clearfix">
+            <!-- 名称 -->
+            <div class="form-item mt-20 form-percent100">
+                <label class="form-label"><i class="form-require">*</i>名称：</label>
+                <div class="form-position">
+                    <div class="daq-inp-rule wid-348">
+                        <input type="text" placeholder="请输入文字" value="${data.name}"/>
+                    </div>
+                </div>
+            </div>
+            <!-- 地址 -->
+            <div class="form-item mt-20 form-percent100">
+                <label class="form-label"><i class="form-require">*</i>链接地址：</label>
+                <div class="form-position">
+                    <div class="daq-inp-rule wid-348">
+                        <input type="text" placeholder="请输入文字" value="${data.url}" />
+                    </div>
+                </div>
+            </div>
+            <!-- 封面图 -->
+            <div class="form-item mt-20 form-percent100">
+                <label class="form-label">封面图：</label>
+                <div class="form-position">
+                    <div class="clearfix daq-upload daq-upload-square mt-10">
+                        <div id="squarePicker_edit">
+                            <i class="sysfont">&#xe629;</i>
+                        </div>
+                        <!--用来存放图片item-->
+                        <div id="squareList_edit" class="uploader-list">
+                            <div class="img-box file-item thumbnail" imgurl="${data.img}">
+                                <img src="${data.img}" alt="${data.name}" />
+                                <label class="drag-label" style="display: block;"></label>
+                                <p class="upload-operate"><i class="sysfont prev"></i><i class="sysfont delete"></i><i class="sysfont next"></i></p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <!-- 排序 -->
+            <div class="form-item mt-20 form-percent100">
+                <label class="form-label"><i class="form-require">*</i>排序：</label>
+                <div class="form-position">
+                    <div class="daq-inp-rule wid-348">
+                        <input type="text" placeholder="请输入排序" value="${data.sort}"/>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </form>
+</script>
+
+
+<!--弹框-成功-->
+<script type="text/template" id="popUpSuccess">
+    <p class="mb-icon mb-success"><i class="sysfont"></i></p>
+    <p class="mb-ask">保存成功！</p>
+</script>
+
+<!--弹框-失败-->
+<script type="text/template" id="popUpFail">
+    <p class="mb-icon mb-fail"><i class="sysfont"></i></p>
+    <p class="mb-ask">保存失败！</p>
+</script>
+
+<script>
+    $(function () {
+        var table = $("#table").daqDataTable({
+            url: "/admin/link/getListDatas",
+            columns: [
+                {
+                    field: 'img',
+                    title: '缩略图',
+                    className: 'wid-percent10',
+                    formatter: function (value) {
+                        var html = '';
+                        html += '<img style="height: 42px;" src="'+ value +'" alt="">';
+                        return html
+                    }
+                },
+                {
+                    field: 'name',
+                    title: '名称',
+                    className: 'wid-percent20'
+                },
+                {
+                    field: 'url',
+                    title: '链接地址',
+                    className: 'wid-percent25'
+                },
+                {
+                    field: 'updatedAt',
+                    title: '修改时间',
+                    className: 'wid-percent15'
+                },
+                {
+                    field: 'id',
+                    title: '操作',
+                    className: 'wid-percent10',
+                    formatter: function (value, data) {
+                        return '<p class="btn-mg-5">' +
+                            '<a class="daq-btn daq-btn-cic btn-green btn-pad-small js_editor" href="javascript:;"><i class="sysfont"></i></a>' +
+                            '<a class="daq-btn daq-btn-cic btn-red btn-pad-small js_delete" href="javascript:;"><i class="sysfont"></i></a>' +
+                            '</p>';
+                    }
+                }],
+            pageSize: 10,
+            limits: 2,
+            pageText: true,
+            checkbox: true,
+            mixColor: true,
+            callback: function (datas) {
+//                console.log(datas)
+            },
+            onClick: function (data) {
+//                console.log(data)
+            }
+        });
+
+        //新增数据
+        $(document).on('click', '.js_add', function (e) {
+            e.stopPropagation();
+            $.daqDialog({
+                title: '新增',
+                content: $('#js_add_row').html(),
+                mask: true,
+                width: 650,
+                height: 550,
+                model: 'fadeInDown',
+                buttons: [
+                    {
+                        text: '确定',
+                        callback: function () {
+                            var formDatas = $('#form_add').serializeArray();
+                            var datas = {};
+                            for (var item in formDatas) {
+                                datas[formDatas[item].name] = formDatas[item].value;
+                            }
+                            datas.img = $('#squareList_add>div').attr('imgurl');
+                            $.ajax({
+                                type: 'post',
+                                url: '/admin/link/add',
+                                data: datas,
+                                success: function (result) {
+                                    if (result.code === 0) {
+                                        var content = $("#popUpSuccess");
+                                        $.daqDialog({
+                                            title: '成功',
+                                            content: content.html(),
+                                            mask: true,
+                                            width: 400,
+                                            height: 250,
+                                            model: 'fadeInDown',
+                                            closeFn: function () {
+                                                window.location.href = 'list.html';
+                                            }
+                                        });
+                                    } else {
+                                        var content = $("#popUpFail");
+                                        $.daqDialog({
+                                            title: '失败',
+                                            content: content.html(),
+                                            mask: true,
+                                            width: 400,
+                                            height: 250,
+                                            model: 'fadeInDown',
+                                            closeFn: function () {
+                                                window.location.href = 'list.html';
+                                            }
+                                        });
+                                    }
+                                }
+                            })
+                        }
+                    },
+                    {
+                        text: '取消'
+                    }
+                ],
+                callback: function () {
+                    /****************方框上传图片*****************/
+                    var $list=$("#squareList_add"), //存放选中图片的列表
+                        thumbnailWidth = 148,
+                        thumbnailHeight = 148;
+                    // 初始化Web Uploader
+                    var squareUploader = WebUploader.create({
+                        // 选完文件后，是否自动上传。
+                        auto: true,
+                        // swf文件路径
+                        swf: 'http://filealiyun.geeker.com.cn/ued/webupload/js/Uploader.swf',
+                        // 文件接收服务端。
+                        server: '/upload',
+                        //设置文件上传域的name
+                        fileVal: 'Filedata',
+                        //文件上传参数表
+                        formData: {
+                            path: 'test'
+                        },
+                        // 选择文件的按钮。可选。
+                        // 内部根据当前运行是创建，可能是input元素，也可能是flash.
+                        pick: {
+                            id: '#squarePicker_add',
+                            multiple: false  //设置是否支持多文件上传
+                        },
+                        // 只允许选择图片文件。
+                        accept: {
+                            title: 'Images',
+                            extensions: 'gif,jpg,jpeg,bmp,png',
+                            mimeTypes: 'image/jpg,image/jpeg,image/png'
+                        }
+                    });
+                    // 当有文件添加进来的时候
+                    squareUploader.on( 'fileQueued', function( file ) {
+                        squareUploader.refresh(); // 当文件上传结构加载出来后执行该命令，刷新一下文件上传结构，防止上传按钮宽高1px问题导致点不到问题
+                        var $li = $(
+                                '<div id="' + file.id + '" class="file-item thumbnail">' +
+                                '<img/>' +
+                                '<label class="drag-label" ></label>' +
+                                '<p class="upload-delete"><i class="sysfont big"></i><i class="sysfont delete"></i></p>' +
+                                '</div>'
+                            ),
+                            $img = $li.find('img');
+                        // $list为容器jQuery实例
+                        $list.append( $li );
+                        // 创建缩略图
+                        // 如果为非图片文件，可以不用调用此方法。
+                        // thumbnailWidth x thumbnailHeight 为 100 x 100
+                        squareUploader.makeThumb( file, function( error, src ) {
+                            if ( error ) {
+                                $img.replaceWith('<span>不能预览</span>');
+                                return;
+                            }
+                            $img.attr( 'src', src );
+                        }, thumbnailWidth, thumbnailHeight );
+                    });
+                    // 文件上传过程中创建进度条实时显示。
+                    squareUploader.on( 'uploadProgress', function( file, percentage ) {
+                        var $li = $( '#'+file.id ),
+                            $percent = $li.find('.upload-circle');
+                        // 避免重复创建
+                        if ( !$percent.length ) {
+                            $percent = $('<p class="upload-circle"><canvas id="canvas" width="64px" height="64px"></canvas></p>').appendTo( $li );
+                        }
+                        var circle = {
+                            parent: $li.find('#canvas'),
+                            width: 64,
+                            radius: 30,
+                            arc: 4,
+                            percent: Math.floor(percentage * 100),
+                            color: ['#d2d8e3', '#20a0ff'], //[底色，进度色]
+                            textColor: '#8590a0', //文字渲染颜色
+                            textSize: '14px', //文字渲染字体大小
+                            animated: false  //是否以动画的方式绘制 默认false
+                        };
+                        // 捕获 IE7,8下不支持canvas抛出的异常
+                        try {
+                            $("#canvas").daqCircle(circle);
+                        }
+                        catch (err) { }
+                    });
+                    // 文件上传成功，给item添加成功class, 用样式标记上传成功。
+                    squareUploader.on( 'uploadSuccess', function( file, response ) {
+                        var $li = $( '#'+file.id );
+                        //encodeURI(response.datas.url) 把图片原始访问地址赋值给变量,encodeURI防止图片有特殊字符
+                        $li.attr("imgUrl",encodeURI(response.url)).find(".circle-process").remove();
+                        $li.find(".upload-circle").html("<i class='sysfont circle-success'></i>");
+                    });
+                    // 文件上传失败，显示上传出错。
+                    squareUploader.on( 'uploadError', function( file ) {
+                        var $li = $( '#'+file.id ),
+                            $error = $li.find('div.error');
+                        // 避免重复创建
+                        if ( !$error.length ) {
+                            $error = $('<div class="error"></div>').appendTo( $li );
+                        }
+                        $error.text('上传失败');
+                    });
+                    // 完成上传完了，成功或者失败，先删除进度条。
+                    squareUploader.on( 'uploadComplete', function( file ) {
+                        var $li = $( '#'+file.id );
+                        $li.find('.circle-success,.upload-circle').remove();
+                        $li.find('.drag-label').css('display','block');
+                        //点击删除上传的文件
+                        $li.on("click",".upload-delete i.delete",function(){
+                            $(this).parents(".file-item").remove();
+                            squareUploader.removeFile(file,true);
+                        });
+                        //给上传文件列表添加hover事件
+                        $(".uploader-list").on('mouseover','.file-item',function(){
+                            $(this).find(".drag-label").css('display','none');
+                            $(this).find(".upload-delete").css('display','block');
+                        });
+                        $(".uploader-list").on('mouseout','.file-item',function(){
+                            $(this).find(".drag-label").css('display','block');
+                            $(this).find(".upload-delete").css('display','none');
+                        });
+                        //点击显示放大图片
+                        $li.on("click",".upload-delete i.big",function(){
+                            var sourceUrl = $(this).parents(".file-item").attr("imgUrl");
+//                            console.log(sourceUrl)
+                            var cover = '<p class="cover"><img src="'+ sourceUrl +'" /></p>';
+                            $(document.body).append(cover);
+                            imgWH();
+                        });
+                        $(window).resize(function(){
+                            imgWH();
+                        });
+                        //动态设置放大图片的垂直居中显示
+                        //动态设置放大图片的垂直居中显示
+                        function imgWH(){
+                            //取得图片原始尺寸，并设置最大宽高显示；
+                            var winH = $(window).height(),
+                                oldWid = file._info.width,
+                                oldHei = file._info.height,
+                                scale = oldWid / oldHei; //宽高之比
+                            if( oldWid > 1000){
+                                oldWid = 1000;
+                                oldHei = oldWid / scale;
+                                if(oldHei > 650){
+                                    oldHei =  650;
+                                }
+                            }else if(oldHei > 650){
+                                oldHei = 650;
+                                oldWid = oldHei * scale;
+                                if(oldWid > 1000){
+                                    oldWid = 1000;
+                                }
+                            }
+                            //根据计算的宽高设置预览图片的宽高
+                            $(".cover img").css({'width': oldWid, 'height': oldHei, 'margin-top': (winH - oldHei)/2});
+                        }
+                        //点击遮罩层移除图片展示
+                        $(document.body).on("click",".cover",function(){
+                            $(this).remove();
+                        });
+                    });
+                }
+            });
+        });
+
+        //删除数据
+        $(document).on('click', '.js_delete', function (e) {
+            e.stopPropagation();
+            var $this = $(this),
+                arr = table.getCheckedId();
+            if (arr.length <= 0) {
+                $.daqMessage({
+                    icon: {
+                        text: ''
+                    },
+                    text: '请选择要需要删除的资源',
+                    skin: 1,
+                    time: 2000
+                });
+                return false;
+            };
+            var id = table.getEditorData(parseInt(arr[0])).id;
+            $.daqDialog({
+                title: '温馨提示',
+                content: $('#js_delete_row').html(),
+                mask: true,
+                height: 260,
+                model: 'fadeInDown',
+                buttons: [
+                    {
+                        text: '确定',
+                        callback: function () {
+                            $.ajax({
+                                type: 'post',
+                                url: '/admin/link/delete?id=' + id,
+                                success: function (result) {
+                                    if (result.code === 0) {
+                                        var content = $("#popUpSuccess");
+                                        $.daqDialog({
+                                            title: '成功',
+                                            content: content.html(),
+                                            mask: true,
+                                            width: 400,
+                                            height: 250,
+                                            model: 'fadeInDown',
+                                            closeFn: function () {
+                                                window.location.href = 'list.html';
+                                            }
+                                        });
+                                    } else {
+                                        var content = $("#popUpFail");
+                                        $.daqDialog({
+                                            title: '失败',
+                                            content: content.html(),
+                                            mask: true,
+                                            width: 400,
+                                            height: 250,
+                                            model: 'fadeInDown',
+                                            closeFn: function () {
+                                                window.location.href = 'list.html';
+                                            }
+                                        });
+                                    }
+                                }
+                            })
+                        }
+                    },
+                    {
+                        text: '取消'
+                    }
+                ]
+            });
+        });
+
+        //编辑数据
+        $(document).on('click', '.js_editor', function (e) {
+            e.stopPropagation();
+            var $this = $(this),
+                arr = table.getCheckedId();
+            if (arr.length <= 0) {
+                $.daqMessage({
+                    icon: {
+                        text: ''
+                    },
+                    text: '请选项要编辑资源',
+                    skin: 1,
+                    time: 2000
+                });
+                return false;
+            };
+            var data = table.getEditorData(parseInt(arr[0]));
+            $.daqDialog({
+                title: '编辑',
+                content: $('#js_editor_row').tmpl({data: data}).html(),
+                mask: true,
+                width: 650,
+                height: 550,
+                model: 'fadeInDown',
+                buttons: [
+                    {
+                        text: '确定',
+                        callback: function () {
+
+                        }
+                    },
+                    {
+                        text: '取消'
+                    }
+                ],
+                callback: function () {
+                    //给上传文件列表添加hover事件
+                    $(".uploader-list").on('mouseover','.file-item',function(){
+                        $(this).find(".drag-label").css('display','none');
+                        $(this).find(".upload-operate").stop().animate({ 'bottom': '0'},50);
+                    });
+                    $(".uploader-list").on('mouseout','.file-item',function(){
+                        $(this).find(".drag-label").css('display','block');
+                        $(this).find(".upload-operate").stop().animate({ 'bottom': '-30px'},50);
+                    });
+                    // 点击删除文件
+                    $(".uploader-list").on("click",".upload-operate i.delete",function(){
+                        $('#squareList_edit').empty();
+                    });
+
+
+                    /****************方框上传图片*****************/
+                    var $list=$("#squareList_edit"), //存放选中图片的列表
+                        thumbnailWidth = 148,
+                        thumbnailHeight = 148;
+                    // 初始化Web Uploader
+                    var squareUploader = WebUploader.create({
+                        // 选完文件后，是否自动上传。
+                        auto: true,
+                        // swf文件路径
+                        swf: 'http://filealiyun.geeker.com.cn/ued/webupload/js/Uploader.swf',
+                        // 文件接收服务端。
+                        server: 'http://file.geeker.com.cn/uploadOSS',
+                        //设置文件上传域的name
+                        fileVal: 'Filedata',
+                        //文件上传参数表
+                        formData: {
+                            path: 'test'
+                        },
+                        // 选择文件的按钮。可选。
+                        // 内部根据当前运行是创建，可能是input元素，也可能是flash.
+                        pick: {
+                            id: '#squarePicker_edit',
+                            multiple: false  //设置是否支持多文件上传
+                        },
+                        // 只允许选择图片文件。
+                        accept: {
+                            title: 'Images',
+                            extensions: 'gif,jpg,jpeg,bmp,png',
+                            mimeTypes: 'image/jpg,image/jpeg,image/png'
+                        }
+                    });
+                    // 当有文件添加进来的时候
+                    squareUploader.on( 'fileQueued', function( file ) {
+                        squareUploader.refresh(); // 当文件上传结构加载出来后执行该命令，刷新一下文件上传结构，防止上传按钮宽高1px问题导致点不到问题
+                        var $li = $(
+                                '<div id="' + file.id + '" class="file-item thumbnail">' +
+                                '<img/>' +
+                                '<label class="drag-label" ></label>' +
+                                '<p class="upload-delete"><i class="sysfont big"></i><i class="sysfont delete"></i></p>' +
+                                '</div>'
+                            ),
+                            $img = $li.find('img');
+                        // $list为容器jQuery实例
+                        $list.append( $li );
+                        // 创建缩略图
+                        // 如果为非图片文件，可以不用调用此方法。
+                        // thumbnailWidth x thumbnailHeight 为 100 x 100
+                        squareUploader.makeThumb( file, function( error, src ) {
+                            if ( error ) {
+                                $img.replaceWith('<span>不能预览</span>');
+                                return;
+                            }
+                            $img.attr( 'src', src );
+                        }, thumbnailWidth, thumbnailHeight );
+                    });
+                    // 文件上传过程中创建进度条实时显示。
+                    squareUploader.on( 'uploadProgress', function( file, percentage ) {
+                        var $li = $( '#'+file.id ),
+                            $percent = $li.find('.upload-circle');
+                        // 避免重复创建
+                        if ( !$percent.length ) {
+                            $percent = $('<p class="upload-circle"><canvas id="canvas" width="64px" height="64px"></canvas></p>').appendTo( $li );
+                        }
+                        var circle = {
+                            parent: $li.find('#canvas'),
+                            width: 64,
+                            radius: 30,
+                            arc: 4,
+                            percent: Math.floor(percentage * 100),
+                            color: ['#d2d8e3', '#20a0ff'], //[底色，进度色]
+                            textColor: '#8590a0', //文字渲染颜色
+                            textSize: '14px', //文字渲染字体大小
+                            animated: false  //是否以动画的方式绘制 默认false
+                        };
+                        // 捕获 IE7,8下不支持canvas抛出的异常
+                        try {
+                            $("#canvas").daqCircle(circle);
+                        }
+                        catch (err) { }
+                    });
+                    // 文件上传成功，给item添加成功class, 用样式标记上传成功。
+                    squareUploader.on( 'uploadSuccess', function( file, response ) {
+                        var $li = $( '#'+file.id );
+                        //encodeURI(response.datas.url) 把图片原始访问地址赋值给变量,encodeURI防止图片有特殊字符
+                        $li.attr("imgUrl",encodeURI(response.datas.url)).find(".circle-process").remove();
+                        $li.find(".upload-circle").html("<i class='sysfont circle-success'></i>");
+                    });
+                    // 文件上传失败，显示上传出错。
+                    squareUploader.on( 'uploadError', function( file ) {
+                        var $li = $( '#'+file.id ),
+                            $error = $li.find('div.error');
+                        // 避免重复创建
+                        if ( !$error.length ) {
+                            $error = $('<div class="error"></div>').appendTo( $li );
+                        }
+                        $error.text('上传失败');
+                    });
+                    // 完成上传完了，成功或者失败，先删除进度条。
+                    squareUploader.on( 'uploadComplete', function( file ) {
+                        var $li = $( '#'+file.id );
+                        $li.find('.circle-success,.upload-circle').remove();
+                        $li.find('.drag-label').css('display','block');
+                        //点击删除上传的文件
+                        $li.on("click",".upload-delete i.delete",function(){
+                            $(this).parents(".file-item").remove();
+                            squareUploader.removeFile(file,true);
+                        });
+                        //给上传文件列表添加hover事件
+                        $(".uploader-list").on('mouseover','.file-item',function(){
+                            $(this).find(".drag-label").css('display','none');
+                            $(this).find(".upload-delete").css('display','block');
+                        });
+                        $(".uploader-list").on('mouseout','.file-item',function(){
+                            $(this).find(".drag-label").css('display','block');
+                            $(this).find(".upload-delete").css('display','none');
+                        });
+                        //点击显示放大图片
+                        $li.on("click",".upload-delete i.big",function(){
+                            var sourceUrl = $(this).parents(".file-item").attr("imgUrl");
+//                            console.log(sourceUrl)
+                            var cover = '<p class="cover"><img src="'+ sourceUrl +'" /></p>';
+                            $(document.body).append(cover);
+                            imgWH();
+                        });
+                        $(window).resize(function(){
+                            imgWH();
+                        });
+                        //动态设置放大图片的垂直居中显示
+                        //动态设置放大图片的垂直居中显示
+                        function imgWH(){
+                            //取得图片原始尺寸，并设置最大宽高显示；
+                            var winH = $(window).height(),
+                                oldWid = file._info.width,
+                                oldHei = file._info.height,
+                                scale = oldWid / oldHei; //宽高之比
+                            if( oldWid > 1000){
+                                oldWid = 1000;
+                                oldHei = oldWid / scale;
+                                if(oldHei > 650){
+                                    oldHei =  650;
+                                }
+                            }else if(oldHei > 650){
+                                oldHei = 650;
+                                oldWid = oldHei * scale;
+                                if(oldWid > 1000){
+                                    oldWid = 1000;
+                                }
+                            }
+                            //根据计算的宽高设置预览图片的宽高
+                            $(".cover img").css({'width': oldWid, 'height': oldHei, 'margin-top': (winH - oldHei)/2});
+                        }
+                        //点击遮罩层移除图片展示
+                        $(document.body).on("click",".cover",function(){
+                            $(this).remove();
+                        });
+                    });
+                }
+            });
+        });
+
+        //查询数据
+        $(document).on('click', '.js_search_btn', function (e) {
+            e.stopPropagation();
+            var $this = $(this),
+                $text = $.trim($('.js_search_inp').val());
+            if ($text) {
+                table.search({
+                    url: 'http://192.168.2.16:8081/tableTest/get',
+                    data: {
+                        id: $text
+                    }
+                });
+            }
+        });
+    });
+</script>
+</body>
+</html>

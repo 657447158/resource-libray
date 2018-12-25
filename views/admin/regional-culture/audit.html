@@ -1,0 +1,297 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <%-include("../_include/include-head",{tit:"资源管理"})%>
+</head>
+<body>
+
+<div class="resource-list-container">
+    <div class="daq-crumb clearfix mt-20">
+        <span>您当前在的位置：UED资源共享平台管理系统</span>
+        <i class="crumb-sign crumb-mg">-</i>
+        <a href="resource-list.html">资源管理</a>
+        <i class="crumb-sign crumb-mg">-</i>
+        <span>审核资源</span>
+    </div>
+    <p class="demo-title"></p>
+    <form action="" id="form-msg">
+
+    </form>
+</div>
+
+<!--弹框-成功-->
+<script type="text/template" id="popUpSuccess">
+    <p class="mb-icon mb-success"><i class="sysfont"></i></p>
+    <p class="mb-ask">审核通过！</p>
+</script>
+
+<!--弹框-失败-->
+<script type="text/template" id="popUpFail">
+    <p class="mb-icon mb-fail"><i class="sysfont"></i></p>
+    <p class="mb-ask">审核未通过！</p>
+</script>
+
+<!-- 表单详情 -->
+<script type="text/template" id="resourceTmp">
+    {{if data}}
+    <div class="form-item-table mt-22">
+        <table cellpadding="0" cellspacing="0" width="100%">
+            <tr style="display: none;">
+                <input style="display: none;" type="text" name="id" value="${data.id}" />
+            </tr>
+            <tr>
+                <td class="form-tab-label">
+                    <label class="form-label"><i class="form-require">*</i>名称：</label>
+                </td>
+                <td>
+                    <div class="form-table-edit clearfix">
+                        <div class="daq-inp-rule wid-348 fl">
+                            <input readonly type="text" name="title" class="form-resource " placeholder="请输入资源名称" value="${data.title}"/>
+                        </div>
+                    </div>
+                </td>
+            </tr>
+            <tr>
+                <td class="form-tab-label">
+                    <label class="form-label"><i class="form-require">*</i>类型：</label>
+                </td>
+                <td>
+                    <div class="form-table-edit clearfix" id="typeBox">
+                        <div id="select1" class="daq-select wid-158 fl mr-10">
+                            <select name="codeName1">
+                                <option value="">请选择</option>
+                            </select>
+                        </div>
+                    </div>
+                </td>
+            </tr>
+            <tr>
+                <td class="form-tab-label">
+                    <label class="form-label"><i class="form-require">*</i>关键字：</label>
+                </td>
+                <td>
+                    <div class="form-table-edit clearfix">
+                        <div class="daq-inp-rule wid-348 fl">
+                            <input readonly type="text" name="keyWord" class="form-resource " placeholder="请输入关键字" value="${data.keyWord.slice(1,-1)}"/>
+                        </div>
+                    </div>
+                </td>
+            </tr>
+            <tr>
+                <td class="form-tab-label">
+                    <label class="form-label"><i class="form-require">*</i>封面图：</label>
+                </td>
+                <td>
+                    <div class="form-table-edit clearfix">
+                        <div class="audit-cover"><img src="${data.coverImg}" alt="${data.title}"></div>
+                    </div>
+                </td>
+            </tr>
+            <tr>
+                <td class="form-tab-label">
+                    <label class="form-label"><i class="form-require">*</i>内容：</label>
+                </td>
+                <td>
+                    <div class="form-table-edit clearfix">
+                        <textarea id="content" name="content">{{html data.content}}</textarea>
+                    </div>
+                </td>
+            </tr>
+            <tr>
+                <td class="form-tab-label">
+                    <label class="form-label">排序：</label>
+                </td>
+                <td>
+                    <div class="form-table-edit clearfix">
+                        <div class="daq-inp-rule wid-358 fl">
+                            <input type="text" name="sort" class="form-resource " placeholder="请输入" value="${data.sort}"/>
+                        </div>
+                    </div>
+                </td>
+            </tr>
+            <tr>
+                <td class="form-tab-label"></td>
+                <td>
+                    <div class="form-table-edit">
+                        <button type="button" class="daq-btn" id="pass">通过</button>
+                        <button type="button" class="daq-btn" id="fail">不通过</button>
+                    </div>
+                </td>
+            </tr>
+        </table>
+    </div>
+    {{/if}}
+</script>
+
+<script>
+    $(function() {
+
+
+        var id = getUrlParams('id');
+
+        getResDetails();
+        passOrFail();
+
+        /**
+         * 获取url参数
+         * @AuthorHTL
+         * @param     name 参数名称
+         * @return    value
+         */
+        function getUrlParams (name) {
+            var reg = new RegExp("(^|&)" + name + "=([^&]*)(&|$)", "i");
+            var r = window.location.search.substr(1).match(reg);
+            if (r != null) {
+                return decodeURI(r[2]);
+            } else {
+                return null;
+            }
+        };
+
+        // 获取资源详情
+        function getResDetails () {
+            $('#form-msg').empty();
+            $.ajax({
+                type: 'get',
+                url: '/admin/resource/getDetails?id=' + id,
+                success: function (result) {
+                    if (result.code === 0) {
+                        var data = result.data;
+                        if (data) {
+                            $('#resourceTmp').tmpl({data: data}).appendTo('#form-msg');
+                            // 实例化类型下拉框
+                            getTypeMenus(data.codeName, data.id);
+                            // 编辑器
+                            KindEditor.create('#content', {
+                                width: '1280px',
+                                height: '600px',
+                                afterBlur: function () { // 同步KindEditor的值到textarea文本框
+                                    this.sync();
+                                },
+                                uploadJson: '/upload',
+                                allowFileManager: false,
+                                readonlyMode: true
+                            });
+                        }
+                    }
+                }
+            })
+        }
+
+        // 获取类型下拉框的值（第一个）
+        function getTypeMenus(selectedName, selectedId) {
+            $.ajax({
+                type: 'get',
+                url: '/admin/resource/getDetailsMenusType?id=' + id,
+                success: function (result) {
+                    if (result.code === 0) {
+                        var dataList = result.datas;
+                        if (dataList && dataList.length > 0) {
+                            var options = '';
+                            if (dataList.length === 1) { // 只有一级菜单
+                                dataList[0].forEach(function (item) {
+                                    var option = '<option value="' + item.id + '">' + item.name + '</option>';
+                                    if (item.name === selectedName) {
+                                        option = '<option selected="selected" value="' + item.id + '">' + item.name + '</option>';
+                                    }
+                                    options += option
+                                });
+                                $('select[name="codeName1"]').append(options);
+
+                                $("#select1").daqSelect({
+                                    disable: true
+                                });
+                            } else { // 有两级菜单
+                                var html = '';
+                                var option2 = '';
+                                dataList[0].forEach(function (item) {
+                                    var option = '<option value="' + item.id + '">' + item.name + '</option>';
+                                    for (var i = 0; i < dataList[1].length; i++) {
+                                        if (dataList[1][i].name === selectedName && item.id === dataList[1][i].parentId) {
+                                            option = '<option selected="selected" value="' + item.id + '">' + item.name + '</option>';
+                                        }
+                                    }
+                                    options += option;
+                                });
+                                $('select[name="codeName1"]').append(options);
+
+                                $("#select1").daqSelect({
+                                    disable: true
+                                });
+                                dataList[1].forEach(function (item) {
+                                    var optionTmp = '<option value="' + item.id + '">' + item.name + '</option>';
+                                    if (item.name === selectedName) {
+                                        optionTmp = '<option selected="selected" value="' + item.id + '">' + item.name + '</option>';
+                                    }
+                                    option2 += optionTmp
+                                })
+                                html += '<div id="select2" class="daq-select wid-158 fl">' +
+                                    '<select name="codeName2">' +
+                                    '<option value="">请选择</option>' + option2 +
+                                    '</select>' +
+                                    '</div>';
+                                $(html).appendTo($('#typeBox'));
+                                $("#select2").daqSelect({
+                                    disable: true,
+                                    value: 2,
+                                    callback: function (data) {
+                                        console.log(data)
+                                    }
+                                });
+                            }
+                        }
+                    }
+                }
+            })
+        }
+
+        // 通过 or 不通过
+        function passOrFail () {
+            $('body').on('click', 'button', function () {
+                var status = 1;
+                if ($(this).attr('id') === 'fail') {
+                    status = 0;
+                }
+                $.ajax({
+                    type: 'post',
+                    url: '/admin/resource/audit',
+                    data: {
+                        status: status,
+                        id: id
+                    },
+                    success: function (result) {
+                        if (result.code === 0) {
+                            var content = $("#popUpSuccess");
+                            $.daqDialog({
+                                title: '通过',
+                                content: content.html(),
+                                mask: true,
+                                width: 400,
+                                height: 250,
+                                model:'fadeInDown',
+                                closeFn: function () {
+                                    window.location.href = 'list.html';
+                                }
+                            });
+                        } else {
+                            var content =  $("#popUpFail");
+                            $.daqDialog({
+                                title: '未通过',
+                                content: content.html(),
+                                mask: true,
+                                width: 400,
+                                height: 250,
+                                model:'fadeInDown',
+                                closeFn: function () {
+                                    window.location.href = 'list.html';
+                                }
+                            });
+                        }
+                    }
+                })
+            })
+        }
+    })
+</script>
+</body>
+</html>

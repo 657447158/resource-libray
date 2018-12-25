@@ -1,0 +1,890 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <%-include("../_include/include-head",{tit:"类型列表"})%>
+</head>
+<body>
+
+<div class="resource-list-container">
+    <div class="daq-crumb clearfix mt-20">
+        <span>您当前在的位置：UED资源共享平台管理系统</span>
+        <i class="crumb-sign crumb-mg">-</i>
+        <a href="system-list.html">菜单操作</a>
+    </div>
+    <p class="demo-title"></p>
+    <div class="fl" style="width: 30%;">
+        <div class="buttons mt-10 clearfix menu-buttons">
+
+        </div>
+        <ul id="testTree" class="daq-normal-tree"></ul>
+    </div>
+    <div class="fr" style="width: 68%">
+        <div class="buttons mt-10 clearfix operate-buttons">
+            <div class="daq-inp-rule wid-158 mtr-5 fl">
+                <input type="text" placeholder="请输入菜单名称" id="searchWords"/>
+            </div>
+            <button class="daq-btn mt-5 js_search"><span>搜索</span></button>
+        </div>
+        <table id="table" class="daq-table daq-tab-pad mt-20"></table>
+    </div>
+</div>
+
+
+<script type="text/template" id="js_delete_row">
+    <p class="mb-icon"><i class="sysfont"></i></p>
+    <p class="mb-ask">确定要删除这条数据吗？</p>
+</script>
+
+<!-- 新增-tree -->
+<script type="text/template" id="js_add_row">
+    <form action="">
+        <div class="form-item-globle clearfix">
+            <!-- 名称 -->
+            <div class="form-item mt-20 form-percent100">
+                <label class="form-label"><i class="form-require">*</i>菜单名称：</label>
+                <div class="form-position">
+                    <div class="daq-inp-rule wid-348">
+                        <input type="text" placeholder="请输入菜单名称" id="addName"/>
+                    </div>
+                </div>
+            </div>
+            <div class="form-item mt-20 form-percent100">
+                <label class="form-label"><i class="form-require">*</i>codeName：</label>
+                <div class="form-position">
+                    <div class="daq-inp-rule wid-348">
+                        <input type="text" placeholder="请输入codeName" id="addCodeName"/>
+                    </div>
+                </div>
+            </div>
+            <div class="form-item mt-20 form-percent100">
+                <label class="form-label">父级菜单：</label>
+                <div class="drop-down-select wid-238 fl daq-select-multiple" style="margin-left: 10px;">
+                    <select name="dishes" class="dishes">
+                    </select>
+                </div>
+            </div>
+            <!-- url -->
+            <div class="form-item mt-20 form-percent100">
+                <label class="form-label">URL：</label>
+                <div class="form-position">
+                    <div class="daq-inp-rule wid-348">
+                        <input type="text" placeholder="请输入跳转地址" id="addUrl" value="${data.url}"/>
+                    </div>
+                </div>
+            </div>
+            <!-- icon -->
+            <div class="form-item mt-20 form-percent100">
+                <label class="form-label"><i class="form-require">*</i>ICON：</label>
+                <div class="form-position">
+                    <div class="daq-inp-rule wid-348">
+                        <input type="text" placeholder="请输入ICON字体图标" id="addIcon" value="${data.icon}"/>
+                    </div>
+                </div>
+            </div>
+            <!-- 菜单权限列表 -->
+            <div class="form-item mt-20 form-percent100">
+                <label class="form-label"><i class="form-require">*</i>权限：</label>
+                <div class="form-position">
+                    <div id="checkbox" class="clearfix choose-box operate-box">
+
+                    </div>
+                </div>
+            </div>
+            <!-- 排序 -->
+            <div class="form-item mt-20 form-percent100">
+                <label class="form-label"><i class="form-require">*</i>排序：</label>
+                <div class="form-position">
+                    <div class="daq-inp-rule wid-348">
+                        <input type="text" placeholder="请输入排序" id="addSort"/>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </form>
+</script>
+
+<!-- 编辑-tree -->
+<script type="text/template" id="js_editor_row">
+    <form action="">
+        <div class="form-item-globle clearfix">
+            <!-- 名称 -->
+            <div class="form-item mt-20 form-percent100">
+                <label class="form-label"><i class="form-require">*</i>菜单名称：</label>
+                <div class="form-position">
+                    <div class="daq-inp-rule wid-348">
+                        <input type="text" placeholder="请输入菜单名称" id="editName" value="${data.name}"/>
+                    </div>
+                </div>
+            </div>
+            <div class="form-item mt-20 form-percent100">
+                <label class="form-label"><i class="form-require">*</i>codeName：</label>
+                <div class="form-position">
+                    <div class="daq-inp-rule wid-348">
+                        <input type="text" placeholder="请输入codeName" id="editCodeName" value="${data.codeName}" readonly/>
+                    </div>
+                </div>
+            </div>
+            <div class="form-item mt-20 form-percent100">
+                <label class="form-label">父级菜单：</label>
+                <div class="drop-down-select wid-238 fl daq-select-multiple" style="margin-left: 10px;">
+                    <select name="dishes" class="dishes">
+                    </select>
+                </div>
+            </div>
+            <!-- url -->
+            <div class="form-item mt-20 form-percent100">
+                <label class="form-label">URL：</label>
+                <div class="form-position">
+                    <div class="daq-inp-rule wid-348">
+                        <input type="text" placeholder="请输入跳转地址" id="editUrl" value="${data.url}"/>
+                    </div>
+                </div>
+            </div>
+            <!-- icon -->
+            <div class="form-item mt-20 form-percent100">
+                <label class="form-label"><i class="form-require">*</i>ICON：</label>
+                <div class="form-position">
+                    <div class="daq-inp-rule wid-348">
+                        <input type="text" placeholder="请输入ICON字体图标" id="editIcon" value="${data.icon}"/>
+                    </div>
+                </div>
+            </div>
+            <!-- 菜单权限列表 -->
+            <div class="form-item mt-20 form-percent100">
+                <label class="form-label"><i class="form-require">*</i>权限：</label>
+                <div class="form-position">
+                    <div class="clearfix choose-box operate-box">
+
+                    </div>
+                </div>
+            </div>
+            <!-- 排序 -->
+            <div class="form-item mt-20 form-percent100">
+                <label class="form-label"><i class="form-require">*</i>排序：</label>
+                <div class="form-position">
+                    <div class="daq-inp-rule wid-348">
+                        <input type="text" placeholder="请输入排序" id="editSort" value="${data.codeId}"/>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </form>
+</script>
+
+
+<!-- 新增-table -->
+<script type="text/template" id="js_add_table">
+    <form action="">
+        <div class="form-item-globle clearfix">
+            <div class="form-item mt-20 form-percent100">
+                <label class="form-label"><i class="form-require">*</i>所属菜单：</label>
+                <div class="drop-down-select wid-238 fl daq-select-multiple" style="margin-left: 10px;">
+                    <select name="dishes" class="dishes">
+                    </select>
+                </div>
+            </div>
+            <!-- url -->
+            <div class="form-item mt-20 form-percent100">
+                <label class="form-label"><i class="form-require">*</i>操作名称：</label>
+                <div class="form-position">
+                    <div class="daq-inp-rule wid-348">
+                        <input type="text" placeholder="请输入跳转地址" id="addNameOp" value="${data.url}"/>
+                    </div>
+                </div>
+            </div>
+            <!-- icon -->
+            <div class="form-item mt-20 form-percent100">
+                <label class="form-label"><i class="form-require">*</i>操作代码：</label>
+                <div class="form-position">
+                    <div class="daq-inp-rule wid-348">
+                        <input type="text" placeholder="请输入ICON字体图标" id="addCodeOp" value="${data.icon}"/>
+                    </div>
+                </div>
+            </div>
+            <!-- 排序 -->
+            <div class="form-item mt-20 form-percent100">
+                <label class="form-label"><i class="form-require">*</i>排序：</label>
+                <div class="form-position">
+                    <div class="daq-inp-rule wid-348">
+                        <input type="text" placeholder="请输入排序" id="addSortOp"/>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </form>
+</script>
+
+
+
+<!--弹框-成功-->
+<script type="text/template" id="popUpSuccess">
+    <p class="mb-icon mb-success"><i class="sysfont"></i></p>
+    <p class="mb-ask">保存成功！</p>
+</script>
+
+<!--弹框-失败-->
+<script type="text/template" id="popUpFail">
+    <p class="mb-icon mb-fail"><i class="sysfont"></i></p>
+    <p class="mb-ask">保存失败！</p>
+</script>
+
+<script>
+
+    var adminInfo = '<%- JSON.stringify(adminInfo) %>';
+    adminInfo = JSON.parse(adminInfo);
+    var operation = adminInfo.operation.menu;
+
+    var addParentId, editParentId, addLevel, editLevel, addOperate, editOperate;
+
+
+    $(function () {
+        if (operation.add) {
+            $('<button class="daq-btn mt-5 js_add" style="margin-right: 4px;"><span>新增</span></button>').appendTo('.menu-buttons');
+//            $('<button class="daq-btn mt-5 js_add_op" style="margin-right: 4px;"><span>新增</span></button>').appendTo('.operate-buttons');
+        }
+        if (operation.edit) {
+            $('<button class="daq-btn mt-5 js_editor" style="margin-right: 4px;"><span>编辑</span></button>').appendTo('.menu-buttons');
+//            $('<button class="daq-btn mt-5 js_editor_op" style="margin-right: 4px;"><span>编辑</span></button>').appendTo('.operate-buttons');
+        }
+        if (operation.del) {
+            $('<button class="daq-btn mt-5 js_delete" style="margin-right: 4px;"><span>删除</span></button>').appendTo('.menu-buttons');
+//            $('<button class="daq-btn mt-5 js_delete_op" style="margin-right: 4px;"><span>删除</span></button>').appendTo('.operate-buttons');
+        }
+
+        // 获取树形菜单数据
+        $.ajax({
+            type: 'get',
+            url: '/admin/menu/getTreeDatas',
+            success: function (result) {
+                if (result.code === 0) {
+                    if (result.datas && result.datas.length > 0) {
+                        var zNodes = result.datas;
+                        zNodes.map(function (item) {
+                            item.url = 'javascript:;'
+                        })
+                        var setting = {
+                            check: {
+                                enable: true,
+                                chkStyle: 'radio',
+                                radioType: 'all'
+                            },
+                            data: {
+                                simpleData: {
+                                    enable: false
+                                }
+                            },
+                            callback: {
+                                onCheck: function (event, treeId, treeNode) {
+                                    var checked = treeNode.checked;
+                                    if (checked) {
+                                        var id = treeNode.id
+                                    }
+                                    changeListDatas(id)
+                                }
+                            },
+                            view: {
+                                showIcon: false, //不显示icon
+                                showTitle: true, //不显示title
+                                dblClickExpand: false //禁用双击节点展开
+                            }
+                        };
+                        $('#testTree').daqTree({
+                            defaultStyleId: '',
+                            nodes: zNodes,
+                            settings: setting
+                        });
+                    }
+                }
+            }
+        })
+
+
+        var table = $("#table").daqDataTable({
+            url: "/admin/menu/getMenuOperateList",
+            columns: [
+                {
+                    field: 'name',
+                    title: '所属菜单',
+                    className: 'wid-percent10'
+                },
+                {
+                    field: 'codeName',
+                    title: '操作名称',
+                    className: 'wid-percent10'
+                },
+                {
+                    field: 'code',
+                    title: '操作代码',
+                    className: 'wid-percent10'
+                },
+                {
+                    field: 'url',
+                    title: 'URL',
+                    className: 'wid-percent30',
+                    formatter: function (value, data) {
+                        var val = value
+                        if (!value) {
+                            val = ''
+                        }
+                        return val
+                    }
+                },
+                {
+                    field: 'codeId',
+                    title: '工具栏',
+                    className: 'wid-percent10',
+                    formatter: function (value, data) {
+                        var text = '显示'
+                        if (value == 1) {
+                            text = '不显示'
+                        };
+                        return text
+                    }
+                },
+                {
+                    field: 'id',
+                    title: '操作',
+                    className: 'wid-percent10',
+                    formatter: function (value, data) {
+                        var modifyHmtl = '';
+                        var deleteHtml = '';
+                        if (operation.edit) {
+//                            modifyHmtl = '<a class="daq-btn daq-btn-cic btn-green btn-pad-small js_editor" href="javascript:;"><i class="sysfont"></i></a>';
+                        }
+                        if (operation.del) {
+//                            deleteHtml = '<a class="daq-btn daq-btn-cic btn-red btn-pad-small js_delete" href="javascript:;"><i class="sysfont"></i></a>';
+                        }
+
+                        return '<p class="btn-mg-5">'+ modifyHmtl + deleteHtml +'</p>';
+                    }
+                }],
+            pageSize: 10,
+            limits: 2,
+            pageText: true,
+            checkbox: true,
+            mixColor: true
+        });
+
+        function tipsMsg (text) {
+            $.daqMessage({
+                icon: {
+                    text: ''
+                },
+                text: text,
+                skin: 1,
+                position: 'center',
+                time: 5000
+            });
+        }
+
+        //新增数据-tree
+        $(document).on('click', '.js_add', function (e) {
+            e.stopPropagation();
+            var $this = $(this);
+            var title = '新增';
+            var treeObj = $.fn.zTree.getZTreeObj("testTree");
+            var checkedArr = treeObj.getCheckedNodes();
+            var data = {}
+            $.daqDialog({
+                title: title,
+                content: $('#js_add_row').tmpl({data: data}).html(),
+                mask: true,
+                width: 650,
+                height: 600,
+                model: 'fadeInDown',
+                buttons: [
+                    {
+                        text: '确定',
+                        callback: function () {
+                            var data = {
+                                name: $('#addName').val(),
+                                codeId: $('#addSort').val(),
+                                parentId: addParentId,
+                                url: $('#addUrl').val(),
+                                icon: $('#addIcon').val(),
+                                level: addLevel,
+                                permission: addOperate
+                            }
+                            if (!data.name) {
+                                tipsMsg('请输入菜单名称！')
+                                return;
+                            }
+                            if (!data.icon) {
+                                tipsMsg('请输入图标代码！')
+                                return;
+                            }
+                            if (!data.name) {
+                                tipsMsg('请输入序号！')
+                                return;
+                            }
+                            $.ajax({
+                                type: 'post',
+                                url: '/admin/menu/add',
+                                data: data,
+                                success: function (result) {
+                                    tools.alertTips(result, '#popUpSuccess', '#popUpFail' ,'list.html')
+                                }
+                            })
+                        }
+                    },
+                    {
+                        text: '取消'
+                    }
+                ],
+                callback: function () {
+                    $("#radio").daqRadio({
+                        callback: function (data, obj) {
+                            if (data == 0) {
+                                $('#menuValueBox').hide();
+                                $('#menuIconBox').hide();
+                            } else {
+                                $('#menuValueBox').show();
+                                $('#menuIconBox').show();
+                            }
+                        }
+                    });
+                    getMenusList(1);
+                    getOperateList({flag: 1});
+
+                }
+            });
+        });
+        //删除数据-tree
+        $(document).on('click', '.js_delete', function (e) {
+            e.stopPropagation();
+            var treeObj = $.fn.zTree.getZTreeObj("testTree");
+            var checkedArr = treeObj.getCheckedNodes();
+            var arr = table.getCheckedId();
+            var data = table.getEditorData(parseInt(arr[0]));
+            if (checkedArr.length <= 0 && arr.length <= 0) {
+                $.daqMessage({
+                    icon: {
+                        text: ''
+                    },
+                    text: '请选择要需要删除的菜单',
+                    skin: 1,
+                    time: 2000
+                });
+                return false;
+            };
+            var id = data ? data.id : checkedArr[0].id;
+            $.daqDialog({
+                title: '温馨提示',
+                content: $('#js_delete_row').html(),
+                mask: true,
+                height: 260,
+                model: 'fadeInDown',
+                buttons: [
+                    {
+                        text: '确定',
+                        callback: function () {
+                            $.ajax({
+                                type: 'post',
+                                url: '/admin/menu/delete?id=' + id,
+                                success: function (result) {
+                                    tools.alertTips(result, '#popUpSuccess', '#popUpFail' ,'list.html')
+                                }
+                            })
+                        }
+                    },
+                    {
+                        text: '取消'
+                    }
+                ]
+            });
+        });
+        //编辑数据-tree
+        $(document).on('click', '.js_editor', function (e) {
+            e.stopPropagation();
+            var treeObj = $.fn.zTree.getZTreeObj("testTree");
+            var checkedArr = treeObj.getCheckedNodes();
+            if (checkedArr.length <= 0) {
+                $.daqMessage({
+                    icon: {
+                        text: ''
+                    },
+                    text: '请选项要编辑资源',
+                    skin: 1,
+                    time: 2000
+                });
+                return false;
+            };
+            var id = checkedArr[0].id;
+            $.ajax({
+                type: 'get',
+                url: '/admin/menu/getDetails?id=' + id,
+                success: function (result) {
+                    if (result.code === 0) {
+                        var obj = result.data;
+                        var parentId = obj.parentId;
+                        var permission = obj.permission;
+                        $.daqDialog({
+                            title: '编辑',
+                            content: $('#js_editor_row').tmpl({data: obj}).html(),
+                            mask: true,
+                            width: 650,
+                            height: 600,
+                            model: 'fadeInDown',
+                            buttons: [
+                                {
+                                    text: '确定',
+                                    callback: function () {
+                                        var obj = {
+                                            id: id,
+                                            name: $('#editName').val(),
+                                            parentId: editParentId,
+                                            url: $('#editUrl').val(),
+                                            icon: $('#editIcon').val(),
+                                            codeId: $('#editSort').val(),
+                                            level: editLevel,
+                                            permission: editOperate
+                                        };
+                                        if (!obj.name) {
+                                            tipsMsg('请输入菜单名称！')
+                                            return;
+                                        }
+                                        if (!obj.icon) {
+                                            tipsMsg('请输入图标代码！')
+                                            return;
+                                        }
+                                        if (!obj.name) {
+                                            tipsMsg('请输入序号！')
+                                            return;
+                                        }
+                                        $.ajax({
+                                            type: 'post',
+                                            url: '/admin/menu/update',
+                                            data: obj,
+                                            success: function (result) {
+                                                tools.alertTips(result, '#popUpSuccess', '#popUpFail' ,'list.html')
+                                            }
+                                        })
+                                    }
+                                },
+                                {
+                                    text: '取消'
+                                }
+                            ],
+                            callback: function () {
+                                $("#editRadio").daqRadio({
+                                    callback: function (data, obj) {
+                                        if (data == 1) {
+                                            $('#editMenuValueBox').show();
+                                            $('#editMenuIconBox').show();
+                                        } else {
+                                            $('#editMenuValueBox').hide();
+                                            $('#editMenuIconBox').hide();
+                                        }
+                                    }
+                                });
+                                getMenusList(0, parentId);
+                                getOperateList({flag: 0, permission: permission});
+                            }
+                        });
+                    }
+                }
+            })
+
+        });
+
+        //新增数据-table
+        $(document).on('click', '.js_add_op', function (e) {
+            e.stopPropagation();
+            var $this = $(this);
+            var title = '新增';
+            var treeObj = $.fn.zTree.getZTreeObj("testTree");
+            var checkedArr = treeObj.getCheckedNodes();
+            var data = {}
+            $.daqDialog({
+                title: title,
+                content: $('#js_add_table').tmpl({data: data}).html(),
+                mask: true,
+                width: 650,
+                height: 500,
+                model: 'fadeInDown',
+                buttons: [
+                    {
+                        text: '确定',
+                        callback: function () {
+                            var data = {
+                                name: $('#addName').val(),
+                                codeId: $('#addSort').val(),
+                                parentId: addParentId,
+                                url: $('#addUrl').val(),
+                                icon: $('#addIcon').val(),
+                                level: addLevel,
+                                permission: addOperate
+                            }
+                            if (!data.name) {
+                                tipsMsg('请输入菜单名称！')
+                                return;
+                            }
+                            if (!data.icon) {
+                                tipsMsg('请输入图标代码！')
+                                return;
+                            }
+                            if (!data.name) {
+                                tipsMsg('请输入序号！')
+                                return;
+                            }
+                            $.ajax({
+                                type: 'post',
+                                url: '/admin/menu/add',
+                                data: data,
+                                success: function (result) {
+                                    tools.alertTips(result, '#popUpSuccess', '#popUpFail' ,'list.html')
+                                }
+                            })
+                        }
+                    },
+                    {
+                        text: '取消'
+                    }
+                ],
+                callback: function () {
+                    $("#radio").daqRadio({
+                        callback: function (data, obj) {
+                            if (data == 0) {
+                                $('#menuValueBox').hide();
+                                $('#menuIconBox').hide();
+                            } else {
+                                $('#menuValueBox').show();
+                                $('#menuIconBox').show();
+                            }
+                        }
+                    });
+                    getMenusList(1);
+                    getOperateList({flag: 1});
+
+                }
+            });
+        });
+
+
+        //编辑数据-table
+        $(document).on('click', '.js_editor_table', function (e) {
+            e.stopPropagation();
+            var $this = $(this),
+                arr = table.getCheckedId();
+            if (arr.length <= 0) {
+                $.daqMessage({
+                    icon: {
+                        text: ''
+                    },
+                    text: '请选项要编辑菜单',
+                    skin: 1,
+                    time: 2000
+                });
+                return false;
+            };
+            var data = table.getEditorData(parseInt(arr[0]));
+            $.daqDialog({
+                title: '编辑',
+                content: $('#js_editor_row').tmpl({data: data}).html(),
+                mask: true,
+                width: 650,
+                height: 250,
+                model: 'fadeInDown',
+                buttons: [
+                    {
+                        text: '确定',
+                        callback: function () {
+                            var obj = {
+                                id: data.id,
+                                name: $('#editName').val(),
+                                parentId: editParentId,
+                                url: $('#editUrl').val(),
+                                icon: $('#editIcon').val(),
+                                codeId: $('#editSort').val(),
+                                level: editLevel
+                            };
+                            if (!obj.name) {
+                                tipsMsg('请输入菜单名称！')
+                                return;
+                            }
+                            if (!obj.icon) {
+                                tipsMsg('请输入图标代码！')
+                                return;
+                            }
+                            if (!obj.name) {
+                                tipsMsg('请输入序号！')
+                                return;
+                            }
+                            $.ajax({
+                                type: 'post',
+                                url: '/admin/menu/update',
+                                data: obj,
+                                success: function (result) {
+                                    tools.alertTips(result, '#popUpSuccess', '#popUpFail' ,'list.html')
+                                }
+                            })
+                        }
+                    },
+                    {
+                        text: '取消'
+                    }
+                ],
+                callback: function () {
+                    tools.getParentsRegions(data.regionsId, function (obj) {
+                        var defaultsArr = [];
+                        for (var item in obj) {
+                            defaultsArr.push({
+                                region: obj[item].region,
+                                name: obj[item].name
+                            })
+                        }
+                        $('#js_citySelect_edit').daqCitySelect({
+                            defaults: defaultsArr,
+                            className: 'wid-98',
+                            callback: function (data) {
+                                $('input[name="regionsId"]').val(data[data.length-1].value)
+                            }
+                        });
+                    });
+                }
+            });
+        });
+        //查询数据
+        $(document).on('click', '.js_search', function (e) {
+            e.stopPropagation();
+            var $text = $.trim($('#searchWords').val());
+            table.search({
+                data: {
+                    name: $text
+                }
+            });
+        });
+
+
+
+        // 点击树形菜单，切换右侧列表数据
+        function changeListDatas (id) {
+            var data = {
+                id: id
+            };
+            var $text = $.trim($('#searchWords').val());
+            data.name = $text;
+            if (!id) {
+                data.id = ''
+            }
+            table.search({
+                data: data
+            })
+        }
+
+
+        // 获取父级菜单列表
+        function getMenusList (flag, defaultValue) {
+            $.ajax({
+                type: 'get',
+                url: '/admin/menu/getTreeDatas',
+                success: function (result) {
+                    if (result.code === 0) {
+                        if (result.datas && result.datas.length > 0) {
+                            var dataList = result.datas;
+                            var html = '<option value="" data-level="1">请选择</option>';
+                            for (var i = 0; i < dataList.length; i++) {
+                                html += '<option value="'+ dataList[i].id +'" data-level="'+ dataList[i].level +'">'+ dataList[i].name +'</option>';
+                                if (dataList[i].children && dataList[i].children.length > 0) {
+                                    var subMenu = dataList[i].children;
+                                    for (var j = 0; j < subMenu.length; j++) {
+                                        html += '<option value="'+ subMenu[j].id +'" data-level="'+ subMenu[j].level +'">'+ subMenu[j].name +'</option>'
+                                    }
+                                }
+                            }
+                            $('.dishes').append(html);
+                            var defaultSelected = {};
+                            if (flag == 0) {
+                                defaultSelected = {
+                                    enable: true,
+                                    value: defaultValue
+                                }
+                            }
+                            $(".daq-select-multiple").dropDownSelect({
+                                defaultSelected: defaultSelected,
+                                level: {
+                                    enable: true,
+                                    simple: true,
+                                    level: 'level'
+                                },
+                                separator: '<i class="sysfont" style="margin-right: 2px;"></i>',
+                                filter: true,
+                                triggerChange: true,
+                                placeholder: '请选择',
+                                change: function (event, option, options) {
+                                    if (flag == 1) {
+                                        // 新增
+                                        addParentId = option.value;
+                                        addLevel = +option.level + 1;
+                                        if (!option.value) {
+                                            addLevel = 1;
+                                        }
+                                    } else {
+                                        editParentId = option.value;
+                                        editLevel = +option.level + 1;
+                                        if (!option.value) {
+                                            addLevel = 1;
+                                        }
+                                    }
+                                }
+                            });
+                        }
+                    }
+                }
+            })
+        }
+
+        // 获取权限列表
+        function getOperateList (obj) {
+            if (obj.permission) {
+                obj.permission = obj.permission.slice(1, -1).split(',');
+                editOperate = ',' + obj.permission.toString() + ','
+            }
+            $.ajax({
+                type: 'get',
+                url: '/admin/menu/getOperateList',
+                success: function (result) {
+                    console.log(result)
+                    if (result.code === 0) {
+                        var dataList = result.datas;
+                        if (dataList && dataList.length > 0) {
+                            var html = '';
+                            dataList.map(function (item, index) {
+                                if (item.codeName === 'list') {
+                                    html += '<input type="checkbox" name="b.multi" checked disabled value="'+ item.codeId +'" title="'+ item.name +'" data-codeid="'+ item.codeId +'" />';
+                                } else {
+                                    html += '<input type="checkbox" name="b.multi" value="'+ item.codeId +'" title="'+ item.name +'" data-codeid="'+ item.codeId +'" />'
+                                }
+                            });
+                            $('.operate-box').append(html);
+                            if (obj.permission && obj.permission.length > 1) {
+                                var arr = $('.operate-box input');
+                                for (var i = 0; i < arr.length; i++) {
+                                    for (var j = 0; j < obj.permission.length; j++) {
+                                        if (obj.permission[j] == arr.eq(i).attr('data-codeid')) {
+                                            arr.eq(i).attr('checked', 'checked')
+                                        }
+                                    }
+                                }
+                            }
+                            $(".operate-box").daqCheckbox({
+                                callback: function (data, obj) {
+                                    if (obj.flag == 1) {
+                                        addOperate = ',1,' + data.toString() + ',';
+                                    } else {
+                                        editOperate = ',1,' + data.toString() + ',';
+                                    }
+                                }
+                            });
+                        }
+                    }
+
+                }
+            })
+        }
+
+
+    });
+</script>
+</body>
+</html>

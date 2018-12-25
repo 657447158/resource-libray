@@ -1,0 +1,25 @@
+﻿<script type="text/template" id="videoListTmp">
+    {{each list}}
+    <li class="list-box video-list hover">
+        <div class="hover-box hover">
+            {{if download}}
+                {{if loginFlag}}
+                <a class="iconfont icon-download" data-id="${id}" href="${download}" download="${title}">&#xC1112;</a>
+                {{else}}
+                <a class="iconfont icon-download" data-id="${id}" href="javascript:;">&#xC1112;</a>
+                {{/if}}
+            {{/if}}
+            {{if love}}
+            <a href="javascript:;" class="iconfont collect icon-collect" data-id="${id}" data-love="0">&#xC1111;</a>
+            {{else}}
+            <a href="javascript:;" class="iconfont collect icon-collect" data-id="${id}" data-love="1">&#xC1110;</a>
+            {{/if}}
+        </div>
+        <a href="video-detail.html?id=${id}" target="_blank">
+            <span class="img-box-1"><img src="${coverImg}" alt=""/></span>
+            <video src="${download}"></video>
+        </a>
+        <p class="clearfix"><span class="fl">${title}</span><span class="fr format">格式：${format}</span></p>
+    </li>
+    {{/each}}
+</script>

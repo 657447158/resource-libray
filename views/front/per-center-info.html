@@ -1,0 +1,180 @@
+﻿<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <%-include("_include/_headerInfo",{h_tit:"个人中心-我的下载"})%>
+</head>
+<body>
+
+    <!-- 头部导航栏 start -->
+    <%-include("_include/_header", {curr: 9})%>
+    <!-- 头部导航栏 end -->
+
+    <!-- 列表-头部 -->
+    <div class="per-header">
+        <%-include("_include/per-head-info")%>
+    </div>
+    <div class="per-list-container">
+        <div class="tag-list-wrap">
+            <ul>
+                <li><a href="per-center-upload.html">我要上传</a></li>
+                <li><a href="per-center-already.html">我已上传</a></li>
+                <li><a href="per-center-collect.html">我的收藏</a></li>
+                <li><a href="per-center-download.html">我的下载</a></li>
+                <li class="curr"><a href="per-center-info.html">个人信息</a></li>
+            </ul>
+        </div>
+    </div>
+
+    <div class="per-info-wrap">
+
+    </div>
+
+
+
+    <!-- 底部信息 start-->
+    <%-include("_include/_footer")%>
+    <!-- 底部信息 end -->
+    <%-include("_include/waterfull-list")%>
+
+<script type="text/template" id="perInfoTmp">
+    <div class="form-item">
+            <label><span class="red">*&nbsp;</span>用户名：</label>
+            <input type="text" name="per-username" disabled value="${data.name}"/>
+        </div>
+        <div class="form-item">
+            <label><span class="red">*&nbsp;</span>入职时间：</label>
+            <input type="text" name="per-time" disabled value="${data.joinDate}"/>
+        </div>
+        <div class="form-item">
+            <label><span class="red">*&nbsp;</span>工作岗位：</label>
+            <input type="text" name="per-time" disabled value="${data.position}"/>
+        </div>
+        <div class="form-item">
+            <label><span class="red">*&nbsp;</span>原密码：</label>
+            <input type="password" name="per-old-pwd" placeholder="请输入原始密码"/>
+        </div>
+        <div class="form-item">
+            <label><span class="red">*&nbsp;</span>新密码：</label>
+            <input type="password" name="per-new-pwd" placeholder="请输入新密码"/>
+        </div>
+        <div class="form-item">
+            <label><span class="red">*&nbsp;</span>确认新密码：</label>
+            <input type="password" name="per-confirm-new-pwd" placeholder="请再次确认新密码"/>
+        </div>
+        <div class="form-item">
+            <label></label>
+            <a class="confirm-btn" href="javascript:;">确认修改</a>
+        </div>
+</script>
+
+<!-- 成功确认 -->
+<script type="text/template" id="popUpFive">
+    <p class="mb-icon mb-success"><i class="sysfont"></i></p>
+    <p class="mb-ask">修改成功！</p>
+</script>
+
+<!--失败确认内容-->
+<script type="text/template" id="popUpSix">
+    <p class="mb-icon mb-fail"><i class="sysfont"></i></p>
+    <p class="mb-ask">修改失败</p>
+</script>
+
+
+
+<script>
+
+    var DAQ = {
+        init: function () {
+            $('#perInfoTmp').tmpl({data: userInfo}).appendTo('.per-info-wrap');
+            this.method();
+        },
+        method: function () {
+            var _this = this;
+            $('.per-info-wrap').on('click', '.confirm-btn', function () {
+                var oPwd = $('input[name="per-old-pwd"]').val();
+                var nPwd = $('input[name="per-new-pwd"]').val();
+                var cnPwd = $('input[name="per-confirm-new-pwd"]').val();
+
+                if (!oPwd) {
+                    _this.errMsg('原密码不能为空！');
+                    return;
+                }
+                if (!nPwd) {
+                    _this.errMsg('新密码不能为空！');
+                    return;
+                }
+                if (nPwd != cnPwd) {
+                    _this.errMsg('两次输入密码不一直！');
+                    return;
+                }
+
+                $.ajax({
+                    type: 'post',
+                    url: '/member/editUserInfo',
+                    data: {
+                        id: userInfo.id,
+                        oPwd: oPwd,
+                        nPwd: nPwd
+                    },
+                    success: function (result) {
+                        if (result.code === 0) {
+                            _this.successMsg(function () {
+                                window.location.reload()
+                            })
+                        } else {
+                            _this.failedMsg(function () {
+                                window.location.reload()
+                            })
+                        }
+                    }
+                })
+            })
+        },
+        errMsg: function (text) {
+            $.daqMessage({
+                icon: {
+                    text: ''
+                },
+                text: text,
+                skin: 2,
+                time: 2000
+            });
+        },
+        successMsg: function (callback) {
+            var successCt = $("#popUpFive");
+            $.daqDialog({
+                title: '成功提示',
+                iconfont: '',
+                content: successCt.html(),
+                mask: true,
+                width: 400,
+                height: 250,
+                model: 'fadeInDown',
+                closeFn: callback
+            });
+        },
+        failedMsg: function (callback) {
+            var content6 = $("#popUpSix");
+            $.daqDialog({
+                title: '失败提示',
+                iconfont: '',
+                content: content6.html(),
+                mask: true,
+                width: 400,
+                height: 250,
+                model: 'fadeInDown',
+                closeFn: callback
+            })
+        }
+    }
+
+
+    $(function () {
+        DAQ.init();
+    })
+
+
+</script>
+
+</body>
+</html>

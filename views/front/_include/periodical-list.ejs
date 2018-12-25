@@ -1,0 +1,14 @@
+﻿<script type="text/template" id="periodicalListTmp">
+    {{each list}}
+    <li class="list-box periodical-list hover">
+        <a href="periodical-detail.html?id=${id}" target="_blank">
+            <div class="hover-box hover">
+                <span class="iconfont download">&#xC1112;</span>
+                <span class="iconfont collect">&#xC1110;</span>
+            </div>
+            <span><img src="${coverImg}" alt=""/></span>
+        </a>
+        <p>${title}</p>
+    </li>
+    {{/each}}
+</script>

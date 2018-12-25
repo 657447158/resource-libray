@@ -1,0 +1,46 @@
+﻿{
+  "development": {
+    "session_secret": "533aaaf35c5f55dd6b006f8b",
+    "appCookieName": "material",
+    "adminLoginPath": "/admin/login.html",
+    "session_share": "533aaaf35c5f55dd6b006f8c",
+    "userLoginPath": "/member/login",
+    "global_url": "",
+    "db": "mysql://ued_material:saddaqsoued_materialD123123AD123@192.168.0.93:13365/ued_material",
+    "session_option": {
+      "host": "192.168.0.93",
+      "port": 13365,
+      "user": "ued_material",
+      "password": "saddaqsoued_materialD123123AD123",
+      "database": "ued_material"
+    },
+    "super": "xulei",
+    "compDirName": "/attached/components",
+    "batchDownloadDir": "temp",
+    "svc_name":"UEDMaterial",
+    "svc_desc":"中科大旗软件有限公司UED部素材库服务",
+    "port":"8080"
+  },
+  "production": {
+     "session_secret": "533aaaf35c5f55dd6b006f8b",
+    "appCookieName": "material",
+    "adminLoginPath": "/admin/login.html",
+    "session_share": "533aaaf35c5f55dd6b006f8c",
+    "userLoginPath": "/member/login",
+    "global_url": "",
+    "db": "mysql://ued_material:saddaqsoued_materialD123123AD123@192.168.0.93:13365/ued_material",
+    "session_option": {
+      "host": "192.168.0.93",
+      "port": 13365,
+      "user": "ued_material",
+      "password": "saddaqsoued_materialD123123AD123",
+      "database": "ued_material"
+    },
+    "super": "xulei",
+    "compDirName": "/attached/components",
+    "batchDownloadDir": "temp",
+    "svc_name":"UEDMaterial",
+    "svc_desc":"中科大旗软件有限公司UED部素材库服务",
+    "port":"8080"
+  }
+}

@@ -1,0 +1,351 @@
+﻿<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <%-include("_include/_headerInfo",{h_tit:"有料"})%>
+</head>
+<body>
+
+    <!-- 头部导航栏 start -->
+    <%-include("_include/_header", {curr: 4})%>
+    <!-- 头部导航栏 end -->
+
+    <!-- 列表-头部 -->
+    <%-include("_include/list-header")%>
+
+
+    <!-- 列表-标签 -->
+    <div class="tag-list-wrap">
+        <div class="tag-list">
+            <ul class="level-1 clearfix">
+                <li><a href="afflatus-list.html">有料</a></li>
+            </ul>
+        </div>
+    </div>
+    <div class="tag-list-wrap">
+        <div class="tag-list">
+            <ul class="level-2 clearfix">
+
+            </ul>
+        </div>
+    </div>
+
+    <!-- 列表-内容部分 -->
+    <div class="list-container">
+
+    </div>
+
+    <!-- 底部信息 start-->
+    <%-include("_include/_footer")%>
+    <!-- 底部信息 end -->
+
+    <!-- 引入列表模板 -->
+    <%-include("_include/list")%>
+
+
+<!-- 栏目列表模板 -->
+<script type="text/template" id="channelListTmp">
+    {{each list}}
+    <li data-type="${cLevel}" data-id="${id}" data-codeid="${codeid}" data-level="${nLevel+1}" data-name="${name}" data-scort="${scort}"><a href="javascript:;" class="{{if total==0}}defaultCursor{{/if}}">${name}<span class="num">${total}</span></a></li>
+    {{/each}}
+</script>
+
+
+<script>
+
+    var parentVal = 'afflatus';
+    var codeId;
+    var channelCode = tools.getUrlParams('channelCode');
+    var initFlag = false;
+
+    var DAQ = {
+        init: function () {
+            this.getChannelDetails();
+            this.method();
+            if (channelCode && (channelCode === 'al' || channelCode === 'tb' || channelCode === 'wc')) {
+                initFlag = true;
+            } else {
+                this.getDataList({parentVal: parentVal});
+            }
+        },
+        method: function () {
+            var _this = this;
+            /**
+             * 标签点选事件
+             * 不是最后一个层级的，移入均显示同级菜单
+             */
+
+            // hover-box点击选择事件
+            $('.level-1').on('click', '.hover-box a', function () {
+                var $this = $(this);
+                var $text = $this.data('name');
+                var $level = $this.data('level');
+                var $id = $this.data('id');
+                var codeid = $this.data('codeid');
+                var num = $this.find('span').text();
+                if (num == 0) {
+                    return;
+                }
+                _this.hasChildren($id, function (flag) {
+                    $this.parents('li').nextAll().remove();
+                    if (flag) {
+                        // 有子菜单
+                        $this.parents('li').find('.second-code span').text($text);
+                        $this.parents('li').find('.second-code').attr('data-codeid', codeid);
+                        $this.parents('li').find('.second-code span').attr('data-id', $id);
+                        _this.getChannelList($id, $level, flag);
+                    } else {
+                        $this.parents('li').remove();
+                        var html = '<li class="last">' +
+                            '<i class="iconfont right">&#xE119;</i>' +
+                            '<a href="javascript:;">'+ $text +'<i class="iconfont close">&#xE121;</i></a>' +
+                            '</li>';
+                        $('.level-1').append(html);
+                        var boxes = $this.parents('.hover-box').find('a');
+                        var levelHtml = '';
+                        for (var i = 0; i < boxes.length; i++) {
+                            var className = '';
+                            var num2 = boxes.eq(i).find('span').text();
+                            if (num2 == 0) {
+                                className = 'defaultCursor';
+                            }
+                            levelHtml += '<li data-id="'+ boxes.eq(i).data('id') +'" data-codeid="'+ boxes.eq(i).data("codeid") +'" data-level="'+ boxes.eq(i).data("level") +'" data-name="'+ boxes.eq(i).data("name") +'"><a class="'+ className +'" href="javascript:;">'+ boxes.eq(i).data("name") +'<span class="num">'+ num2 +'</span></a></li>'
+                        }
+                        $('.level-2').empty();
+                        $('.level-2').append(levelHtml);
+                    }
+                    _this.getDataList({ids: codeid});
+                })
+            })
+
+            $('.level-2').on('click', 'li', function () {
+                var $this = $(this);
+                var $id = $this.data('id');
+                var $text = $this.data('name');
+                var $level = $this.data('level');
+                var codeid = $this.data('codeid').slice(0, -1);
+                var num = $this.find('.num').text();
+                if (num == 0) {
+                    return;
+                }
+                _this.hasChildren($id, function (flag) {
+                    $('.level-1 .last').remove();
+                    if (flag) {
+                        // 有子菜单
+                        var list = $('.level-2 li');
+                        var tmpHmtl = '';
+                        for (var i = 0; i < list.length; i++) {
+                            var className = '';
+                            var num2 = list.eq(i).find('.num').text();
+                            if (num2 == 0) {
+                                className = 'defaultCursor';
+                            }
+                            tmpHmtl += '<a class="'+ className +'" href="javascript:;" data-codeid="'+ list.eq(i).data('codeid') +'" data-id="'+ list.eq(i).data('id') +'" data-level="'+ list.eq(i).data('level') +'" data-type="'+ list.eq(i).data('type') +'" data-name="'+ list.eq(i).data('name') +'">'+ list.eq(i).data('name') +'&nbsp;<span>'+ num2 +'</span></a>';
+                        }
+                        html = '<li class="sec">' +
+                            '<i class="iconfont right">&#xE119;</i>' +
+                            '<a class="second-code" href="javascript:;" data-codeid="'+ codeid +'" data-id="'+ $id +'"><span>'+ $text +'</span><i class="iconfont down">&#xB206;</i></a>' +
+                            '<div class="hover-box">' +
+                            tmpHmtl +
+                            '</div>' +
+                            '</li>';
+                        _this.getChannelList($id, $level, flag);
+                    } else {
+                        html = '<li class="last">' +
+                            '<i class="iconfont right">&#xE119;</i>' +
+                            '<a href="javascript:;">'+ $text +'<i class="iconfont close">&#xE121;</i></a>' +
+                            '</li>';
+                    }
+                    $('.level-1').append(html);
+                    _this.getDataList({ids: codeid})
+                })
+            })
+
+            $('.level-1').on('click', '.close', function () {
+                var $this = $(this);
+                var className = $this.parents('.last').prev().attr('class');
+                var flag = (className === 'sec') ? true : false;
+                var params = {};
+                if (flag) {
+                    params.ids = $this.parents('li').prev().find('.second-code').attr('data-codeid');
+                } else {
+                    params.parentVal = parentVal;
+                }
+                $this.parents('li').remove();
+                _this.getDataList(params)
+            })
+        },
+        getChannelDetails: function () {
+            var _this = this;
+            $.ajax({
+                type: 'get',
+                url: '/member/getChannelDetail',
+                data: {
+                    val: parentVal
+                },
+                success: function (result) {
+                    if (result.code === 0) {
+                        if (result.data) {
+                            codeId = result.data.id;
+                            _this.getChannelList(codeId, 1);
+                        }
+                    }
+                }
+            })
+        },
+        getChannelList: function (id, level, flag) {
+            var _this = this;
+            // flag 布尔值，在hover-box里面时候用
+            // 获取子栏目
+            if (!flag) {
+                id = codeId
+            }
+            $.ajax({
+                type: 'get',
+                url: '/member/getChannelList',
+                data: {
+                    level: level,
+                    id: id || codeId
+                },
+                success: function (result) {
+                    $('.level-2').empty();
+                    console.log(result)
+                    if (result.code === 0) {
+                        if (result.datas && result.datas.length > 0) {
+                            var dataList = result.datas;
+                            dataList.forEach(function (item) {
+                                if (item.codeid === '') {
+                                    item.codeid = item.id + ','
+                                }
+                            })
+                            $('#channelListTmp').tmpl({list: dataList}).appendTo('.level-2');
+                            // 这里做有channelCode的操作
+                            if (initFlag) {
+                                _this.getDatasByChannelCode();
+                            }
+                        } else {
+                            $('.level-2').append('<li class="no-data">暂无数据</li>');
+                        }
+                    }
+                }
+            })
+        },
+        getDataList: function (params) {
+            var _this = this;
+            $('.list-container').empty();
+            $.ajax({
+                type: 'get',
+                url: '/member/getListDatas',
+                data: {
+                    parentVal: params.parentVal,
+                    codesId: params.ids,
+                    pageSize: 12,
+                    currentPage: params.currentPage
+                },
+                success: function (result) {
+                    if (result.code === 0) {
+                        if (result.datas && result.datas.length > 0) {
+                            $('#listTmp').tmpl({list: result.datas}).appendTo('.list-container');
+                            // 加载分页
+                            $("#pagination").attr('curr_page', result.page.currentPage);
+                            $("#pagination").pagination(result.page.totalPage);
+                            getMaterial = function (page) {
+                                params.currentPage = page;
+                                _this.getDataList(params)
+                            }
+                            tools.initListWidth();
+                            tools.footerFixed();
+                        } else {
+                            $('.list-container').empty().append('<li class="no-data">暂无数据</li>');
+                            tools.footerFixed()
+                        }
+                    }
+                }
+            })
+        },
+        hasChildren: function (id, callback) {
+            var _this = this;
+            $.ajax({
+                type: 'get',
+                url: '/member/isThisTypeHasChildren',
+                data: {
+                    id: id
+                },
+                success: function (result) {
+                    var flag = false;
+                    if (result.code === 0) {
+                        flag = true;
+                    }
+                    if ($.isFunction(callback)) {
+                        callback(flag);
+                    }
+                }
+            })
+        },
+        getDatasByChannelCode: function () {
+            var _this = this;
+            var list = $('.level-2 li');
+            var ids = '';
+            var $id = '';
+            var $level = '';
+            var $text = '';
+            var tmpHmtl = '';
+            var channelName;
+            switch (channelCode) {
+                case 'al':
+                    channelName = '案例';
+                    break;
+                case 'tb':
+                    channelName = 'icon/图标';
+                    break;
+                case 'wc':
+                    channelName = '文创';
+                    break;
+            }
+
+            for (var i = 0; i < list.length; i++) {
+                var item = list.eq(i);
+                var name = item.data('name');
+                var num2 = item.find('.num').text();
+                var className = '';
+                if (num2 == 0) {
+                    className = 'defaultCursor';
+                }
+                if (name === channelName) {
+                    ids = item.data('codeid');
+                    $id = item.data('id');
+                    $level = item.data('level');
+                    $text = item.data('name');
+                }
+                tmpHmtl += '<a class="'+ className +'" href="javascript:;" data-codeid="'+ item.data('codeid') +'" data-id="'+ item.data('id') +'" data-level="'+ item.data('level') +'" data-type="'+ item.data('type') +'" data-name="'+ item.data('name') +'">'+ item.data('name') +'&nbsp;<span>'+ num2 +'</span></a>';
+            }
+            initFlag = false;
+            _this.hasChildren($id, function (flag) {
+                var html = '';
+                if (flag) {
+                    html = '<li class="sec">' +
+                        '<i class="iconfont right">&#xE119;</i>' +
+                        '<a class="second-code" href="javascript:;" data-codeid="'+ ids +'" data-id="'+ $id +'"><span>'+ $text +'</span><i class="iconfont down">&#xB206;</i></a>' +
+                        '<div class="hover-box">' +
+                        tmpHmtl +
+                        '</div>' +
+                        '</li>';
+                    _this.getChannelList($id, $level, true);
+                } else {
+                    html = '<li class="last">' +
+                        '<i class="iconfont right">&#xE119;</i>' +
+                        '<a href="javascript:;">'+ $text +'<i class="iconfont close">&#xE121;</i></a>' +
+                        '</li>';
+                }
+                $('.level-1').append(html);
+            })
+            _this.getDataList({ids: ids});
+        }
+    }
+
+    $(function () {
+        DAQ.init();
+    })
+</script>
+
+</body>
+</html>

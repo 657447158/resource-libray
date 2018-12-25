@@ -1,0 +1,62 @@
+﻿
+
+<!--横向瀑布流-->
+<script type="text/template" id="waterfullListTmp">
+    {{each list}}
+    <li class="item" data-w="${imgW}" data-h="${imgH}" data-id="${id}" data-download="${coverImg}">
+        <a class="img_a" href="picture-detail.html?id=${id}" target="_blank">
+            <img class="li_img" src="/images/lazy.png" data-original="${coverImg}" onerror="error(this)" alt="${title}" />
+            <span class="tit_sp plot_icon">${title}</span>
+        </a>
+        <span class="water_icon plot_icon clearfix">
+            {{if download}}
+                {{if loginFlag}}
+                <a class="iconfont icon-download" data-id="${id}" href="${download}" download="${title}">&#xC1112;</a>
+                {{else}}
+                <a class="iconfont icon-download" data-id="${id}" href="javascript:;">&#xC1112;</a>
+                {{/if}}
+            {{/if}}
+            {{if love}}
+            <i class="iconfont icon-collect" data-id="${id}" data-love="0">&#xC1111;</i>
+            {{else}}
+            <i class="iconfont icon-collect" data-id="${id}" data-love="1">&#xC1110;</i>
+            {{/if}}
+        </span>
+    </li>
+    {{/each}}
+</script>
+
+
+<!--竖向瀑布流-->
+<script type="text/template" id="waterfullListTmp2">
+    {{each list}}
+    <li class="item1" data-w="${imgW}" data-h="${imgH}" data-id="${id}" data-download="${coverImg}">
+        <div class="water_box">
+            <a class="img_a" href="${href || 'javascript:;'}" target="_blank" ${sty}>
+                <img class="li_img" ${sty} src="/images/lazy.png" data-original="${coverImg}" onerror="error(this)" alt="${title}" />
+            </a>
+            <a href="${href || 'javascript:;'}" class="tit_itme" target="_blank">${title}</a>
+            <span class="water_icon plot_icon clearfix">
+                {{if download}}
+                    {{if loginFlag}}
+                    <a class="iconfont icon-download" data-id="${id}" href="${download}" download="${title}">&#xC1112;</a>
+                    {{else}}
+                    <a class="iconfont icon-download" data-id="${id}" href="javascript:;">&#xC1112;</a>
+                    {{/if}}
+                {{/if}}
+                {{if love}}
+                <i class="iconfont icon-collect" data-id="${id}" data-love="0">&#xC1111;</i>
+                {{else}}
+                <i class="iconfont icon-collect" data-id="${id}" data-love="1">&#xC1110;</i>
+                {{/if}}
+                {{if edit}}
+                <a href="per-center-file.html?id=${id}&status=${status}" class="iconfont icon-collect" data-id="${id}">&#xE77C;</a>
+                {{/if}}
+                {{if del}}
+                <i class="iconfont icon-delete" data-id="${id}">&#xC1119;</i>
+                {{/if}}
+            </span>
+        </div>
+    </li>
+    {{/each}}
+</script>

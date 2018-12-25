@@ -1,0 +1,12 @@
+﻿<ul class="h_side fl">
+  <li <%if(_curr=="home"){%> class="curr" <%}%>><a href="/admin"><i class="iconfont">&#xE767;</i>系统首页</a></li>
+  <li <%if(_curr=="material"){%> class="curr" <%}%>><a href="/admin/list-interface"><i class="iconfont">&#xE769;</i>资源管理</a></li>
+  <li <%if(_curr=="system"){%> class="curr" <%}%>><a href="/admin/list-glossary.html"><i class="iconfont">&#xE76C;</i>系统设置</a></li>
+  <li <%if(_curr=="member"){%> class="curr" <%}%>><a href="/admin/list-member"><i class="iconfont">&#xE802;</i>用户管理</a></li>
+  <li <%if(_curr=="scenic"){%> class="curr" <%}%>><a href="/admin/list-scenic"><i class="iconfont">&#xE801;</i>景区列表</a></li>
+  <li <%if(_curr=="link"){%> class="curr" <%}%>><a href="/admin/list-link"><i class="iconfont">&#xE803;</i>友情链接</a></li>
+  <li <%if(_curr=="project"){%> class="curr" <%}%>><a href="/admin/list-project"><i class="iconfont">&#xE803;</i>项目管理</a></li>
+</ul>
+<script src="/js/lib/artTemplate/template.js"></script>
+<script src="/js/utils/tools.js"></script>
+<script src="http://files001.oss-cn-shenzhen.aliyuncs.com/ued/js/vue.min.js"></script>

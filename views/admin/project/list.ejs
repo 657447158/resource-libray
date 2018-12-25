@@ -1,0 +1,114 @@
+﻿<!DOCTYPE html>
+<html class="h100">
+<head lang="zh-CN">
+    <%-include("../_include/include-head",{tit:"项目管理"})%>
+</head>
+<body>
+<%-include ../_include/include-top%>
+<div class="home_cont" id="list_box">
+    <%-include("../_include/include-left",{_curr:"project"})%>
+    <div class="h_main fr">
+        <div class="list_tit">
+            <p>您当前的位置：UED资源共享平台管理系统-项目管理</p>
+        </div>
+        <div class="list_tit list_search">
+            <span class="list_input"><input type="text" id="search" name="search"  class="Wdatenobg"  placeholder="请输入名称"   v-model="searchQuery" /></span>
+            <a class="oper_btn" href="/admin/create-project">新增</a>
+            <a class="oper_btn edit_btn" onclick="editF('/admin/edit-project')"  tag="/admin/edit-project">编辑</a>
+            <% if(locals._super==locals.session.user.name){%>
+            <a class="oper_btn" onclick="delF('/admin/del-project')" href="javascript:;">删除</a>
+            <%}%>
+        </div>
+        <div class="list_cont">
+            <table class="list_table">
+                <thead>
+                <tr>
+                    <th><input type="checkbox" name="ch"></th>
+                    <th class="tl"  style="width:20%">项目名称</th>
+                    <th>类型</th>
+                    <th>负责人</th>
+                    <th>优先级</th>
+                    <th>当前进度</th>
+                    <th style="width:10%">计划开始时间-结束时间</th>
+                    <th style="width:10%">实际开始时间-结束时间</th>
+                    <th>执行人</th>
+                    <th>状态</th>
+                    <th>操作</th>
+                </tr>
+                </thead>
+                <tbody>
+                <tr v-for="entity in entitys">
+                    <td><input type="checkbox" name="chs" :value="entity.id" ></td>
+                    <td class="tl" v-text="entity.name"></td>
+                    <td v-text="entity.type"></td>
+                    <td v-text="entity.principal"></td>
+                    <td v-text="entity.priority"></td>
+                    <td v-text="entity.progress"></td>
+                    <td >{{new Date(entity.planStartDate).Format("yyyy/MM/dd")}} - {{new Date(entity.planEndDate).Format("yyyy/MM/dd")}}</td>
+                    <td>{{new Date(entity.actualStartDate).Format("yyyy/MM/dd")}} - {{new Date(entity.actualEndDate).Format("yyyy/MM/dd")}}</td>
+                    <td v-text='entity.operator'></td>
+                    <td v-text='entity.status'></td>
+                    <td class="opera_td">
+                        <a class="iconfont" :href="'/admin/edit-project?id=' + entity.id">&#xC1118;</a>
+                        <a class="iconfont" href="javascript:;" @Click="delF('/admin/del-project',entity.id)">&#xC1119;</a>
+                        <a href="javascript:;" :data-id="entity.id" onclick="proParent(this)" class="iconfont pro_parent">展开</a>
+                    </td>
+                </tr>
+                </tbody>
+            </table>
+
+        </div>
+        <vue-nav :parames="parames" :callback="callback" :filter-key="searchQuery" ></vue-nav>
+    </div>
+</div>
+<script src="/js/vue/vue-nav.js"></script>
+<script src="/js/method.js"></script>
+<script type="text/javascript">
+    $(function(){
+        //参数
+        var parames={
+            url:'/admin/list-project',
+            method:'post',
+            pageSize:10,
+            cur:1,
+            search:{}
+        };
+        var app = new Vue({
+            el: '#list_box',
+            data:{
+                parames: parames,
+                entitys: {},
+                searchQuery: ''
+            },
+            components:{
+                'vue-nav': Vnav
+            },
+            methods:{
+                callback:function(data) {
+                    this.entitys=data.data;
+                }
+            }
+        });
+        winHF();
+    });
+
+    $(window).resize(function(){
+        winHF();
+    });
+
+    function proParent(obj) {
+        var text = $(obj).html(),
+            dataId = $(obj).attr("data-id");
+        if(text == "展开") {
+            $.post("/admin/list-project", {parentId: dataId, cur: 1, pageSize: 30}, function(e) {
+                console.log(e);
+            });
+            $(obj).html("收起");
+        } else {
+            $(obj).html("展开");
+        }
+    }
+</script>
+</body>
+</html>
+

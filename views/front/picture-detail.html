@@ -1,0 +1,126 @@
+﻿<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <%-include("_include/_headerInfo",{h_tit:"图库"})%>
+</head>
+<body>
+
+    <!-- 头部导航栏 start -->
+    <%-include("_include/_header", {curr: 2})%>
+    <!-- 头部导航栏 end -->
+    <div class="detail-header"></div>
+    <!-- 列表-头部 -->
+
+
+
+
+    <!-- 列表-内容部分 -->
+    <div class="detail-container">
+
+    </div>
+
+    <!-- 底部信息 start-->
+    <%-include("_include/_footer")%>
+    <!-- 底部信息 end -->
+
+    <!-- 详情-图标栏 start-->
+    <%-include("_include/detail-bar")%>
+    <!-- 详情-图标栏 end-->
+
+
+<!-- 详情模板 -->
+<script type="text/template" id="detailTmp">
+    <div class="ct-wrap">
+        <div class="user-box">
+            <span class="img-box"><img src="${data.avatar}" alt="" /></span>
+            <div class="info">
+                <p class="title">${data.title}</p>
+                <p><span>作者：${data.userName}</span><span>浏览次数：${data.browse}次</span><span>格式：${data.format}</span><span>大小：${(data.size / 1024 / 1024).toFixed(2)}Mb</span><span>上传时间：${data.createdAt}</span><span>来源：${data.source || '未知'}</span></p>
+            </div>
+        </div>
+        <div class="content-box">
+            <span class="pic-detail-box">
+                 <img class="${data.className}" src="${data.coverImg}" alt="${data.title}" />
+            </span>
+            {{if data.download}}
+            <div class="download-wrap">
+                <i class="iconfont">&#xE104;</i>
+                <a class="download-btn" href="${data.download}" download="${data.title}" onclick="isLogin()">
+                    附件：${data.title}.${data.download.split('.')[1].toLowerCase()}
+                </a>
+            </div>
+            {{/if}}
+        </div>
+    </div>
+    <div class="tags-box">
+        <span>标签：</span>
+        {{each(i,item) data.keyWord}}
+        <a href="javascript:;">${item}</a>
+        {{/each}}
+    </div>
+</script>
+
+
+<script>
+
+    var id = tools.getUrlParams('id');
+
+    var DAQ = {
+        init: function () {
+            this.getDetail();
+        },
+        getDetail: function () {
+            $.ajax({
+                type: 'get',
+                url: '/member/getProductionDetail',
+                data: {
+                    id: id,
+                    browse: 1
+                },
+                success: function (result) {
+                    if (result.code === 0) {
+                        if (result.data) {
+                            var data = result.data;
+                            var arr = data.keyWord.split(';');
+                            data.keyWord = [];
+                            data.className = '';
+                            for (var i = 0; i < arr.length; i++) {
+                                if (arr[i] != ';' && arr[i] != '') {
+                                    data.keyWord.push(arr[i])
+                                }
+                            }
+                            data.createdAt = data.createdAt.split('T')[0];
+                            if (!data.format) {
+                                data.format = data.download.split('.')[1];
+                            }
+                            if (data.w > 1200) {
+                                data.className = 'w-per100';
+                            }
+                            switch (data.source) {
+                                case '1':
+                                    data.source = '原创';
+                                    break;
+                                case '2':
+                                    data.source = '网络';
+                                    break;
+                                case '3':
+                                    data.source = '第三方授权';
+                                    break;
+                            }
+                            $('#detailTmp').tmpl({data: result.data}).appendTo('.detail-container');
+                            $('#detailBarTmp').tmpl({data: result.data}).appendTo('.detail-container');
+//                            tools.footerFixed();
+                        }
+                    }
+                }
+            })
+        }
+    }
+
+    $(function () {
+        DAQ.init();
+    })
+</script>
+
+</body>
+</html>

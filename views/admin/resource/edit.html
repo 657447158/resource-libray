@@ -1,0 +1,566 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <%-include("../_include/include-head",{tit:"资源管理"})%>
+</head>
+<body>
+
+<div class="resource-list-container">
+    <div class="daq-crumb clearfix mt-20">
+        <span>您当前在的位置：UED资源共享平台管理系统</span>
+        <i class="crumb-sign crumb-mg">-</i>
+        <a href="resource-list.html">资源管理</a>
+        <i class="crumb-sign crumb-mg">-</i>
+        <span>编辑资源</span>
+    </div>
+    <p class="demo-title"></p>
+    <form action="" id="form-msg">
+
+    </form>
+</div>
+
+<!--弹框-成功-->
+<script type="text/template" id="popUpSuccess">
+    <p class="mb-icon mb-success"><i class="sysfont"></i></p>
+    <p class="mb-ask">修改成功！</p>
+</script>
+
+<!--弹框-失败-->
+<script type="text/template" id="popUpFail">
+    <p class="mb-icon mb-fail"><i class="sysfont"></i></p>
+    <p class="mb-ask">修改失败！</p>
+</script>
+
+<!-- 表单详情 -->
+<script type="text/template" id="resourceTmp">
+    {{if data}}
+    <div class="form-item-table mt-22">
+        <table cellpadding="0" cellspacing="0" width="100%">
+            <tr style="display: none;">
+                <input style="display: none;" type="text" name="id" value="${data.id}" />
+            </tr>
+            <tr>
+                <td class="form-tab-label">
+                    <label class="form-label"><i class="form-require">*</i>名称：</label>
+                </td>
+                <td>
+                    <div class="form-table-edit clearfix">
+                        <div class="daq-inp-rule wid-348 fl">
+                            <input type="text" name="title" class="form-resource " placeholder="请输入资源名称" value="${data.title}"/>
+                        </div>
+                    </div>
+                </td>
+            </tr>
+            <tr>
+                <td class="form-tab-label">
+                    <label class="form-label"><i class="form-require">*</i>类型：</label>
+                </td>
+                <td>
+                    <div class="form-table-edit clearfix" id="typeBox">
+                        <div id="select1" class="daq-select wid-158 fl mr-10">
+                            <select name="codeName1">
+                                <option value="">请选择</option>
+                            </select>
+                        </div>
+                    </div>
+                </td>
+            </tr>
+            <tr>
+                <td class="form-tab-label">
+                    <label class="form-label"><i class="form-require">*</i>关键字：</label>
+                </td>
+                <td>
+                    <div class="form-table-edit clearfix">
+                        <div class="daq-inp-rule wid-348 fl">
+                            <input type="text" name="keyWord" class="form-resource " placeholder="请输入关键字" value="${data.keyWord.slice(1,-1)}"/>
+                        </div>
+                    </div>
+                </td>
+            </tr>
+            <tr>
+                <td class="form-tab-label">
+                    <label class="form-label"><i class="form-require">*</i>封面图：</label>
+                </td>
+                <td>
+                    <div class="form-table-edit clearfix">
+                        <div class="upload-default-box">
+                            <i class="sysfont upload-dft-icon"></i>
+                            <p class="upload-tips">支持JPG和PNG格式图片不超过2M</p>
+                        </div>
+                        <a class="daq-btn btn-pad-52 media-btn mt-5" id="logoBox" type="button"><i class="sysfont mr-5"></i>点击上传</a>
+                    </div>
+                </td>
+            </tr>
+            <tr>
+                <td class="form-tab-label">
+                    <label class="form-label"><i class="form-require">*</i>内容：</label>
+                </td>
+                <td>
+                    <div class="form-table-edit clearfix">
+                        <textarea id="content" name="content">{{html data.content}}</textarea>
+                    </div>
+                </td>
+            </tr>
+            <tr>
+                <td class="form-tab-label">
+                    <label class="form-label">排序：</label>
+                </td>
+                <td>
+                    <div class="form-table-edit clearfix">
+                        <div class="daq-inp-rule wid-358 fl">
+                            <input type="text" name="sort" class="form-resource " placeholder="请输入" value="${data.sort}"/>
+                        </div>
+                    </div>
+                </td>
+            </tr>
+            <tr>
+                <td class="form-tab-label"></td>
+                <td>
+                    <div class="form-table-edit">
+                        <button class="daq-btn" type="submit">确认保存</button>
+                        <button type="button" class="daq-btn" id="afreshBtn">重新编辑</button>
+                    </div>
+                </td>
+            </tr>
+        </table>
+    </div>
+    {{/if}}
+</script>
+
+<script>
+    $(function() {
+
+
+        var id = tools.getUrlParams('id');
+        var parentId = '';
+
+        getResDetails();
+        afreshEdit();
+
+        //为id为form-msg的表单添加验证
+        $("#form-msg").validate({
+            ignore: '',  // 隐藏元素也要验证
+            debug: false, // 如果这个参数为true，那么表单不会提交，只进行检查，调试时十分方便
+            focusInvalid: true, //当为false时，验证无效时，没有焦点响应
+            focusCleanup: false, //被验证的元素获得焦点时移除错误信息
+            rules: {
+                title: "required", // 验证名称
+                keyWord: "required", // 验证关键字
+//                codeName: "required", // 验证类型
+            },
+            messages: {
+                title: "请输入名称",
+                keyWord: "请填写关键字",
+                codeName: "请选择类型",
+            },
+            showErrors : function(errorMap, errorList) {
+                // 遍历错误列表
+                for(var obj in errorMap) {
+                    // 自定义错误提示效果
+                    var $parent = $('input[name="' + obj + '"]').parents(".daq-inp-rule");
+                    $parent.addClass('error-active');
+                }
+                // 此处注意，一定要调用默认方法，这样保证提示消息的默认效果
+                this.defaultShowErrors();
+
+            },
+            // 验证成功的处理
+            success: function (element) {
+                var $parent = $(element).siblings(".daq-inp-rule");
+                $parent.removeClass('error-active');
+                // 获取span元素的值保存到变量spanText
+                var spanText = $(element).parents().siblings("span").text();
+                // 截取"*"后面的字符
+                var spanTexts = spanText.split("*")[1];
+                // 判断当前节点下是否有图标i
+                var isTrue = $(element).parents().siblings("span").children("i").length;
+
+            },
+            // 设置失去焦点的情况下验证
+            onfocusout: function (element) {
+                $(element).valid();
+            },
+            // 修改错误提示文字位置
+            errorPlacement: function (error,element) {
+                // 错误提示图标
+                error.appendTo(element.parents(".form-table-edit"));
+            },
+            // jQuery表单提交
+            submitHandler: function(form){
+                var formData = {
+                    id: id,
+                    title: $('input[name="title"]').val(),
+                    codeName: ($('#select2 option[selected="selected"]').length > 0) ? $('#select2 option[selected="selected"]').text() : $('#select1 option[selected="selected"]').text(),
+                    codeId: ($('#select2 option[selected="selected"]').length > 0) ? $('#select2 option[selected="selected"]').val() : $('#select1 option[selected="selected"]').val(),
+                    keyWord: $('input[name="keyWord"]').val(),
+                    coverImg: $('.media-pic-preview img').attr('src'),
+                    content: $('#content').val(),
+                    sort: $('input[name="sort"]').val()
+                }
+                $.ajax({
+                    type: 'post',
+                    url: '/admin/resource/update',
+                    data: formData,
+                    success: function (result) {
+                        if (result.code === 0) {
+                            var content = $("#popUpSuccess");
+                            $.daqDialog({
+                                title: '成功',
+                                content: content.html(),
+                                mask: true,
+                                width: 400,
+                                height: 250,
+                                model:'fadeInDown',
+                                closeFn: function () {
+                                    window.location.href = 'list.html';
+                                }
+                            });
+                        } else {
+                            var content =  $("#popUpFail");
+                            $.daqDialog({
+                                title: '失败',
+                                content: content.html(),
+                                mask: true,
+                                width: 400,
+                                height: 250,
+                                model:'fadeInDown'
+                            });
+                        }
+                    }
+                })
+                return false;
+            }
+        });
+
+
+        // 获取资源详情
+        function getResDetails () {
+            $('#form-msg').empty();
+            $.ajax({
+                type: 'get',
+                url: '/admin/resource/getDetails?id=' + id,
+                success: function (result) {
+                    if (result.code === 0) {
+                        var data = result.data;
+                        if (data) {
+                            $('#resourceTmp').tmpl({data: data}).appendTo('#form-msg');
+
+                            // 实例化类型下拉框
+                            getTypeMenus(data.codeName, data.id);
+
+                            // 封面图加载
+                            var datas = {
+                                url: data.coverImg
+                            }
+                            uploadImg(datas.url, '#logoBox');
+                            function uploadImg(url, obj) {
+                                var btnObj = $(obj);
+                                // 如果有默认值，则回显
+                                if (url) {
+                                    var name = url.substring(url.lastIndexOf("/") + 1, url.length);
+                                    var defaults = '<div class="media-pic-preview" title="' + name + '"><img src="' + url + '" />' +
+                                        '<div class="box-mask media-show-pic">' +
+                                        '<p class="media-operate"><i class="sysfont js-img-enlarge"></i></p>' +
+                                        '<p class="pics-item-name">' + name + '</p>' +
+                                        '</div>' +
+                                        '<label class="media-show-close"></label></div>';
+                                    btnObj.siblings('.upload-default-box').addClass('upload-show-box').html(defaults);
+                                    btnObj.addClass('btn-green').html('<i class="sysfont mr-5"></i>重新上传');
+                                }
+                                // 初始化WebUploader
+                                var imgUploader = WebUploader.create({
+                                    // 选完文件后，是否自动上传。
+                                    auto: true,
+                                    // swf文件路径
+                                    swf: 'http://filealiyun.geeker.com.cn/ued/webupload/js/Uploader.swf',
+                                    // 文件接收服务端。
+                                    server: 'http://file.geeker.com.cn/uploadOSS',
+                                    //设置文件上传域的name
+                                    fileVal: 'Filedata',
+                                    //文件上传参数表
+                                    formData: {
+                                        path: 'test/img'
+                                    },
+                                    // 选择文件的按钮。可选。
+                                    // 内部根据当前运行是创建，可能是input元素，也可能是flash.
+                                    pick: {
+                                        id: btnObj,
+                                        multiple: false  //设置是否支持多文件上传
+                                    },
+                                    fileSingleSizeLimit: 2*1024*1024,
+                                    // 只允许选择图片文件。
+                                    accept: {
+                                        title: 'Images',
+                                        extensions: 'gif,jpg,jpeg,bmp,png',
+                                        mimeTypes: 'image/jpg,image/jpeg,image/bmp,image/png'
+                                    }
+                                });
+                                imgUploader.on('fileQueued', function () {
+                                    imgUploader.refresh(); // 当文件上传结构加载出来后执行该命令，刷新一下文件上传结构，防止上传按钮宽高1px问题导致点不到问题
+                                    $.daqMessage({
+                                        icon: {
+                                            text: ''
+                                        },
+                                        text: '上传中！',
+                                        skin: 1,
+                                        time: ''
+                                    });
+                                });
+                                imgUploader.on('error', function (file) {
+                                    if (file == 'Q_TYPE_DENIED') {
+                                        $.daqMessage({
+                                            icon: {
+                                                text: ''
+                                            },
+                                            text: '不支持改文件类型！',
+                                            skin: 1,
+                                            time: 2000
+                                        });
+                                    } else if (file == 'Q_EXCEED_NUM_LIMIT') {
+                                        $.daqMessage({
+                                            icon: {
+                                                text: ''
+                                            },
+                                            text: '超出文件上传的数量限制！',
+                                            skin: 1,
+                                            time: 2000
+                                        });
+                                    } else if (file == "F_DUPLICATE") {
+                                        $.daqMessage({
+                                            icon: {
+                                                text: ''
+                                            },
+                                            text: '该文件已上传！',
+                                            skin: 1,
+                                            time: 5000
+                                        });
+                                    } else if (file == 'Q_EXCEED_SIZE_LIMIT' || file == 'F_EXCEED_SIZE') {
+                                        $.daqMessage({
+                                            icon: {
+                                                text: ''
+                                            },
+                                            text: '文件大小超出限制！',
+                                            skin: 1,
+                                            time: 2000
+                                        });
+                                    }
+                                });
+                                // 文件上传成功，给item添加成功class, 用样式标记上传成功。
+                                imgUploader.on('uploadSuccess', function (file, response) {
+                                    $('.daq-feedback').remove();
+                                    $.daqMessage({
+                                        icon: {
+                                            text: ''
+                                        },
+                                        text: '上传成功！',
+                                        skin: 1,
+                                        time: 2000
+                                    });
+                                    var datas = response.datas;
+                                    if (datas) {
+                                        var showDom = '<div class="media-pic-preview" title="' + file.name + '"><img src="' + response.url + '" />' +
+                                            '<div class="box-mask media-show-pic">' +
+                                            '<p class="media-operate"><i class="sysfont js-img-enlarge"></i></p>' +
+                                            '<p class="pics-item-name">' + file.name + '</p>' +
+                                            '</div>' +
+                                            '<label class="media-show-close"></label></div>';
+                                        btnObj.siblings('.upload-default-box').addClass('upload-show-box').html(showDom);
+                                        btnObj.addClass('btn-green').find('.webuploader-pick').html('<i class="sysfont mr-5"></i>重新上传');
+                                    }
+                                });
+
+                                // 文件上传失败，显示上传出错。
+                                imgUploader.on('uploadError', function (file) {
+                                    $.daqMessage({
+                                        icon: {
+                                            text: ''
+                                        },
+                                        text: '上传失败！',
+                                        skin: 1,
+                                        time: 2000
+                                    });
+                                });
+
+                                // 图片预览
+                                btnObj.siblings('.upload-default-box').on('click', '.js-img-enlarge', function () {
+                                    var el = $(this).parents('.media-pic-preview').find('img');
+                                    $(this).parents('.media-pic-preview').daqPreviewImg({
+                                        imgEl: el,
+                                        title: '.pics-item-name'
+                                    });
+                                })
+                                // 图片hover事件
+                                btnObj.siblings('.upload-default-box').on("mouseenter mouseleave", function (event) {
+                                    if (event.type == "mouseenter") {
+                                        $(this).find('.box-mask').stop().animate({"height": "100%"}, 50
+                                        ).find('.media-operate').stop().show();
+                                        $(this).find('.pics-item-name').stop().hide();
+                                    } else if (event.type == "mouseleave") {
+                                        $(this).find('.box-mask').stop().animate({"height": "26px"}, 50).find('.media-operate').stop().hide();
+                                        $(this).find('.pics-item-name').stop().show();
+                                    }
+                                })
+                                // 图片删除
+                                btnObj.siblings('.upload-default-box').on('click', '.media-show-close', function () {
+                                    var files = imgUploader.getFiles();  // 获取已上传的文件对象
+                                    var name = $(this).parents('.media-pic-preview').find('.pics-item-name').text();
+                                    $(files).each(function(i, v) { // 遍历已上传对象找到与当前删除的对象匹配的删除改文件，防止再次上传提示该文件已上传
+                                        var now = v.name;
+                                        if (now == name) {
+                                            imgUploader.removeFile($(this));
+                                        }
+                                    })
+                                    var showDom = '<i class="sysfont upload-dft-icon"></i><p class="upload-tips">支持JPG和PNG格式图片不超过2M</p>';
+                                    btnObj.siblings('.upload-default-box').removeClass('upload-show-box').html(showDom);
+                                    btnObj.removeClass('btn-green').find('.webuploader-pick').html('<i class="sysfont mr-5"></i>点击上传');
+                                })
+                            }
+
+                            // 编辑器
+                            KindEditor.create('#content', {
+                                width: '1280px',
+                                height: '600px',
+                                afterBlur: function () { // 同步KindEditor的值到textarea文本框
+                                    this.sync();
+                                },
+                                uploadJson: '/upload',
+                                allowFileManager: false
+                            });
+                        }
+                    }
+                }
+            })
+        }
+
+        // 获取类型下拉框的值（第一个）
+        function getTypeMenus(selectedName, selectedId) {
+            $.ajax({
+                type: 'get',
+                url: '/admin/resource/getDetailsMenusType?id=' + id,
+                success: function (result) {
+                    if (result.code === 0) {
+                        var dataList = result.datas;
+                        if (dataList && dataList.length > 0) {
+                            var options = '';
+                            if (dataList.length === 1) { // 只有一级菜单
+                                dataList[0].forEach(function (item) {
+                                    var option = '<option value="' + item.id + '">' + item.name + '</option>';
+                                    if (item.name === selectedName) {
+                                        option = '<option selected="selected" value="' + item.id + '">' + item.name + '</option>';
+                                    }
+                                    options += option
+                                });
+                                $('select[name="codeName1"]').append(options);
+
+                                $("#select1").daqSelect({
+                                    callback: function (data) {
+                                        var params = {
+                                            code: data.code,
+                                            codeName: data.text
+                                        };
+
+                                        getSubTypes(params)
+                                    }
+                                });
+                            } else { // 有两级菜单
+                                var html = '';
+                                var option2 = '';
+                                dataList[0].forEach(function (item) {
+                                    var option = '<option value="' + item.id + '">' + item.name + '</option>';
+                                    for (var i = 0; i < dataList[1].length; i++) {
+                                        if (dataList[1][i].name === selectedName && item.id === dataList[1][i].parentId) {
+                                            option = '<option selected="selected" value="' + item.id + '">' + item.name + '</option>';
+                                        }
+                                    }
+                                    options += option;
+                                });
+                                $('select[name="codeName1"]').append(options);
+
+                                $("#select1").daqSelect({
+                                    callback: function (data) {
+                                        var params = {
+                                            code: data.code,
+                                            codeName: data.text
+                                        }
+                                        getSubTypes(params)
+                                    }
+                                });
+                                dataList[1].forEach(function (item) {
+                                    var optionTmp = '<option value="' + item.id + '">' + item.name + '</option>';
+                                    if (item.name === selectedName) {
+                                        optionTmp = '<option selected="selected" value="' + item.id + '">' + item.name + '</option>';
+                                    }
+                                    option2 += optionTmp
+                                })
+                                html += '<div id="select2" class="daq-select wid-158 fl">' +
+                                    '<select name="codeName2">' +
+                                    '<option value="">请选择</option>' + option2 +
+                                    '</select>' +
+                                    '</div>';
+                                $(html).appendTo($('#typeBox'));
+                                $("#select2").daqSelect({
+                                    value: 2,
+                                    callback: function (data) {
+//                                        console.log(data)
+                                    }
+                                });
+                            }
+                        }
+                    }
+                }
+            })
+        }
+
+        // 根据类型的第一个下拉框的取值，来判定第二个下拉框是否显示以及显示的内容
+        function getSubTypes (params) {
+            if ($('#select2').length > 0) {
+                $('#select2').remove();
+            }
+            if (params.code == '') {
+                return;
+            }
+            if (params.code) {
+                parentId = params.code
+            }
+            $.ajax({
+                type: 'get',
+                url: '/admin/resource/getDetailsSubMenus?parentId='+parentId,
+                success: function (result) {
+                    if (result.code === 0) {
+                        var dataList = result.datas;
+                        if (dataList && dataList.length > 0) {
+                            var html = '';
+                            var options = '';
+                            for (var i = 0; i < dataList.length; i++) {
+                                if (dataList[i].name === params.codeName) {
+                                    options += '<option selected="selected" value="' + dataList[i].id + '">'+ dataList[i].name +'</option>'
+                                } else {
+                                    options += '<option value="' + dataList[i].id + '">'+ dataList[i].name +'</option>'
+                                }
+                            }
+                            html += '<div id="select2" class="daq-select wid-198 fl">' +
+                                '<select name="codeName2">' +
+                                '<option value="">请选择</option>' + options +
+                                '</select>' +
+                                '</div>';
+                            $(html).appendTo($('#typeBox'));
+                            $("#select2").daqSelect({
+                                value: 2,
+                                callback: function (data) {}
+                            });
+                        }
+                    }
+                }
+            })
+        }
+
+        // 重新编辑
+        function afreshEdit () {
+            $('body').on('click', '#afreshBtn', function () {
+                getResDetails();
+            })
+        }
+    })
+</script>
+</body>
+</html>

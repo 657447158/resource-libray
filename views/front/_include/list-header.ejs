@@ -1,0 +1,40 @@
+﻿<div class="list-header">
+    <div class="search-box-wrap">
+        <div class="search-box list-search-box">
+            <input type="password" style="position: absolute; top: -999999px";>
+            <input type="text" placeholder="0个资源等你发现..." class="search-input" />
+            <a href="javascript:;" class="search-icon"></a>
+        </div>
+        <p class="slogan">在这里，我们鼓励创作与分享，但我们更在意每一次美好分享背后的努力与付出...</p>
+    </div>
+</div>
+
+<script>
+    $(function () {
+        if (parentVal) {
+            $.ajax({
+                type: 'get',
+                url: '/member/getMenusTypeAndCount',
+                data: {
+                    parentVal: parentVal
+                },
+                success: function (result) {
+                    if (result.code === 0) {
+                        $('.search-input').attr('placeholder', result.data.total + '个资源等你发现...');
+                    }
+                }
+            })
+        } else {
+            $.ajax({
+                type: 'get',
+                url: '/member/getTotalResource',
+                success: function (result) {
+                    if (result.code === 0) {
+                        $('.search-input').attr('placeholder', result.total + '个资源等你发现...');
+                    }
+                }
+            })
+        }
+
+    })
+</script>

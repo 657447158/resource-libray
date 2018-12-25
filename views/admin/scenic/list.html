@@ -1,0 +1,442 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <%-include("../_include/include-head",{tit:"景区列表"})%>
+</head>
+<body>
+
+<div class="resource-list-container">
+    <div class="daq-crumb clearfix mt-20">
+        <span>您当前在的位置：UED资源共享平台管理系统</span>
+        <i class="crumb-sign crumb-mg">-</i>
+        <a href="scenery-list.html">景区列表</a>
+    </div>
+    <p class="demo-title"></p>
+    <div class="buttons mt-10 clearfix">
+        <div class="daq-inp-rule wid-158 mtr-5 fl">
+            <input type="text" placeholder="请输入景区名称" id="scenicName"/>
+        </div>
+        <button class="daq-btn mt-5 js_search"><span>搜索</span></button>
+
+    </div>
+    <table id="table" class="daq-table daq-tab-pad mt-20"></table>
+</div>
+
+
+<script type="text/template" id="js_delete_row">
+    <p class="mb-icon"><i class="sysfont"></i></p>
+    <p class="mb-ask">确定要删除这条数据吗？</p>
+</script>
+
+<!-- 新增 -->
+<script type="text/template" id="js_add_row">
+    <form action="" id="form_add">
+        <div class="form-item-globle clearfix">
+            <!-- 地区 -->
+            <div class="form-item mt-20 form-percent100">
+                <label class="form-label">地区：</label>
+                <div class="form-position">
+                    <div id="js_citySelect_add" class="clearfix"></div>
+                </div>
+            </div>
+            <!-- 名称 -->
+            <div class="form-item mt-20 form-percent100">
+                <label class="form-label">名称：</label>
+                <div class="form-position">
+                    <div class="daq-inp-rule wid-348">
+                        <input type="text" name="name" placeholder="请输入景区名称"/>
+                    </div>
+                </div>
+            </div>
+            <!-- 地址 -->
+            <div class="form-item mt-20 form-percent100">
+                <label class="form-label">地址：</label>
+                <div class="form-position">
+                    <div class="daq-inp-rule wid-348">
+                        <input type="text" name="icon" placeholder="请输入地址"/>
+                    </div>
+                </div>
+            </div>
+            <!-- 排序 -->
+            <div class="form-item mt-20 form-percent100">
+                <label class="form-label">排序：</label>
+                <div class="form-position">
+                    <div class="daq-inp-rule wid-348">
+                        <input type="text" name="sort" placeholder="请输入序号"/>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </form>
+</script>
+
+<!-- 编辑 -->
+<script type="text/template" id="js_editor_row">
+    <form action="" id="form_edit">
+        <div class="form-item-globle clearfix">
+            <input type="text" name="id" style="display: none;" value="${data.id}" />
+            <input type="text" name="regionsId" style="display: none;" value="${data.regionsId}" />
+            <!-- 地区 -->
+            <div class="form-item mt-20 form-percent100">
+                <label class="form-label">地区：</label>
+                <div class="form-position">
+                    <div id="js_citySelect_edit" class="clearfix"></div>
+                </div>
+            </div>
+            <!-- 名称 -->
+            <div class="form-item mt-20 form-percent100">
+                <label class="form-label">名称：</label>
+                <div class="form-position">
+                    <div class="daq-inp-rule wid-348">
+                        <input type="text" name="name" placeholder="请输入文字" value="${data.name}"/>
+                    </div>
+                </div>
+            </div>
+            <!-- 地址 -->
+            <div class="form-item mt-20 form-percent100">
+                <label class="form-label">地址：</label>
+                <div class="form-position">
+                    <div class="daq-inp-rule wid-348">
+                        <input type="text" name="icon" placeholder="请输入文字" value="${data.icon}"/>
+                    </div>
+                </div>
+            </div>
+            <!-- 排序 -->
+            <div class="form-item mt-20 form-percent100">
+                <label class="form-label">排序：</label>
+                <div class="form-position">
+                    <div class="daq-inp-rule wid-348">
+                        <input type="text" name="sort" placeholder="请输入文字" value="${data.sort}"/>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </form>
+</script>
+
+<!--弹框-成功-->
+<script type="text/template" id="popUpSuccess">
+    <p class="mb-icon mb-success"><i class="sysfont"></i></p>
+    <p class="mb-ask">成功！</p>
+</script>
+
+<!--弹框-失败-->
+<script type="text/template" id="popUpFail">
+    <p class="mb-icon mb-fail"><i class="sysfont"></i></p>
+    <p class="mb-ask">失败！</p>
+</script>
+
+<script>
+
+    var adminInfo = '<%- JSON.stringify(adminInfo) %>';
+    adminInfo = JSON.parse(adminInfo);
+    var operation = adminInfo.operation.scenic;
+
+    $(function () {
+        if (operation.add) {
+            $('<button class="daq-btn mt-5 js_add" style="margin-right: 4px"><span>新增</span></button>').appendTo('.buttons');
+        }
+        if (operation.edit) {
+            $('<button class="daq-btn mt-5 js_editor" style="margin-right: 4px"><span>编辑</span></button>').appendTo('.buttons');
+        }
+        if (operation.del) {
+            $('<button class="daq-btn mt-5 js_delete"><span>删除</span></button>').appendTo('.buttons');
+        }
+        var regionId;
+        var table = $("#table").daqDataTable({
+            url: "/admin/scenic/getListDatas",
+            columns: [
+                {
+                    field: 'name',
+                    title: '景区名称',
+                    className: 'wid-percent20'
+                },
+                {
+                    field: 'icon',
+                    title: '地址',
+                    className: 'wid-percent25'
+                },
+                {
+                    field: 'updatedAt',
+                    title: '修改时间',
+                    className: 'wid-percent20'
+                },
+                {
+                    field: 'id',
+                    title: '操作',
+                    className: 'wid-percent10',
+                    formatter: function (value, data) {
+                        var editHtml = '', delHtml = '';
+                        if (operation.edit) {
+                            editHtml = '<a class="daq-btn daq-btn-cic btn-green btn-pad-small js_editor" href="javascript:;"><i class="sysfont"></i></a>';
+                        }
+                        if (operation.del) {
+                            delHtml = '<a class="daq-btn daq-btn-cic btn-red btn-pad-small js_delete" href="javascript:;"><i class="sysfont"></i></a>'
+                        }
+                        return '<p class="btn-mg-5">'+ editHtml + delHtml +'</p>';
+                    }
+                }],
+            pageSize: 10,
+            limits: 2,
+            pageText: true,
+            checkbox: true,
+            mixColor: true,
+            callback: function (datas) {
+//                console.log(datas)
+            },
+            onClick: function (data) {
+//                console.log(data)
+            }
+        });
+
+        //新增数据
+        $(document).on('click', '.js_add', function (e) {
+            e.stopPropagation();
+            var $this = $(this);
+            $.daqDialog({
+                title: '新增',
+                content: $('#js_add_row').html(),
+                mask: true,
+                width: 650,
+                height: 450,
+                model: 'fadeInDown',
+                buttons: [
+                    {
+                        text: '确定',
+                        callback: function () {
+                            var data = {};
+                            data.regionsId = regionId;
+                            var params = $('#form_add').serializeArray();
+                            for (var i in params) {
+                                data[params[i].name] = params[i].value
+                            }
+                            $.ajax({
+                                type: 'post',
+                                url: '/admin/scenic/add',
+                                data: data,
+                                success: function (result) {
+                                    if (result.code === 0) {
+                                        var content = $("#popUpSuccess");
+                                        $.daqDialog({
+                                            title: '成功',
+                                            content: content.html(),
+                                            mask: true,
+                                            width: 400,
+                                            height: 250,
+                                            model: 'fadeInDown',
+                                            closeFn: function () {
+                                                window.location.href = 'list.html';
+                                            }
+                                        });
+                                    } else {
+                                        var content = $("#popUpFail");
+                                        $.daqDialog({
+                                            title: '失败',
+                                            content: content.html(),
+                                            mask: true,
+                                            width: 400,
+                                            height: 250,
+                                            model: 'fadeInDown',
+                                            closeFn: function () {
+                                                window.location.href = 'list.html';
+                                            }
+                                        });
+                                    }
+                                }
+                            })
+                        }
+                    },
+                    {
+                        text: '取消'
+                    }
+                ],
+                callback: function () {
+                    $('#js_citySelect_add').daqCitySelect({
+                        className: 'wid-98',
+                        callback: function (data) {
+                            regionId = data[data.length-1].value
+                        }
+                    });
+                }
+            });
+        });
+        //删除数据
+        $(document).on('click', '.js_delete', function (e) {
+            e.stopPropagation();
+            var $this = $(this),
+                arr = table.getCheckedId();
+            if (arr.length <= 0) {
+                $.daqMessage({
+                    icon: {
+                        text: ''
+                    },
+                    text: '请选择要需要删除的景区',
+                    skin: 1,
+                    time: 2000
+                });
+                return false;
+            };
+            var data = table.getEditorData(parseInt(arr[0]));
+            $.daqDialog({
+                title: '温馨提示',
+                content: $('#js_delete_row').html(),
+                mask: true,
+                height: 260,
+                model: 'fadeInDown',
+                buttons: [
+                    {
+                        text: '确定',
+                        callback: function () {
+                            $.ajax({
+                                type: 'post',
+                                url: '/admin/scenic/delete?id=' + data.id,
+                                success: function (result) {
+                                    if (result.code === 0) {
+                                        var content = $("#popUpSuccess");
+                                        $.daqDialog({
+                                            title: '成功',
+                                            content: content.html(),
+                                            mask: true,
+                                            width: 400,
+                                            height: 250,
+                                            model: 'fadeInDown',
+                                            closeFn: function () {
+                                                window.location.href = 'list.html';
+                                            }
+                                        });
+                                    } else {
+                                        var content = $("#popUpFail");
+                                        $.daqDialog({
+                                            title: '失败',
+                                            content: content.html(),
+                                            mask: true,
+                                            width: 400,
+                                            height: 250,
+                                            model: 'fadeInDown',
+                                            closeFn: function () {
+                                                window.location.href = 'list.html';
+                                            }
+                                        });
+                                    }
+                                }
+                            })
+                        }
+                    },
+                    {
+                        text: '取消'
+                    }
+                ]
+            });
+        });
+        //编辑数据
+        $(document).on('click', '.js_editor', function (e) {
+            e.stopPropagation();
+            var $this = $(this),
+                arr = table.getCheckedId();
+            if (arr.length <= 0) {
+                $.daqMessage({
+                    icon: {
+                        text: ''
+                    },
+                    text: '请选项要编辑资源',
+                    skin: 1,
+                    time: 2000
+                });
+                return false;
+            };
+            var data = table.getEditorData(parseInt(arr[0]));
+            $.daqDialog({
+                title: '编辑',
+                content: $('#js_editor_row').tmpl({data: data}).html(),
+                mask: true,
+                width: 650,
+                height: 450,
+                model: 'fadeInDown',
+                buttons: [
+                    {
+                        text: '确定',
+                        callback: function () {
+                            var data = {
+                                id: $('input[name="id"]').val(),
+                                regionsId: $('input[name="regionsId"]').val(),
+                                name: $('input[name="name"]').val(),
+                                icon: $('input[name="icon"]').val(),
+                                sort: $('input[name="sort"]').val()
+                            };
+                            $.ajax({
+                                type: 'post',
+                                url: '/admin/scenic/update',
+                                data: data,
+                                success: function (result) {
+                                    if (result.code === 0) {
+                                        var content = $("#popUpSuccess");
+                                        $.daqDialog({
+                                            title: '成功',
+                                            content: content.html(),
+                                            mask: true,
+                                            width: 400,
+                                            height: 250,
+                                            model: 'fadeInDown',
+                                            closeFn: function () {
+                                                window.location.href = 'list.html';
+                                            }
+                                        });
+                                    } else {
+                                        var content = $("#popUpFail");
+                                        $.daqDialog({
+                                            title: '失败',
+                                            content: content.html(),
+                                            mask: true,
+                                            width: 400,
+                                            height: 250,
+                                            model: 'fadeInDown',
+                                            closeFn: function () {
+                                                window.location.href = 'list.html';
+                                            }
+                                        });
+                                    }
+                                }
+                            })
+                        }
+                    },
+                    {
+                        text: '取消'
+                    }
+                ],
+                callback: function () {
+                    tools.getParentsRegions(data.regionsId, function (obj) {
+                        var defaultsArr = [];
+                        for (var item in obj) {
+                            defaultsArr.push({
+                                region: obj[item].region,
+                                name: obj[item].name
+                            })
+                        }
+                        $('#js_citySelect_edit').daqCitySelect({
+                            defaults: defaultsArr,
+                            className: 'wid-98',
+                            callback: function (data) {
+                                $('input[name="regionsId"]').val(data[data.length-1].value)
+                            }
+                        });
+                    });
+                }
+            });
+        });
+
+        //查询数据
+        $(document).on('click', '.js_search', function (e) {
+            e.stopPropagation();
+            var $text = $.trim($('#scenicName').val());
+            if ($text) {
+                table.search({
+                    data: {
+                        name: $text
+                    }
+                });
+            }
+        });
+    });
+</script>
+</body>
+</html>

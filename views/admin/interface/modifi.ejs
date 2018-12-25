@@ -1,0 +1,295 @@
+﻿<!DOCTYPE html>
+<html class="h100">
+<head lang="zh-CN">
+
+  <%-include("../_include/include-head",{tit:"资源编辑"})%>
+  <link rel="stylesheet" type="text/css" href="/js/lib/tinymce/plugins/codesample/css/prism.css">
+</head>
+<body>
+<%-include ../_include/include-top%>
+<div class="home_cont">
+
+  <%-include("../_include/include-left",{_curr:"material"})%>
+  <div class="h_main fr">
+    <p class="adress_nav">
+      <span>您当前的位置：</span><span>UED资源共享平台管理系统</span>-<a href="/admin/list-interface">资源管理</a>-<span>编辑资源</span>
+    </p>
+    <div class="audit_body">
+      <div class="edit_cont">
+        <form method="post" id="face_form">
+          <input type="hidden" id="id" name="id" value="<%-entity.Id%>"/>
+          <input type="hidden" name="codeName" id="codeName" value="<%=entity.codeName%>"/>
+          <input type="hidden" name="codeId" id="codeId" value="<%=entity.codeId%>"/>
+          <input type="hidden" class="fl setMes" name="scenic" value="<%-entity.scenic%>">
+          <input type="hidden" class="fl setMes" name="coverImg" value="<%-entity.coverImg%>">
+
+          <table cellpadding="0" cellspacing="0" class="tabTable">
+            <tbody>
+            <tr>
+              <td class="name">界面名称：</td>
+              <td class="kuang">
+                <div>
+                  <input type="text" class="long_input" id="title" name="title" value="<%-entity.title%>"/>
+                </div>
+              </td>
+              <%if(entity.parentVal!="picture"){%>
+                <td class="name">类型：</td>
+                <td class="kuang code_td add_tabMgs">
+                  <select id="code" class=" one_sel setMes fl" name="codeIdSel"></select>
+                </td>
+              <%}else{%>
+                <td class="name">类型：</td>
+                <td class="kuang">
+                  <select class="one_sel setMes fl" id="province"></select>
+                  <select class="two_sel setMes fl" id="city" name="city"></select>
+                  <select class="four_sel setMes fl" id="scenicId" name="scenicId"></select>
+                </td>
+              <%}%>
+            </tr>
+            <%if(entity.parentVal=="case"){%>
+              <tr>
+                <td class="name">存放位置：</td>
+                <td class="kuang">
+                  <div>
+                    <input type="text" class="long_input" id="intro" name="intro" value="<%-entity.place%>"/>
+                  </div>
+                </td>
+                <td class="name">网站地址：</td>
+                <td class="kuang">
+                  <div>
+                    <input type="text" class="long_input" id="url" name="url"  value="<%-entity.url%>"/>
+                  </div>
+                </td>
+              </tr>
+            <%}%>
+            <tr>
+              <td class="name">关键字：</td>
+              <td class="kuang" colspan="3">
+                <div>
+                  <input type="text" class="long_input" id="keyWord" name="keyWord" value="<%-entity.keyWord.substring(1,entity.keyWord.length-1)%>"/>
+                </div>
+              </td>
+            </tr>
+
+            <tr>
+              <td class="name">封面图：</td>
+              <td colspan="3" class="sc_pictuer">
+                <div class="pic_cont clearfix">
+                  <div id="cover_img" class="webuploader-container" tag="0">
+                    <div class="webuploader-pick">上传图片</div>
+                    <div id="rt_rt_1adqfe9m78qj1mp3u2rhej10ia1">
+                      <input type="file" name="coverImg" class="webuploader-element-invisible" accept="image/*"><label ></label>
+                    </div>
+                  </div>
+                  <%if(entity.coverImg){%>
+                  <div class="parentFileBox">
+                    <ul class="fileBoxUl">
+                      <li id="upload_coverImg" class="diyUploadHover edit_img">
+                        <div class="viewThumb" ><img src="<%-entity.coverImg%>"></div>
+                        <p class="diyCut"><a class="cut_left">&nbsp;</a><a class="cut_right">&nbsp;</a><a class="cut_close" data-ipt="coverImg_del">&nbsp;</a></p>
+                      </li>
+                    </ul>
+                  </div>
+                  <%}%>
+                </div>
+              </td>
+            </tr>
+            <%if(entity.content){%>
+            <tr>
+              <td class="name">内容：</td>
+              <td colspan="3" class="sc_pictuer">
+                <div class="pic_cont clearfix">
+                <textarea name="content" id="content"><%-entity.content%></textarea></div>
+              </td>
+            </tr>
+            <%}%>
+            <tr>
+              <td class="name">排序：</td>
+              <td class="kuang" colspan="3">
+                <div>
+                  <input type="text" class="long_input" id="sort" name="sort" value="<%=entity.sort%>"/>
+                </div>
+              </td>
+            </tr>
+            </tbody>
+            <tfoot>
+            <tr class="oper_tr">
+              <td class="name "><p class="oper_p"></p></td>
+              <td class="kuang" colspan="3">
+                <p class="oper_p">
+                  <input type="button" class="oper_btn" onclick="submiteCk()" value="确认保存"/>
+                  <input type="reset" class="oper_btn" value="重新编辑"/>
+                </p>
+              </td>
+            </tr>
+            </tfoot>
+          </table>
+        </form>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+</body>
+</html>
+<script src="/js/jquery-1.8.3.min.js"></script>
+<script src="/component/kindeditor/kindeditor.js"></script>
+<script type="text/javascript" src="/js/webuploader.html5only.min.js"></script>
+<script type="text/javascript" src="/js/diyUpload.js"></script>
+<script src="/js/method.js"></script>
+<script>
+  var editor;
+  <%if(entity.content){%>
+  KindEditor.ready(function (k) {
+    editor = k.create('#content', {
+      resizeMode: 0,
+      width: '1000px',
+      height: '500px',
+      uploadJson: '/admin/upload1',
+      allowFileManager: false,
+      newlineTag: 'p',
+      filterMode: false,
+      resizeType:false,
+      items:['source', '|', 'undo', 'redo', '|', 'preview',  'template', 'cut', 'copy', 'paste',
+        'plainpaste', 'wordpaste', '|', 'justifyleft', 'justifycenter', 'justifyright',
+        'justifyfull', 'insertorderedlist', 'insertunorderedlist', 'indent', 'outdent', 'subscript',
+        'superscript', 'clearhtml',   'selectall', '|', 'fullscreen', '/',
+        'formatblock', 'fontname', 'fontsize', '|', 'forecolor', 'hilitecolor', 'bold',
+        'italic', 'underline', 'strikethrough', 'lineheight', 'removeformat', '|', 'image', 'multiimage',
+        'table', 'hr', 'emoticons', 'baidumap', 'pagebreak',
+        'anchor', 'link', 'unlink','code']
+    });
+    editor.sync();
+  });
+  <%}%>
+  $(function(){
+    winHFE();
+    $(".code_td").on("change","select[name='codeIdSel']",function(){
+         selChange($(this));
+    });
+    var file_size=999999900000*(1024*1024*1024*1024);
+    $('#cover_img').diyUpload({
+      url: '/upload',
+      success: function (data) {
+        $("#face_form input[name='coverImg']").val(data.url);
+        if(editor){
+          $("#content").val(editor.html());
+        }
+       $("#face_form").submit();
+      },
+      error: function (err) {
+        console.info(err);
+      },
+      chunkSize:file_size,
+      fileSizeLimit:file_size,
+      fileSingleSizeLimit:file_size,
+      accept: {
+        title: "Images",
+        extensions: "gif,jpg,jpeg,bmp,png,tif"
+      },
+      fileNumLimit:1
+    });
+
+    if("<%=entity.parentVal%>"=="picture" ){
+
+      $.get("/getCity.html?regId=",function(provinces){
+        var _region='';
+        $("#province").empty();
+        provinces.region.forEach(function(province){
+          _region+='<option value="'+province.region+'">'+province.name+'</option>';
+        });
+        $("#province").html(_region);
+        var provinceId=("<%=entity.regionsId%>"+"").substring(0,2)+"0000";
+        var cityId=("<%=entity.regionsId%>"+"").substring(0,4)+"00";
+        var county=("<%=entity.regionsId%>"+"");
+
+        $("#province").val(provinceId);
+        areaChange(provinceId,cityId,county);
+        $("#province").attr("scenicId","<%= entity.scenicId%>");
+      });
+
+    }else{
+      $.ajax({
+        type: 'get',
+        url: '/subTypes',
+        data: {
+          codeVal: "<%=entity.parentVal%>"
+        },
+        success: function (result) {
+          var _html = '';
+          result.data.forEach(function (e) {
+            _html += '<option value="' + e.id + '">' + e.name + '</option>';
+          });
+          $("#code").html(_html);
+          $("#codeId").attr("data-id",<%=entity.codeId%>)
+          codeSel(<%=entity.codeId%>,true,null);
+        }
+      })
+
+    }
+    $("#province").on("change",function(){
+      areaChange($("#province").val(),"","");
+    })
+    $("#city").on("change",function(){
+      getScenic( $("#city").val())
+    })
+  });
+
+
+  $("#scenicId").on("change",function(){
+    $('input[name="scenic"]').val($("#scenicId option:selected").text());
+  })
+
+  function areaChange(provinceId,cityId,county){
+    $.get("/getCity.html?regId="+provinceId,function(citys){
+      var _cityTemp="";
+      $("#city").empty();
+      var level="";
+      citys.region.forEach(function(city){
+        level=city.level;
+        _cityTemp+='<option value="'+city.region+'">'+city.name+'</option>';
+      });
+      $("#city").append(_cityTemp);
+      $("#city").val(cityId);
+      getScenic(county);
+
+    });
+  }
+
+  $(window).resize(function () {
+    winHFE();
+  })
+
+  //获取景区
+  function getScenic(county){
+    if(!county){
+      county=$("#city").val();
+    }
+    $.get("/getScenic.html?regId="+(county/100),function(scenics){
+      var  _scenic='<option value="0">请选择</option>';
+      $("#scenicId").empty();
+      scenics.scenics.forEach(function(scenic){
+        _scenic+='<option value="'+scenic.id+'">'+scenic.name+'</option>';
+      });
+      $("#scenicId").append(_scenic);
+
+      $("#scenicId").val($("#province").attr("scenicId"));
+      $('input[name="scenic"]').val($("#scenicId option:selected").text());
+    });
+  }
+  function submiteCk(){
+    $(".diyButton .diyStart").click();
+    if($(".diyButton").length<=0){
+      if(editor){
+        $("#content").val(editor.html());
+      }
+     var _keyWord= $("#keyWord").val();
+      $("input[name='keyWord']").val(_keyWord.replace(/；/g,";"));
+      $("#face_form").submit();
+    }
+
+  }
+
+
+</script>

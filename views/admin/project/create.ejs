@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html class="h100">
+<head lang="zh-CN">
+    <%-include("../_include/include-head",{tit:"新增项目"})%>
+</head>
+<body>
+<%-include ../_include/include-top%>
+<div class="home_cont">
+    <%-include("../_include/include-left",{_curr:"project"})%>
+  <div class="h_main fr">
+    <p class="adress_nav">
+      <span>您当前的位置：</span><span>UED资源共享平台管理系统</span>-<a href="/admin/list-project">项目管理</a>-<span>新增项目</span>
+    </p>
+    <div class="audit_body">
+      <div class="edit_cont">
+        <form id="project">
+          <table cellpadding="0" cellspacing="0"  class="tabTable">
+            <tbody>
+            <tr>
+              <td class="name">项目名称：</td>
+              <td class="kuang" colspan="3">
+                <div class="clearfix">
+                  <select id="type" name="type" class="one_sel setMes fl" style="width:150px;">
+                  </select>
+                  <select id="parentId" name="parentId" class="one_sel setMes fl" style="width:652px;">
+                    <option value="0">顶级</option>
+                      <%parents.forEach(function(parent){%>
+                             <option value="<%=parent.id%>"><%=parent.name%></option>
+                      <%})%>
+                  </select>
+                  <input type="text" name="name" id="name" class="long_input fl" style="width: 652px;"/>
+                </div>
+              </td>
+            </tr>
+            <tr>
+              <td class="name">负责人：</td>
+              <td class="kuang">
+                <div>
+                  <input type="text" name="principal"  id="principal" class="long_input" />
+                </div>
+              </td>
+              <td class="name">当前进度：</td>
+              <td class="kuang">
+                <div>
+                  <input type="text" name="progress" id="progress" class="long_input" value="0"/>
+                </div>
+              </td>
+            </tr>
+
+            <tr>
+              <td class="name">计划时间：</td>
+              <td class="kuang">
+                <div class="clearfix">
+                  <input type="text" name="planStartDate" id="planStartDate" class="long_input fl ipt_date" onclick="WdatePicker()"><label class="fl ipt_line" >-</label><input type="text" name="planEndDate" id="planEndDate" class="fl long_input ipt_date"  onclick="WdatePicker()">
+                </div>
+              </td>
+              <td class="name">实际时间：</td>
+              <td class="kuang">
+                <div class="clearfix">
+                  <input type="text" id="actualStartDate" name="actualStartDate" class="long_input fl ipt_date"  onclick="WdatePicker()"><label class="fl ipt_line">-</label><input type="text" name="actualEndDate" id="actualEndDate" class="fl long_input ipt_date"  onclick="WdatePicker()">
+                </div>
+              </td>
+            </tr>
+            <tr>
+              <td class="name">优先级：</td>
+              <td class="kuang">
+                <select id="priority" name="priority" class="one_sel setMes fl" style="width:654px;"></select>
+              </td>
+              <td class="name">状态：</td>
+              <td class="kuang">
+                <select id="status" name="status" class="one_sel setMes fl" style="width:654px;"></select>
+              </td>
+            </tr>
+
+            <tr>
+                <td class="name">备注：</td>
+                <td class="kuang" colspan="3">
+                    <textarea name="remark" id="remark" class="long_input" style="width:90%;"></textarea>
+                </td>
+            </tr>
+            <tr>
+              <td class="name">执行人：</td>
+              <td class="kuang member_list" colspan="3"></td>
+            </tr>
+            </tbody>
+            <tfoot>
+            <tr class="oper_tr">
+              <td class="name "><p class="oper_p"></p></td>
+              <td class="kuang" colspan="3">
+                <p class="oper_p">
+                  <input type="button" onclick="submiteCk()" class="oper_btn" value="确认保存"/>
+                  <input type="reset" class="oper_btn" value="重新编辑"/>
+                </p>
+              </td>
+            </tr>
+            </tfoot>
+          </table>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script src="/js/method.js"></script>
+<script src="/js/DatePicker/WdatePicker.js"></script>
+<script>
+    $(function(){
+        winHFE();
+        getCode("type","项目类别");
+        getCode("status","项目状态");
+        getCode("priority","项目优先级");
+       // getCode("job","职位分类");
+        $('input').focus(function(){
+            $('input').removeClass('che');
+            $(this).addClass('che');
+        });
+        addMember(0,0);
+
+
+    });
+    $(window).resize(function(){
+        winHFE();
+    });
+    function submiteCk(){
+        $.post("/admin/create-project",$("#project").serialize(),function(e){
+            tipsMsg(e.msg);
+            if(e.status == 1){
+                setTimeout(function() {
+                    location = '/admin/list-project';
+                }, 1500);
+            }
+        })
+    }
+</script>
+</body>
+</html>

@@ -1,0 +1,72 @@
+﻿<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <%-include("_include/_headerInfo",{h_tit:"排行榜"})%>
+</head>
+<body>
+
+    <div class="rws-head">
+        <img src="/images/member/rws-head-1.jpg" alt="">
+    </div>
+    <div class="rws-table">
+        <table>
+            <thead>
+                <tr>
+                    <th>排名</th>
+                    <th>姓名</th>
+                    <th>岗位</th>
+                    <th>总贡献值</th>
+                    <th>当前季度贡献值</th>
+                </tr>
+            </thead>
+            <tbody>
+
+            </tbody>
+        </table>
+    </div>
+    <div class="rws-footer">共享产生价值，平台版权所有：大旗软件，仅限大旗软件内部员工使用</div>
+
+<!-- 栏目列表模板 -->
+<script type="text/template" id="listTmp">
+    {{each(index) list}}
+    <tr>
+        <td>${index + 1}</td>
+        <td><span class="avatar"><img src="${avatar}" alt=""></span>${name}</td>
+        <td>${position}</td>
+        <td>${totalRws}</td>
+        <td>${jrws}</td>
+    </tr>
+    {{/each}}
+</script>
+
+
+<script>
+    var userInfo = '<%- JSON.stringify(userInfo) %>';
+    userInfo = JSON.parse(userInfo);
+    var parentVal = 'afflatus';
+    var channelCode = tools.getUrlParams('channelCode');
+
+    var DAQ = {
+        init: function () {
+            $.ajax({
+                type: 'get',
+                url: '/member/getRws',
+                success: function (result) {
+                    console.log(result)
+                    if (result.code === 0) {
+                        if (result.datas && result.datas.length > 0) {
+                            $('#listTmp').tmpl({list: result.datas}).appendTo('tbody');
+                        }
+                    }
+                }
+            })
+        }
+    }
+
+    $(function () {
+        DAQ.init();
+    })
+</script>
+
+</body>
+</html>

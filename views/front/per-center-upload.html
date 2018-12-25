@@ -1,0 +1,698 @@
+﻿<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <link rel="stylesheet" href="http://filealiyun.geeker.com.cn/ued/geekUI-system/css/base/daq-system.min.css"/>
+    <%-include("_include/_headerInfo",{h_tit:"个人中心-我要上传"})%>
+</head>
+<body>
+
+    <!-- 头部导航栏 start -->
+    <%-include("_include/_header", {curr: 9})%>
+    <!-- 头部导航栏 end -->
+
+    <!-- 列表-头部 -->
+    <div class="per-header">
+        <%-include("_include/per-head-info")%>
+    </div>
+    <div class="per-list-container">
+        <div class="tag-list-wrap">
+            <ul>
+                <li class="curr"><a href="per-center-upload.html">我要上传</a></li>
+                <li><a href="per-center-already.html">我已上传</a></li>
+                <li><a href="per-center-collect.html">我的收藏</a></li>
+                <li><a href="per-center-download.html">我的下载</a></li>
+                <li><a href="per-center-info.html">个人信息</a></li>
+            </ul>
+        </div>
+        <ul class="list-wrap" id="fileListWrap">
+            <li class="btn-upload">
+                <a href="javascript:;"><i class="iconfont">&#xA100;</i><span class="word">添加文件</span></a>
+            </li>
+            <li class="btn-audit none">
+                <a href="javascript:;"><i></i><span class="word">提交审核</span></a>
+            </li>
+        </ul>
+    </div>
+
+    <!-- 底部信息 start-->
+    <%-include("_include/_footer")%>
+    <!-- 底部信息 end -->
+
+<!-- 添加文件弹窗（选择是否批量上传） -->
+<script type="text/template" id="addFilePopTmp">
+    <div class="production-bg">
+        <div class="production-choose-wrap">
+            <div class="production-title"><i></i><span>作品上传</span><a href="javascript:;" class="pro-close"></a></div>
+            <div class="content-wrap">
+                <a href="per-center-file.html">
+                    <span class="circle circle-1"></span>
+                    <span class="name">文件上传</span>
+                </a>
+                <a href="javascript:;" id="filePicker">
+                    <span class="circle circle-2"></span>
+                    <span class="name">批量上传</span>
+                    <span class="tips"><i>*</i>&nbsp;&nbsp;此功能只适用于图库图片上传</span>
+                </a>
+            </div>
+        </div>
+    </div>
+</script>
+
+<!-- 批量上传弹框 -->
+<script type="text/template" id="editPicsTmp">
+    <div class="production-bg">
+        <div class="production-pic-wrap">
+            <div class="production-title"><i></i><span>作品编辑</span><a href="javascript:;" class="pro-close"></a></div>
+            <div class="content-wrap">
+                <div class="content-ct">
+                    <div class="form-item">
+                        <label><span class="red">*&nbsp;</span>作品名称：</label>
+                        <input type="text" name="production-name" placeholder="请输入作品名称" value="${data.title}" />
+                    </div>
+                    <div class="form-item">
+                        <label class="fl"><span class="red">*&nbsp;</span>作品来源：</label>
+                        <div id="selectSource" class="daq-select fl">
+                            <select name="selectSource">
+                                <option value="">请选择作品来源</option>
+                                <option value="1">原创</option>
+                                <option value="2">网络</option>
+                                <option value="3">第三方授权</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="form-item form-item-area">
+                        <label><span class="red">*&nbsp;</span>地区选择：</label>
+                        <div id="js-cityPicker"></div>
+                        <div id="select-scenic" class="daq-select daq-select-scenic fl none">
+                            <select name="select-scenic">
+
+                            </select>
+                        </div>
+                    </div>
+                    <div class="form-item">
+                        <label><span class="red">*&nbsp;</span>关键字：</label>
+                        <input type="text" name="production-keyword" placeholder='请输入作品关键字，每个关键字用";"分隔（英文符号）' onkeyup="this.value = this.value.replace(/\；/g, ';')"  value="${data.keyWord}" />
+                    </div>
+                    <div class="form-item pro-copyright none">
+                        <label class="fl"><span class="red">*&nbsp;</span>时间戳认证：</label>
+                        <div id="select7" class="daq-select fl">
+                            <select name="select1">
+                                <option value="">请选择</option>
+                                <option value="1">已认证</option>
+                                <option value="2">未认证</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="form-item pro-copyright none">
+                        <label><span class="red">*&nbsp;</span>作者姓名：</label>
+                        <input type="text" name="author-name" placeholder="请输入作者姓名" />
+                    </div>
+                </div>
+                <!-- 确认编辑 -->
+                <div class="pro-confirm clearfix">
+                    <a class="confirm-btn fl" href="javascript:;" onclick="DAQ.upsertFile()">确认编辑</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</script>
+
+
+
+<!-- 我的文件列表 -->
+<script type="text/template" id="myFilesTmp">
+    {{each list}}
+    <li class="file-box" data-id="${id}" data-status="${status}">
+        <span class="close-bg"><a href="javascript:;" data-id="${id}" class="file-close-btn"></a></span>
+        {{if status === 0}}
+        <a href="per-center-file.html?id=${id}" data-id="${id}" class="pro-edit-btn">已修改</a>
+        {{else}}
+        <a href="javascript:;" data-id="${id}" class="pro-edit-btn" onclick="DAQ.openWin(${id})">修改信息</a>
+        {{/if}}
+        <a href="jvascript:;" class="img-box">
+            <img src="${coverImg}" alt="${title}" />
+        </a>
+    {{/each}}
+</script>
+
+<!-- 成功确认 -->
+<script type="text/template" id="popUpFive">
+    <p class="mb-icon mb-success"><i class="sysfont"></i></p>
+    <p class="mb-ask">操作成功！</p>
+</script>
+
+<!--失败确认内容-->
+<script type="text/template" id="popUpSix">
+    <p class="mb-icon mb-fail"><i class="sysfont"></i></p>
+    <p class="mb-ask">操作失败</p>
+</script>
+
+<!--确认删除内容-->
+<script type="text/template" id="popUpOne">
+    <p class="mb-icon"><i class="sysfont"></i></p>
+    <p class="mb-ask">是否要删除该作品？</p>
+</script>
+
+
+<script>
+    var duration = 1000;        // 延时
+    var regionId;
+    var scenicId;
+    var scenic;
+    var proSource = 2;
+    var codeId;
+    var prodId;
+    var coverImg;
+    var timestamp;
+    var picInfo;
+
+    /*
+    * getMyFilesList:           获取我要上传文件列表
+    * uploadMultipleImg:        批量图片上传实例化
+    * uploadFile:               附件上传实例化
+    * KindEditor:               富文本实例化
+    * getType:                  获取作品类型下拉数据
+    * hasChildren:              作品类型对应菜单是否有子菜单
+    * getFormat:                格式实例化
+    * getScenic:                获取景区数据
+    * **Msg:                    错误、成功、失败弹窗
+    * deleteMyfile:             删除文件列表中的单个文件
+    * deleteAccessory:          删除暂存附件
+    * createSelectByScort:      根据codeName循环创建下拉框（修改信息时用）
+    * submitAudit:              提交审核
+    * */
+    var DAQ = {
+        init: function () {
+            this.method();
+            this.getMyFilesList();
+        },
+        getMyFilesList: function () {
+            /*
+            * status: 0 未发起审核 1.发起审核后台并未开始审核 2.审核并通过 3.未通过 4.批量添加的图片，暂存。
+            * */
+            $.ajax({
+                type: 'get',
+                url: '/member/getMyFiles',
+                data: {
+                    userId: userInfo.id,
+                    status: [0, 4]
+                },
+                success: function (result) {
+                    if (result.code === 0) {
+                        if (result.datas && result.datas.length > 0) {
+                            $('.btn-audit').removeClass('none');
+                            $('#myFilesTmp').tmpl({list: result.datas}).prependTo('#fileListWrap');
+                        }
+                        tools.footerFixed();
+                    }
+                }
+            })
+        },
+        method: function () {
+            var _this = this;
+            // 添加文件
+            $('.btn-upload').click(function () {
+                $('#addFilePopTmp').tmpl({}).appendTo('body');
+                _this.uploadMultipleImg();
+            });
+            // 关闭编辑弹窗
+            $('body').on('click', '.pro-close', function () {
+                $('.production-bg').remove()
+            });
+
+            // 删除文件
+            $('body').on('click', '.file-close-btn', function () {
+                var id = $(this).data('id');
+                var content1 = $("#popUpOne");
+                $.daqDialog({
+                    title: '删除提示',
+                    content: content1.html(),
+                    mask: true,
+                    width: 450,
+                    height: 260,
+                    model: 'fadeInDown',
+                    buttons: [
+                        {
+                            text: '确定',
+                            callback: function () {
+                                _this.deleteMyfile(id);
+                            }
+                        },
+                        {
+                            text: '取消',
+                            callback: function () {
+                            }
+                        }
+                    ],
+                    callback: function () {
+                    }
+                })
+            });
+
+            // 删除暂存附件
+            $('body').on('click', '.delete-file', function () {
+                var id = $(this).data('id');
+                _this.deleteAccessory(id);
+            });
+
+
+            // 提交审核（批量，一次性提交所有未提交审核的作品）
+            $('.btn-audit').click(function () {
+                var ids = [];
+                var files = $('.file-box');
+                for (var i = 0; i < files.length; i++) {
+                    var $status = files.eq(i).data('status');
+                    if ($status == 0) {
+                        ids.push(files.eq(i).data('id'))
+                    }
+                }
+                _this.submitAudit(ids)
+            });
+
+        },
+        uploadMultipleImg: function () {
+            // 初始化Web Uploader
+            var uploader = WebUploader.create({
+                // 选完文件后，是否自动上传。
+                auto: true,
+                // swf文件路径
+                swf: 'http://filealiyun.geeker.com.cn/ued/webupload/js/Uploader.swf',
+                // 文件接收服务端。
+                server: '/upload?type=picture',
+                // 设置文件上传域的name
+                fileVal: 'Filedata',
+                // 文件上传参数表
+                formData: {
+                    path: 'test'
+                },
+                // 选择文件的按钮。可选。
+                // 内部根据当前运行是创建，可能是input元素，也可能是flash.
+                pick: {
+                    id: '#filePicker',
+                    multiple: true
+                },
+                // 只允许选择图片文件。
+                accept: {
+                    title: 'Images',
+                    extensions: 'gif,jpg,jpeg,bmp,png',
+                    mimeTypes: 'image/jpg,image/jpeg,image/png'
+                },
+                compress: false
+            });
+            // 当有文件添加进来的时候
+            uploader.on( 'fileQueued', function( file ) {  // webuploader事件.当选择文件后，文件被加载到文件队列中，触发该事件。等效于 uploader.onFileueued = function(file){...} ，类似js的事件定义。
+                uploader.refresh(); // 当文件上传结构加载出来后执行该命令，刷新一下文件上传结构，防止上传按钮宽高1px问题导致点不到问题
+                $('.production-bg').remove()
+            });
+            // 文件上传过程中创建进度条实时显示。
+            uploader.on( 'uploadProgress', function( file, percentage ) {
+            });
+            // 文件上传成功，给item添加成功class, 用样式标记上传成功。
+            uploader.on( 'uploadSuccess', function( file, response ) {
+                console.log(response)
+                if (response.message === 'repeat') {
+                    //生成预览缩略图;
+                    uploader.makeThumb(file, function (error, dataSrc) {
+                        var html = '<li class="file-box file-box-repeat">' +
+                            '<span class="close-bg"><a href="javascript:;" class="file-close-btn"></a></span>' +
+                            '<span class="pro-edit-btn">重复图片</span>' +
+                            '<span class="img-box">' +
+                            '<img src="'+ dataSrc +'" />' +
+                            '</span>' +
+                            '</li>';
+                        $('.btn-upload').before(html)
+                    });
+
+                } else {
+                    var params = {
+                        userId: userInfo.id,
+                        userName: userInfo.name,
+                        codeName: 'picture',
+                        codeId: 65,
+                        coverImg: response.url,
+                        uploadFileSrc: response.url,
+                        format: response.format,
+                        fieldsSize: response.fieldsSize,
+                        fileName: response.fieldsName,
+                        title: response.fieldsName,
+                        status: 4,
+                        fileMD5: response.fileMD5
+                    }
+                    $.ajax({
+                        type: 'post',
+                        url: '/member/upsertProduction',
+                        data: params,
+                        success: function (result) {
+                            var data = result.data
+                            if (result.code === 0) {
+                                var html = '<li class="file-box" data-id="'+ data.id +'">' +
+                                    '<span class="close-bg"><a href="javascript:;" data-id="'+ data.id +'" class="file-close-btn"></a></span>' +
+                                    '<a href="javascript:;" class="pro-edit-btn" onclick="DAQ.openWin('+ data.id +')">修改信息</a>' +
+                                    '<a href="jvascript:;" class="img-box">' +
+                                    '<img src="'+ data.coverImg +'" alt="'+ data.title +'" />' +
+                                    '</a>' +
+                                    '</li>';
+                                $('.btn-upload').before(html)
+                            }
+                        }
+                    })
+                }
+            });
+            // 文件上传失败，显示上传出错。
+            uploader.on( 'uploadError', function( file ) {
+                var $li = $( '#'+file.id ),
+                    $error = $li.find('div.error');
+
+                // 避免重复创建
+                if ( !$error.length ) {
+                    $error = $('<div class="error"></div>').appendTo( $li );
+                }
+
+                $error.text('上传失败');
+            });
+            // 完成上传完了，成功或者失败，先删除进度条。
+            uploader.on( 'uploadComplete', function( file ) {
+
+            });
+        },
+        errMsg: function (text) {
+            $.daqMessage({
+                icon: {
+                    text: ''
+                },
+                text: text,
+                skin: 2,
+                time: 2000
+            });
+        },
+        successMsg: function (callback) {
+            var successCt = $("#popUpFive");
+            $.daqDialog({
+                title: '成功提示',
+                iconfont: '',
+                content: successCt.html(),
+                mask: true,
+                width: 400,
+                height: 250,
+                model: 'fadeInDown',
+                closeFn: callback,
+                callback: function () {
+                    setTimeout(function () {
+                        callback()
+                    }, duration)
+                }
+            });
+        },
+        failedMsg: function (callback) {
+            var content6 = $("#popUpSix");
+            $.daqDialog({
+                title: '失败提示',
+                iconfont: '',
+                content: content6.html(),
+                mask: true,
+                width: 400,
+                height: 250,
+                model: 'fadeInDown',
+                closeFn: callback
+            })
+        },
+        deleteMyfile: function (id) {
+            var _this = this;
+            $.ajax({
+                type: 'post',
+                url: '/member/deleteMyfile',
+                data: {
+                    id: id
+                },
+                success: function (result) {
+                    if (result.code === 0) {
+                        _this.successMsg(function () {
+                            window.location.reload()
+                        });
+                    } else {
+                        _this.failedMsg();
+                    }
+                }
+            })
+        },
+        deleteAccessory: function (id) {
+            var _this = this;
+            $.ajax({
+                type: 'post',
+                url: '/member/deleteAccessory',
+                data: {
+                    id: id
+                },
+                success: function (result) {
+                    if (result.code === 0) {
+                        _this.successMsg(function () {
+                            $('#fileList').empty();
+                        })
+                    }
+                }
+            })
+        },
+        submitAudit: function (ids) {
+            var _this = this;
+            $.ajax({
+                type: 'get',
+                url: '/member/submitAudit',
+                data: {
+                    id:ids
+                },
+                success: function (result) {
+                    if (result.code === 0) {
+                        _this.successMsg(function () {
+                            window.location.reload()
+                        })
+                    }
+                }
+            })
+        },
+        getFileDetails: function (id, callback) {
+            $.ajax({
+                type: 'get',
+                url: '/member/getProductionDetail?id=' + id,
+                success: function (result) {
+                    if (result.code === 0) {
+                        picInfo = JSON.parse(localStorage.getItem('picInfo'))
+                        if (picInfo) {
+                            regionId = picInfo.regionsId;
+                            scenicId = picInfo.scenicId;
+                            scenic = picInfo.scenic;
+                        }
+                        prodId = result.data.id
+                        codeId = result.data.codeId;
+                        coverImg = result.data.coverImg;
+                        if (result.data.regionsId) {
+                            regionId = result.data.regionsId;
+                        }
+                        if (result.data.scenic) {
+                            scenic = result.data.scenic
+                        }
+                        callback(result.data)
+                    }
+                }
+            })
+        },
+        openWin: function (id) {
+            var _this = this;
+            this.getFileDetails(id, function (data) {
+                if (!data.keyWord && picInfo) {
+                    data.keyWord = picInfo.keyWord
+                }
+                $('#editPicsTmp').tmpl({data: data}).appendTo('body');
+                _this.createdSelects(data);
+            })
+        },
+        getScenic: function (regionId, callback) {
+            $.ajax({
+                type: 'get',
+                url: '/member/getScenicList',
+                data: {
+                    regionId: regionId
+                },
+                success: function (result) {
+                    if (result.code === 0) {
+                        callback(result)
+                    }
+                }
+            })
+        },
+        createdSelects: function (data) {
+            var _this = this
+            // 作品来源
+            $("#selectSource").daqSelect({
+                value: (data && data.source) ? data.source : proSource,
+                success: function () {
+                    if (data) {
+                        if (data.source == 1) {
+                            $('.pro-copyright').removeClass('none');
+                        } else {
+                            $('.pro-copyright').addClass('none');
+                        }
+                    }
+                    $('#select7').daqSelect({
+                        value: data ? data.timestamp : '',
+                        success: function () {
+                            if (data) {
+                                timestamp = data.code;
+                                $('input[name="author-name"]').val(data.author);
+                            }
+                        },
+                        callback: function (value) {
+                            timestamp = value.code;
+                        }
+                    });
+                },
+                callback: function (value) {
+                    proSource = value.code;
+                    // 如果选择的是原创，则显示版权保护
+                    if (value.code == 1) {
+                        $('.pro-copyright').removeClass('none');
+                    } else {
+                        $('.pro-copyright').addClass('none');
+                    }
+                }
+            });
+            var defaults = [];
+            var cityObj;
+            cityObj = tools.getCityObj(regionId);
+            if (!$.isEmptyObject(cityObj)) {
+                if (regionId == 110000 || regionId == 120000 || regionId == 310000 || regionId == 500000 || regionId == 710000 || regionId == 810000 || regionId == 820000) {
+                    defaults = [{region: regionId, name: cityObj.name}]
+                } else {
+                    var provinceObj = {
+                        region: cityObj.provinceRegion,
+                        name: cityObj.provinceName
+                    }
+                    defaults.push(provinceObj);
+                    var cityObj = {
+                        region: cityObj.cityRegion,
+                        name: cityObj.cityName
+                    }
+                    defaults.push(cityObj);
+                }
+            }
+            _this.getScenic(regionId, function (result) {
+                if (result.datas && result.datas.length > 0) {
+                    $('select[name="select-scenic"]').empty();
+                    $('select[name="select-scenic"]').next().remove();
+                    $('#select-scenic .daq-select-ul').remove();
+                    var html = '<option value="">请选择景区</option>';
+                    for (var i = 0, dataList = result.datas; i < dataList.length; i++) {
+                        html += '<option value="'+ dataList[i].id +'">'+ dataList[i].name +'</option>'
+                    }
+                    $('select[name="select-scenic"]').append(html);
+                    $('#select-scenic').removeClass('none');
+                    if (picInfo) {
+                        scenicId = picInfo.scenicId
+                    }
+                    if (data.scenicId) {
+                        scenicId = data.scenicId
+                    }
+                    $("#select-scenic").daqSelect({
+                        value: scenicId,
+                        callback: function (data) {
+                            scenicId = data.code;
+                            scenic = data.text;
+                        }
+                    });
+                }
+            })
+            $('#js-cityPicker').daqCitySelect({
+                dist: false, // 不显示区县
+                defaults: defaults,
+                callback: function (obj) {
+                    // 选择 '请选择' 选项时
+                    if (obj[obj.length - 1].value == '') {
+                        $('select[name="select-scenic"]').empty();
+                        $('select[name="select-scenic"]').next().remove();
+                        $('#select-scenic').addClass('none');
+                    }
+                    regionId = obj[obj.length - 1].value;
+                    _this.getScenic(regionId, function (result) {
+                        if (result.datas && result.datas.length > 0) {
+                            $('select[name="select-scenic"]').empty();
+                            $('select[name="select-scenic"]').next().remove();
+                            $('#select-scenic .daq-select-ul').remove();
+                            var html = '<option value="">请选择景区</option>';
+                            for (var i = 0, dataList = result.datas; i < dataList.length; i++) {
+                                html += '<option value="'+ dataList[i].id +'">'+ dataList[i].name +'</option>'
+                            }
+                            $('select[name="select-scenic"]').append(html);
+                            $('#select-scenic').removeClass('none');
+                            $("#select-scenic").daqSelect({
+                                value: '',
+                                callback: function (data) {
+                                    scenicId = data.code;
+                                    scenic = data.text;
+                                }
+                            });
+                        } else {
+                            $('select[name="select-scenic"]').empty();
+                            $('select[name="select-scenic"]').next().remove();
+                            $('#select-scenic').addClass('none');
+//                            if (regionId === '110000' || regionId === '120000') {
+//                                // 处理直辖市的特殊情况
+//
+//                            } else {
+//                                $('select[name="select-scenic"]').empty();
+//                                $('select[name="select-scenic"]').next().remove();
+//                                $('#select-scenic').addClass('none');
+//                            }
+
+                        }
+                    })
+                }
+            });
+        },
+        upsertFile: function () {
+            var _this = this;
+            var params = {
+                id: prodId,
+                codeId: codeId,
+                title: $('input[name="production-name"]').val(),
+                source: proSource,
+                keyWord: $('input[name="production-keyword"]').val(),
+                regionsId: regionId,
+                scenicId: scenicId,
+                scenic: scenic,
+                coverImg: coverImg,
+                timestamp: timestamp,
+                author: $('input[name="author-name"]').val()
+            };
+            var picInfo = {
+                regionsId: params.regionsId,
+                scenicId: params.scenicId,
+                scenic: params.scenic,
+                keyWord: params.keyWord
+            }
+            $.ajax({
+                type: 'post',
+                url: '/member/upsertProduction',
+                data: params,
+                success: function (result) {
+                    if (result.code === 0) {
+                        localStorage.setItem('picInfo', JSON.stringify(picInfo))
+                        _this.successMsg(function () {
+                            $('.production-bg').remove();
+                            window.location.reload();
+                        });
+                    } else {
+                        _this.failedMsg();
+                    }
+                }
+            })
+        }
+    }
+
+    $(function () {
+        DAQ.init();
+    })
+
+
+</script>
+
+</body>
+</html>

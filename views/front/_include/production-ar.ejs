@@ -1,0 +1,39 @@
+﻿<script type="text/template" id="proARTmp">
+    <div class="form-item">
+        <label class="fl"><span class="red">*&nbsp;</span>作品来源：</label>
+        <div id="selectSource" class="daq-select fl">
+            <select name="selectSource">
+                <option value="">请选择作品来源</option>
+                <option value="1">原创</option>
+                <option value="2">网络</option>
+                <option value="3">第三方授权</option>
+            </select>
+        </div>
+    </div>
+    <div class="form-item form-item-keywords">
+        <label><span class="red">*&nbsp;</span>关键字：</label>
+        {{if data}}
+        <input type="text" name="production-keyword" placeholder='请输入作品关键字，每个关键字用";"分隔（英文符号）' value="${data.keyWord}" onkeyup="this.value = this.value.replace(/\；/g, ';')" />
+        {{else}}
+        <input type="text" name="production-keyword" placeholder='请输入作品关键字，每个关键字用";"分隔（英文符号）' onkeyup="this.value = this.value.replace(/\；/g, ';')" />
+        {{/if}}
+    </div>
+    <div class="form-item form-item-cover">
+        <label><span class="red">*&nbsp;</span>封面图上传：</label>
+        <div class="fl">
+            <div class="upload-default-box">
+                <i class="sysfont upload-dft-icon"></i>
+                <p class="upload-tips">支持JPG和PNG格式图片不超过2M</p>
+            </div>
+            <a class="daq-btn btn-pad-52 media-btn mt-5" id="logoBox" type="button"><i class="sysfont mr-5"></i>点击上传</a>
+        </div>
+    </div>
+    <div class="form-item form-item-ct">
+        <label><span class="red">*&nbsp;</span>内容编辑：</label>
+        {{if data}}
+        <div id="ssjs" name="content1">{{html data.content}}</div>
+        {{else}}
+        <div id="ssjs" name="content1"></div>
+        {{/if}}
+    </div>
+</script>

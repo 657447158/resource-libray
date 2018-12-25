@@ -1,0 +1,163 @@
+﻿<!DOCTYPE html>
+<html class="h100">
+<head lang="zh-CN">
+
+  <%-include("../_include/include-head",{tit:"类型列表"})%>
+</head>
+<body>
+
+<%-include ../_include/include-top%>
+<div class="home_cont">
+  <%-include("../_include/include-left",{_curr:"system"})%>
+    <div class="h_main fr">
+        <div class="list_tit">
+          <p>您当前的位置：UED资源共享平台管理系统-网站类型管理</p>
+        </div>
+
+        <div class="list_tit list_search">
+          <span class="list_input"><input type="text" id="search" name="search"  class="Wdatenobg"  placeholder="请输入类型名称" value="<%-search_name%>"/></span>
+          <a class="oper_btn" id="search_btn">搜索</a>
+          <a class="oper_btn" href="/admin/create-code">新增</a>
+          <a class="oper_btn edit_btn" tag="/admin/edit-code" onclick="editF('/admin/edit-code')" style="display:none;">编辑</a>
+          <% if(locals._super==locals.session.user.name){
+          %>
+          <a class="oper_btn" onclick="delF('/admin/del-code')" href="javascript:;">删除</a>
+          <%}%>
+
+        </div>
+
+        <div class="list_cont">
+          <table class="list_table">
+            <thead>
+            <tr>
+              <th><input type="checkbox" name="ch"></th>
+              <th>名称</th>
+              <th>父级名称</th>
+              <th>创建时间</th>
+              <th>修改时间</th>
+              <th>操作</th>
+            </tr>
+            </thead>
+            <tbody>
+            <% entitys.forEach(function(entity){ %>
+            <tr>
+              <td><input type="checkbox" name="chs" value="<%-entity.id%>"></td>
+
+              <td class="tl">
+
+                <% if(entity.parentId==0){%>
+                  <%-entity.name%>
+                <% }else{%>
+                --------<%-entity.name%>
+                <%  }%>
+              </td>
+              <td class=" entity<%-entity.id%>">
+                <% if(entity.parentId==0){%>
+                <%-entity.name%>
+                <% }else{%>
+                <%-entity.type%>
+                <%  }%>
+              </td>
+              <td><%-locals.moment(entity.createdAt).format('YYYY-MM-DD HH:mm:ss')%> </td>
+              <td><%-locals.moment(entity.updatedAt).format('YYYY-MM-DD HH:mm:ss')%>   </td>
+              <td class="opera_td">
+                <a class="iconfont" href="/admin/edit-code?id=<%=entity.id%>">&#xC1118;</a>
+                <% if(locals._super == locals.session.user.name){ %>
+                <a class="iconfont" href="javascript:;" onclick="delF('/admin/del-code',<%=entity.id%>)">&#xC1119;</a>
+                <% } %>
+              </td>
+            </tr>
+            <% }) %>
+            </tbody>
+
+          </table>
+        </div>
+
+        <div class="list_foot clearfix">
+          <div class="fl list_info">
+                    <span>每页显示
+                        <select class="pageSelect" id="pageSel">
+                          <option>10</option>
+                          <option>30</option>
+                          <option>40</option>
+                          <option>50</option>
+                        </select>
+                        条
+                    </span>
+            <span>共<%-totalcount%>条数据 </span>
+            <span class="page_info" data-curr="<%-curr_page%>" data-sum="<%-pagecount%>">当前<span id="curr_page"><%-curr_page%></span>/<%-pagecount%>页</span>
+            <a class="refresh" id="refresh"><img src="/images/admin/refresh.png" alt="刷新列表"/>刷新列表</a>
+          </div>
+          <%if(pagecount>1){ %>
+          <div  class="list_info fr list_page">
+            <div id="pagination" class="fl"></div>
+            <span class="fl">跳转至<input type="text" class="listP_input allPage">页 <a class="page_btn " href="javascript:;">go</a></span>
+
+          </div>
+          <% } %>
+        </div>
+    </div>
+</div>
+<script src="/js/method.js"></script>
+<script src="/js/jquery.pagination.js"></script>
+<script>
+
+  function listCode(page_num){
+    $("#curr_page").html(page_num);
+    $.ajax({
+      type:'get',
+      url:'/admin/list-code',
+      data:{
+        page:page_num,
+        pagesize:$("#pageSel").val(),
+        search:$("#search").val(),
+        type:'json'
+      },
+      success: function(data){
+        $(".list_table tbody tr").remove();
+        var _htmlTR='';
+        data.data.forEach(function(e){
+          _htmlTR+=' <tr>';
+          _htmlTR+='<td><input type="checkbox" name="chs" value="'+ e.id+'"></td>';
+
+          if(e.parentId==0){
+            _htmlTR+=' <td class="tl">'+ e.name+'</td>';
+          }else{
+            _htmlTR+='<td class="tl" >--------'+ e.name+'</td>';
+          }
+
+          if(e.parentId==0){
+            _htmlTR+=' <td>'+ e.name+'</td>';
+          }else{
+            _htmlTR+='<td>'+ e.type+'</td>';
+          }
+
+          _htmlTR+='  <td>'+new Date(e.createdAt).Format("yyyy-MM-dd hh:mm:ss")+'</td>';
+          _htmlTR+='  <td>'+new Date(e.createdAt).Format("yyyy-MM-dd hh:mm:ss")+'</td>';
+          _htmlTR += '<td class="opera_td"><a class="iconfont" href="/admin/edit-code?id='+ e.id+'">&#xC1118;</a>';
+
+          <% if(locals._super == locals.session.user.name){ %>
+          _htmlTR +=' <a class="iconfont" href="javascript:;" onclick=delF("/admin/del-code",'+ e.id+')>&#xC1119;</a>';
+          <%}%>
+          _htmlTR +=  '</td>';
+          _htmlTR+='</tr>';
+
+        });
+        $(".list_table tbody").append(_htmlTR);
+      }
+    });
+  }
+  $(function(){
+    winHF();
+    $("#pageSel").val(<%-page_size%>);
+    $("#pagination").pagination($(".page_info").attr("data-sum"));
+
+  });
+  $(window).resize(function(){
+    winHF();
+  });
+
+</script>
+</body>
+</html>
+

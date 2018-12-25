@@ -1,0 +1,131 @@
+﻿<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <%-include("_include/_headerInfo",{h_tit:"个人中心-我的下载"})%>
+</head>
+<body>
+
+    <!-- 头部导航栏 start -->
+    <%-include("_include/_header", {curr: 9})%>
+    <!-- 头部导航栏 end -->
+
+    <!-- 列表-头部 -->
+    <div class="per-header">
+        <%-include("_include/per-head-info")%>
+    </div>
+    <div class="per-list-container">
+        <div class="tag-list-wrap">
+            <ul>
+                <li><a href="per-center-upload.html">我要上传</a></li>
+                <li><a href="per-center-already.html">我已上传</a></li>
+                <li><a href="per-center-collect.html">我的收藏</a></li>
+                <li class="curr"><a href="per-center-download.html">我的下载</a></li>
+                <li><a href="per-center-info.html">个人信息</a></li>
+            </ul>
+        </div>
+        <ul class="sub-tag-list">
+            <li><a class="curr" href="javascript:;">全部</a><span>/</span></li>
+            <li><a href="javascript:;" data-val="datum">资料</a><span>/</span></li>
+            <li><a href="javascript:;" data-val="picture">图库</a><span>/</span></li>
+            <li><a href="javascript:;" data-val="views">视野</a><span>/</span></li>
+            <li><a href="javascript:;" data-val="afflatus">有料</a><span>/</span></li>
+        </ul>
+        <ul class="files-list plot_list" id="plot_list">
+
+        </ul>
+    </div>
+
+
+
+    <!-- 底部信息 start-->
+    <%-include("_include/_footer")%>
+    <!-- 底部信息 end -->
+    <%-include("_include/waterfull-list")%>
+
+<script>
+
+    var DAQ = {
+        init: function () {
+            this.getDataList();
+            this.method()
+        },
+        method: function () {
+            var _this = this;
+            $('.sub-tag-list').on('click', 'a', function () {
+                var $this = $(this);
+                var val = $this.data('val');
+                $('.sub-tag-list a').removeClass('curr');
+                $this.addClass('curr');
+                _this.getDataList(val);
+            })
+        },
+        getDataList: function (val) {
+            $('.files-list').empty();
+            var id = userInfo.id;
+            $.ajax({
+                type: 'get',
+                url: '/member/getMyCollectFiles',
+                data: {
+                    id: id,
+                    parentVal: val,
+                    type: 1
+                },
+                success: function (result) {
+                    if (result.code === 0) {
+                        if (result.page) {
+                            if (result.page.totalPage == result.page.currentPage) { // 最后一页啦
+                                $('.tc').html('别再往下拉了，已经到底啦！')
+                            }
+                        }
+                        if (result.datas && result.datas.length > 0) {
+                            var dataList = result.datas;
+                            dataList.forEach(function (item) {
+                                if (item.w > 500) {
+                                    item.imgW = 500;
+                                    item.imgH = Math.ceil(item.h/(item.w/500));
+                                } else {
+                                    item.imgW = item.w;
+                                    item.imgH = item.h;
+                                }
+                                item.sty = 'style=height:'+(item.imgH/item.imgW*333)+'px';
+                                item.id = item.tId;
+                                var codeName = item.codeName;
+                                switch (codeName) {
+                                    case '视频':
+                                    case 'PPT':
+                                        item.href = 'video-detail.html?id=' + item.tId;
+                                        break;
+                                    case '电子期刊':
+                                        item.href = 'periodical-detail.html?id=' + item.tId;
+                                        break;
+                                    case '音频':
+                                        item.href = 'music-detail.html?id=' + item.tId;
+                                        break;
+                                    default:
+                                        item.href = 'datum-detail.html?id=' + item.tId;
+                                }
+                            });
+                            $('#waterfullListTmp2').tmpl({list: dataList}).appendTo('#plot_list');
+                            $('.plot_list').find('img').lazyload({effect: "fadeIn", threshold: 10});
+                            waterfall('plot_list','item1',true);
+                            tools.footerFixed();
+                        } else {
+                            $('.files-list').append('<p class="no-data">暂无数据！</p>');
+                            tools.footerFixed();
+                        }
+                    }
+                }
+            })
+        }
+    }
+
+
+    $(function () {
+        DAQ.init();
+    })
+
+
+</script>
+
+</body>
+</html>

@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <%-include("_include/include-head",{tit:"后台首页"})%>
+</head>
+<body>
+<div class="index-container">
+    <!-- 资源统计列表-S -->
+    <ul class="resource-list">
+
+    </ul>
+    <!-- 资源统计列表-E -->
+
+    <!-- Echarts图标-S -->
+    <div class="echarts-content" id="lineEcharts">
+
+    </div>
+    <!-- Echarts图标-E -->
+</div>
+
+<!-- 列表模板 -->
+<script type="text/template" id="listTmp">
+    {{each(i) datas}}
+    <li class="list-${i+1}"><a href="javascript:;"><i
+            class="sysfont head-user-icon">&#${icon};</i><span>${name}</span><span class="num">${total}</span></a></li>
+    {{/each}}
+</script>
+
+<script>
+
+    var myDate = new Date(),
+        thisYear = myDate.getFullYear(),
+        thisMonth = myDate.getMonth() + 1
+        ;
+
+    $(function () {
+        $(window).resize(function () {
+            getListBoxWidth();
+        });
+
+
+        function arrayUnique(arr, name) {
+            var hash = {};
+            return arr.reduce(function (item, next) {
+                hash[next[name]] ? '' : hash[next[name]] = true && item.push(next);
+                return item;
+            }, []);
+        }
+
+        // 动态计算栏目盒子的宽度
+        function getListBoxWidth() {
+            var boxH = $('.index-container').height();
+            var listWrapW = $('.resource-list').width();
+            var listWrapH = $('.resource-list').outerHeight(true);
+            var length = $('.resource-list li').length;
+            var marginR = 30;
+            var liWidth = (listWrapW - marginR * (length - 1)) / length;
+            var echartsWrapH = (boxH - listWrapH - 60) + 'px';
+            $('.resource-list li').css({
+                marginRight: marginR + 'px',
+                width: liWidth + 'px'
+            });
+            $('.resource-list li:last').css({
+                marginRight: 0
+            });
+            $('.echarts-content').css('height', echartsWrapH);
+
+            $.ajax({
+                type: 'get',
+                url: '/admin/sumSourceByMonth',
+                data: {
+                    year: thisYear
+                },
+                success: function (result) {
+                    var tmpDatas = result.datas,
+                        values = [],
+                        datas = []
+                        ;
+                    for (var i = 0; i < thisMonth; i++) {
+                        var num = 0;
+                        for (var j = 0; j < tmpDatas.length; j++) {
+                            var time = Number(tmpDatas[j].month);
+                            if ((i+1) == time) {
+                                num = tmpDatas[j].total
+                            }
+                        }
+                        values.push(num);
+                        datas.push({
+                            time: (i+1) + '月',
+                            num: num
+                        })
+                    }
+                    // echarts图表数据模拟
+                    var result1 = [
+                        {
+                            datas: datas
+                        }
+                    ];
+                    // 数据处理
+                    var data1 = [], seriesName = [];
+                    result1.forEach(function (item, i) {
+                        seriesName.push(item.name);
+                        item.datas.forEach(function (test, j) {
+                            if (i == 0) {
+                                data1.push({ydata: test.time, series: [test.num]});
+                            } else {
+                                data1[j].series.push(test.num);
+                            }
+                        })
+                    });
+
+                    $("#lineEcharts").daqGroupChart({
+                        yCompany: [],
+                        data: data1,                              //动态数据
+                        color: ['#42D885', '#F9C855', '#58B7FF'], //颜色配置
+                        seriesType: ['line'],           //类型配置
+                        seriesName: seriesName,                   //系列名称
+                        isSmooth: true,                            //平滑曲线
+                        isShadow: true,                            //开启范围显示
+                        gradient: [['rgba(25,167,203,1)', 'rgba(25,167,203,0.3)']], // 有多少条数据系列应设置多少组渐变色
+                        isLenged: false,                           //是否开启图例
+                        autoShowToolTip: true,                     // 是否开启自动轮播
+                        position: [40, 30, 30, 50],                    //图表的位置  上、右、下、左
+                        customData: {name: '上传资源', unit: '个', value: values},
+                        setTopTip: function (param, option) {
+                            var str = '';
+                            str =  '<p>' + param[0].axisValue + option.custom.name + ': ' + option.custom.value[param[0].dataIndex] + '个</p>';
+                            return str;
+                        }
+                    });
+                }
+            })
+
+        }
+
+        // 获取栏目列表数据
+        $.ajax({
+            type: 'get',
+            url: '/admin/list',
+            success: function (result) {
+                if (result.code === 0) {
+                    if (result.datas && result.datas.length > 0) {
+                        $('#listTmp').tmpl({datas: result.datas}).appendTo('.resource-list');
+                        getListBoxWidth();
+                    }
+                } else {
+
+                }
+            }
+        })
+
+    })
+</script>
+</body>
+</html>

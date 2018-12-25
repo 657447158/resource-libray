@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1" />
+    <!--优先使用 IE 最新版本和 Chrome-->
+    <meta name="author" content="author,email,address">
+    <!--优先使用 IE 最新版本和 Chrome-->
+    <meta name="keywords" content="素材库平台,中科大旗软件有限公司素材库平台">
+    <meta name="description" content="中科大旗软件有限公司素材库平台">
+    <meta name="author" content="成都中科大旗软件有限公司">
+    <link rel="stylesheet" href="/css/DPL.css">
+    <title>DAQSoft-设计导航</title>
+</head>
+<body>
+
+    <!-- 顶部导航 -->
+    <div class="design-top-nav">
+        <a href="index.html" target="_blank"><img class="logo" src="/images/member/design-logo.png" alt=""></a>
+        <ul>
+
+        </ul>
+    </div>
+
+    <!-- 左侧导航 -->
+    <ul class="design-left-nav">
+
+    </ul>
+
+    <div class="design-container-wrap">
+
+    </div>
+
+
+
+    <script type="text/javascript" src="/js/jquery-1.8.3.min.js"></script>
+    <script type="text/javascript" src="http://filealiyun.geeker.com.cn/ued/js/jquery.tmpl.min.js"></script>
+
+    <!-- 顶部导航列表 -->
+    <script type="text/template" id="topNavTmp">
+        {{each(index) list}}
+        <li {{if index==0}}class="curr"{{/if}}><a href="javascript:;">${name}</a></li>
+        {{/each}}
+    </script>
+
+    <!-- 中间内容列表 -->
+    <script type="text/template" id="listTmp">
+        {{each list}}
+        <div class="design-box recommend-box" data-id="${id}">
+            {{if children.length > 0}}
+            <div class="box-title">${name}</div>
+            <ul class="box-list">
+                {{each children}}
+                <li>
+                    <a href="${link}" target="_blank">
+                        <span class="img-box"><img src="${cover}" alt="${name}"></span>
+                        <div class="link-info">
+                            <p class="name">${name}</p>
+                            <p class="slogan">${info}</p>
+                        </div>
+                    </a>
+                </li>
+                {{/each}}
+            </ul>
+            {{/if}}
+        </div>
+        {{/each}}
+    </script>
+
+    <!-- 左侧导航列表 -->
+    <script type="text/template" id="leftNavTmp">
+        {{each(index) list}}
+        <li><a {{if index==0}}class="curr"{{/if}} href="javascript:;" data-id="${id}"><span>{{if index<10}}0{{/if}}${index+1}</span>${name}</a></li>
+        {{/each}}
+    </script>
+
+
+    <script>
+
+        var DAQ = {
+            init: function () {
+                var winW = $(window).width();
+                var winH = $(window).height();
+                var topNavH = $('.design-top-nav').height();
+                var leftNavW = $('.design-left-nav').outerWidth();
+
+                $('.design-left-nav').css({
+                    height: winH - topNavH - 20
+                });
+                $('.design-container-wrap').css({
+                    width: winW - leftNavW
+                });
+
+                this.method();
+                this.getMenus();
+                this.getDataList();
+            },
+            method: function () {
+                $('.design-left-nav').on('click', 'a' , function () {
+                    $('.design-left-nav a').removeClass('curr');
+                    $(this).addClass('curr');
+                    var leftId = $(this).data('id');
+                    var dataList = $('.design-box');
+                    for (var i = 0; i < dataList.length; i++) {
+                        var $item = dataList.eq(i);
+                        var ctId = $item.data('id');
+                        if (leftId === ctId) {
+                            $('.design-container-wrap').animate({
+                                scrollTop: $item.position().top
+                            });
+                            return;
+                        }
+                    }
+                })
+            },
+            getMenus: function () {
+                $.ajax({
+                    type: 'get',
+                    url: '/member/getDesignMenus',
+                    success: function (result) {
+                        if (result.code === 0) {
+                            var dataList = result.datas;
+                            if (dataList && dataList.length > 0) {
+                                var leftMenus = dataList[0].children;
+                                console.log(dataList)
+                                $('#topNavTmp').tmpl({list: dataList}).appendTo('.design-top-nav ul');
+                                $('#leftNavTmp').tmpl({list: leftMenus}).appendTo('.design-left-nav');
+                            }
+                        }
+                    }
+                })
+            },
+            getDataList: function () {
+                $.ajax({
+                    type: 'get',
+                    url: '/member/getDesignDataList',
+                    success: function (result) {
+                        if (result.code === 0) {
+                            var dataList = result.datas;
+                            if (dataList && dataList.length > 0) {
+                                $('#listTmp').tmpl({list: dataList}).appendTo('.design-container-wrap');
+                            }
+                        }
+                    }
+                })
+            }
+        }
+
+        $(function () {
+            DAQ.init();
+        })
+    </script>
+</body>
+</html>

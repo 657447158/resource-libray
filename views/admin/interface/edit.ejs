@@ -1,0 +1,198 @@
+<!DOCTYPE html>
+<html class="h100">
+<head lang="zh-CN">
+  <%-include("../_include/include-head",{tit:"资源审核"})%>
+</head>
+<body>
+<%-include ../_include/include-top%>
+<div class="home_cont">
+  <%-include("../_include/include-left",{_curr:"material"})%>
+    <div class="h_main fr">
+      <p class="adress_nav">
+        <span>您当前的位置：</span><span>UED资源共享平台管理系统</span>-<a href="/admin/list-interface">资源管理</a>-<span>审核</span>
+      </p>
+
+    <%if(entity.status==1){%>
+      <div class="list_tit list_search">
+        <a class="oper_btn edit_btn"  href="/admin/uploadStatus?status=2&id=<%=entity.Id%>">通过</a>
+        <a class="oper_btn"  href="/admin/uploadStatus?status=3&id=<%=entity.Id%>">不通过</a>  </div>
+   <%}%>
+
+        <div class="audit_body">
+          <div class="edit_cont ">
+              <div class="bg_look">
+
+                <div class="tit_box"  >
+                  <h4 class="tit_h4"><%=entity.title%><span style="margin-left:20px; color:#00aa52">[<%=entity.codeName%>]</span></h4>
+                  <p class="info_p">
+                  <%if(entity.format){%><span>格式：<%=entity.format%></span><%}%>
+                    <%if(entity.size){%> <span>体积：<%=Math.round((entity.size/1024/1000)*100)/100 %>MB</span><%}%>
+                    <span>尺寸：<%=entity.w%>*<%=entity.h%>像素</span>
+                    <span>上传时间：<%-locals.moment(entity.createdAt).format('YYYY-MM-DD HH:mm:ss') %></span>
+                  </p>
+                  <p class="info_p">
+                    <%if(entity.place){%>
+                     <span>svn地址：<%=entity.place%></span>
+                    <%}%>
+                    <%if(entity.url){%>
+                    <span>访问地址：<%=entity.url%></span>
+                    <%}%>
+                  </p>
+                </div>
+                <%if(entity.coverImg){%>
+                <div class="tit_box">
+                  <h4 class="tit_h4">封面图</h4>
+                  <p class="info_p" style="padding-bottom:20px;">
+                    <img src="<%=entity.coverImg%>" height="450"/>
+                  </p>
+                </div>
+                <%}%>
+                <%if(entity.content){%>
+                  <div class="tit_box cont_box">
+                    <h4 class="tit_h4">内容</h4>
+                    <div class="info_p" style="padding-bottom:80px; ">
+                      <%-entity.content%>
+                    </div>
+                  </div>
+                <%}%>
+              </div>
+          </div>
+
+        </div>
+    </div>
+</div>
+
+</body>
+</html>
+<script src="/js/jquery-1.8.3.min.js"></script>
+<script type="text/javascript" src="/js/webuploader.html5only.min.js"></script>
+<script type="text/javascript" src="/js/diyUpload.js"></script>
+<script src="/js/method.js"></script>
+<script>
+  $(function () {
+    $("#codeId").val("<%-entity.codeId%>");
+    $("#imgOpen").val("<%-entity.imgOpen%>");
+    $('#face_img').diyUpload({
+      url: '/admin/upload',
+      success: function (data) {
+        var img_ipt = $("#imgs_tab").val();
+        if (img_ipt == "") {
+          img_ipt += data.url;
+        } else {
+          img_ipt += "," + data.url;
+        }
+        $("#imgs_tab").val(img_ipt);
+        var tag = parseInt($('#upload_num').val()) + 1;
+        $("#upload_num").val(tag);
+        var sort=$("#fileBox_"+data.fieldsId).index();
+        $.post("/admin/uploadImg",{tbName:'articles',type:'list',url: data.url,sort:sort},function(data){ });
+      },
+      error: function (err) {
+       alert(err);
+      },
+      buttonText : '上传文件',
+      chunked:true,
+      // 分片大小
+      chunkSize:90000 * 1024,
+      fileSizeLimit:90000 * 1024,
+      fileSingleSizeLimit:90000 * 1024,
+      accept: {
+        title:"Images",
+        extensions:"gif,jpg,jpeg,bmp,png",
+        mimeTypes:"image/jpeg"
+      },
+      compress:false
+    });
+
+    $('#erw_img').diyUpload({
+      url: '/admin/upload',
+      success: function (data) {
+        $("#erwm").val(data.url);
+        var tag = parseInt($('#upload_num').val()) + 1;
+        $("#upload_num").val(tag);
+
+      },
+      error: function (err) {
+        alert(err);
+      },
+      fileNumLimit:1
+    });
+
+    $('#cover_img').diyUpload({
+      url: '/admin/upload',
+      success: function (data) {
+        $("#coverImg").val(data.url);
+        var tag = parseInt($('#upload_num').val()) + 1;
+        $("#upload_num").val(tag);
+
+      },
+      error: function (err) {
+       alert(err);
+      },
+      fileNumLimit:1
+    });
+    //界面图片集合上传.rar
+    $('#download_file').diyUpload({
+      url: '/admin/upload',
+      success: function (data) {
+        $("#download").val(data.url);
+        var tag = parseInt($('#upload_num').val()) + 1;
+        $("#upload_num").val(tag);
+      },
+      error: function (err) {
+        alert(error);
+      },
+      buttonText : '上传文件',
+      chunked:true,
+      // 分片大小
+      chunkSize:9000000 * 1024,
+      fileNumLimit:1,
+      fileSizeLimit:9000000 * 1024,
+      fileSingleSizeLimit:9000000 * 1024,
+      accept: {}
+    });
+
+    /*界面类型赋值 start*/
+    $("#codeName").val($("#codeId option[value='" + $("#codeId").val() + "']").text());
+    $("#codeId").change(function () {
+      var _val = $(this).val();
+      $("#codeName").val($("#codeId option[value='" + _val + "']").text());
+    });
+    /*界面类型赋值 end*/
+
+    winHFE();
+  });
+  $(window).resize(function () {
+    winHFE();
+  })
+  function submiteCk() {
+   $(".diyButton .diyStart").click();
+    var upload_num=parseInt($(".fileBoxUl li").length)-parseInt($(".fileBoxUl .edit_img").length);
+    if( upload_num==$("#upload_num").val()){
+        sortImg();
+        $("#face_form").submit();
+    } else{
+      $_faceInterval;
+        var $_faceInterval = setInterval(function () {
+          var upload_num=parseInt($(".fileBoxUl li").length)-parseInt($(".fileBoxUl .edit_img").length);
+          if( upload_num==$("#upload_num").val()){
+            sortImg();
+            $("#face_form").submit();
+            clearInterval($_faceInterval);
+          }
+      }, 200);
+    }
+  }
+  /*原图片排序*/
+  function sortImg(){
+    if($(".pic_list .fileBoxUl").attr("tag") && $(".pic_list .fileBoxUl>.edit_img").length>0){
+      var li_len= $(".pic_list .fileBoxUl>.edit_img").length;
+      for(var i=0;i<li_len;i++){
+        var _sort=$(".pic_list .fileBoxUl>.edit_img").eq(i).index();
+        var _id=$(".pic_list .fileBoxUl>.edit_img").eq(i).children(".viewThumb").children("img").attr("tag");
+        $.post("/admin/imgSort",{sort:_sort,Id:_id},function(data){ });
+      }
+    }
+  }
+
+</script>

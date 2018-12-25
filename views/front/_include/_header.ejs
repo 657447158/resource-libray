@@ -1,0 +1,76 @@
+﻿
+<!--head--S-->
+<header class="hover">
+    <nav class="fl" data-curr="<%=curr%>">
+        <a href="index.html" class="logo"><img src="/images/member/logo.png" alt="logo" /></a>
+        <a href="datum-list.html" class="item">资料</a>
+        <a href="picture-list.html" class="item">图库</a>
+        <a href="views-list.html" class="item">视野</a>
+        <a href="afflatus-list.html" class="item">有料</a>
+        <a href="DPL.html" class="item" target="_blank">DPL</a>
+        <a href="design-nav.html" class="item more" target="_blank"></a>
+    </nav>
+    <div class="icon-user">
+        <div class="user-rank"><a href="rws.html" target="_blank" title="贡献值排行"></a></div>
+        <ul class="clearfix">
+            <li class="user-login">
+                <a href="per-center-upload.html" class="user-login-head"><img src="" /></a>
+                <a href="javascript:;" class="login-out">退出</a>
+            </li>
+            <li class="user"><a href="javascript:;"></a></li>
+        </ul>
+    </div>
+</header>
+<!--head--E-->
+
+<!-- 登录框 start -->
+<script type="text/template" id="loginTmp">
+    <div class="login-box-wrap">
+        <span class="login-mask"></span>
+        <div class="login-box">
+            <div class="left-banner">
+                <ul class="slides">
+                    <li><img src="/images/member/login-banner-01.png" alt="banner1" /></li>
+                    <li><img src="/images/member/login-banner-02.png" alt="banner2" /></li>
+                    <li><img src="/images/member/login-banner-03.png" alt="banner3" /></li>
+                    <li><img src="/images/member/login-banner-04.png" alt="banner4" /></li>
+                </ul>
+            </div>
+            <div class="right">
+                <a href="javascript:;" class="close-btn"></a>
+                <img src="/images/member/login-logo.png" alt="logo" class="logo" />
+                <div class="input-box">
+                    <input type="text" placeholder="请输入用户名" autocomplete="off" id="username" />
+                    <i class="icon-user"></i>
+                </div>
+                <div class="input-box">
+                    <input type="password" placeholder="请输入密码" autocomplete="off" id="password" />
+                    <i class="icon-psw"></i>
+                </div>
+                <span class="login-tips">账号或密码错误！</span>
+                <a href="javascript:;" class="login-btn">登录</a>
+                <img src="/images/member/login-slogan.png" alt="整合彰显智慧 创新成就价值" class="slogan"/>
+            </div>
+        </div>
+    </div>
+</script>
+<!-- 登录框 end -->
+
+
+<script>
+    var getMaterial; // 列表页分页点击事件
+    var userInfo = '<%- JSON.stringify(userInfo) %>';
+    userInfo = JSON.parse(userInfo);
+    var loginFlag = true;
+    if ($.isEmptyObject(userInfo)) {
+        loginFlag = false
+    }
+    if (loginFlag) {
+        $('.user-login').show();
+        $('.icon-user .user').hide();
+        $('.icon-user img').attr('src', userInfo.avatar);
+    } else {
+        $('.user-login').hide();
+        $('.icon-user .user').show()
+    }
+</script>
