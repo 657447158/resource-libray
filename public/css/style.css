@@ -1,0 +1,360 @@
+
+.hover {
+    -webkit-transition: all 0.2s linear;
+    -moz-transition: all 0.2s linear;
+    -ms-transition: all 0.2s linear;
+    -o-transition: all 0.2s linear;
+    transition: all 0.2s linear;
+}
+.hover:hover {
+    -webkit-transition: all 0.2s linear;
+    -moz-transition: all 0.2s linear;
+    -ms-transition: all 0.2s linear;
+    -o-transition: all 0.2s linear;
+    transition: all 0.2s linear;
+}
+
+header {
+    position: fixed;
+    top: 0;
+    left: 0;
+    z-index: 10;
+    width: 100%;
+    height: 60px;
+    overflow: hidden;
+    background: url("/images/member/nav-normal-bg.png") repeat;
+}
+header:hover {
+    background: #292929;
+}
+header.curr {
+    position: inherit;
+    background: #292929;
+}
+header a {
+    margin-right: 14px;
+    display: block;
+    float: left;
+    line-height: 58px;
+    font-size: 14px;
+    color: #fff;
+}
+header .logo {
+    margin: 0 44px 0 40px;
+    width: 198px;
+    height: 60px;
+}
+header .logo img {
+    margin-top: 18px;
+}
+header .item {
+    padding: 0 10px;
+}
+header .item:hover, header .curr {
+    color: #ffa800;
+    border-bottom: 2px solid #ffa800;
+}
+header .more {
+    padding: 0 10px;
+    width: 20px;
+    height: 58px;
+    background: url("/images/member/nav-more.png") center no-repeat;
+}
+header .icon-user {
+    float: right;
+    margin-right: 30px;
+    /*width: 130px;*/
+    height: 60px;
+}
+header .icon-user ul {
+    float: left;
+}
+header .icon-user .user {
+    float: right;
+    margin-top: 20px;
+    width: 20px;
+    height: 20px;
+}
+header .icon-user .user a {
+    display: block;
+    width: 100%;
+    height: 100%;
+    background: url("/images/member/index-icons-user.png") 0 0 no-repeat;
+}
+header .icon-user .user a:hover {
+    background-position-y: -50px;
+}
+header .user-login {
+    margin-top: 15px;
+    height: 30px;
+}
+header .user-login a {
+    float: left;
+    display: inline-block;
+    line-height: 30px;
+}
+header .user-login a:hover {
+    color: #dba63f;
+}
+header .user-login-head {
+    width: 30px;
+    height: 30px;
+    border-radius: 50%;
+    text-align: center;
+    overflow: hidden;
+    cursor: pointer;
+}
+header .user-login-head img {
+    height: 100%;
+}
+header .user-rank {
+    float: left;
+    margin-top: 19px;
+}
+header .user-rank a {
+    margin-right: 24px;
+    display: block;
+    width: 26px;
+    height: 20px;
+    background: url("/images/member/user-rank.png");
+}
+header .user-rank a:hover {
+    background: url("/images/member/user-rank-hover.png");
+}
+.container {
+    position: relative;
+    width: 100%;
+    /*height: 744px;*/
+    overflow: hidden;
+}
+.container .search-box-wrap ::-webkit-input-placeholder {
+    font-size: 16px;
+    color: #929294;
+    text-align: center;
+}
+.container .search-box-wrap {
+    position: absolute;
+    top: 278px;
+    left: 50%;
+    margin-left: -410px;
+    width: 820px;
+    height: 100px;
+}
+.container .search-box {
+    width: 820px;
+    height: 70px;
+    font-size: 16px;
+    line-height: 70px;
+    border-radius: 10px;
+    background: rgba(255, 255, 255, .7);
+}
+.container .search-box:hover {
+    background: #fff;
+}
+.container .search-box .filter-box {
+    float: left;
+    width: 116px;
+}
+.container .search-box .filter-box a {
+    float: left;
+    display: block;
+    padding-left: 32px;
+    color: #434545;
+}
+.container .search-box .filter-box a:hover {
+    color: #333;
+}
+.container .search-box i {
+    margin: 33px 0 0 10px;
+    float: left;
+    display: block;
+    width: 10px;
+    height: 8px;
+    background: url("/images/member/index-icon-down.png") no-repeat;
+}
+.container .search-box .filter-box:hover .filter-box-hover{
+    display: block;
+}
+.container .search-box .filter-box-hover {
+    position: relative;
+    z-index: 1;
+    display: none;
+    padding: 15px 32px 15px 0;
+    width: 788px;
+    line-height: 35px;
+    text-align: left;
+    border-radius: 10px;
+    background: rgba(255, 255, 255, .7);
+}
+.container .search-box .filter-box-hover a {
+    display: block;
+    float: left;
+    color: #666;
+}
+.container .search-box .filter-box-hover span {
+    display: block;
+    float: right;
+    color: #666;
+}
+.container .search-box .filter-box-hover li:hover a, .container .search-box .filter-box-hover li:hover span {
+    color: #333;
+}
+.container .search-box input {
+    float: left;
+    width: 618px;
+    height: 100%;
+    font-size: 16px;
+    background: none;
+}
+.container .search-box .search-icon {
+    margin: 25px 0 0 40px;
+    float: left;
+    display: block;
+    width: 19px;
+    height: 19px;
+    background: url("/images/member/index-icons-search.png") no-repeat;
+}
+.container .search-box .search-icon:hover {
+    background-position-y: -70px;
+}
+.container .slogan {
+    position: absolute;
+    top: 85px;
+    left: 0;
+    z-index: 0;
+    width: 100%;
+    font-size: 12px;
+    color: #fff;
+    text-align: center;
+    text-shadow: 2px 1px 10px #000;
+}
+
+.container .menu-list {
+    margin: 0 auto;
+    width: 1400px;
+    height: 280px;
+    text-align: center;
+    overflow: hidden;
+}
+.container .menu-list li a:hover span {
+    color: #454545;
+}
+.container .menu-list li {
+    margin-top: 80px;
+    padding-top: 10px;
+    float: left;
+    width: 349px;
+    height: 110px;
+    border-right: 1px solid #ebe8e6;
+}
+.container .menu-list h3 {
+    margin: 10px 0 5px 0;
+    font-size: 18px;
+    color: #454545;
+}
+
+.container .menu-list a, .container .menu-list span, .container .menu-list .icon {
+    display: inline-block;
+    color: #666;
+}
+.container .menu-list i {
+    width: 41px;
+    height: 41px;
+    background: url("/images/member/index-icons-menus.png") 0 0 no-repeat;
+}
+.container .menu-list .list-2 i {
+    width: 40px;
+    background-position-x: -41px;
+}
+.container .menu-list .list-3 i {
+    width: 37px;
+    background-position-x: -81px;
+}
+.container .menu-list .list-4 i {
+    width: 40px;
+    background-position-x: -118px;
+}
+.container .menu-list .list-1 a:hover h3 { color: #8fca31;}
+.container .menu-list .list-2 a:hover h3 { color: #25caed;}
+.container .menu-list .list-3 a:hover h3 { color: #feb831;}
+.container .menu-list .list-4 a:hover h3 { color: #ff8ab5;}
+
+footer {
+    width: 100%;
+    height: 56px;
+    line-height: 56px;
+    font-size: 14px;
+    color: #8f8f8f;
+    text-align: center;
+    background: #333;
+}
+footer a {
+    color: #8f8f8f;
+}
+footer a:hover { color: #fff; }
+
+.icon-svn-pop {
+    position: fixed;
+    top: 50%;
+    left: 0;
+    width: 100%;
+    height: 58px;
+    line-height: 58px;
+    text-align: center;
+    color: #fff;
+}
+
+.icon-svn-pop .ct {
+    display: inline-block;
+    margin: 0 auto;
+    padding: 0 20px;
+    border-radius: 5px;
+    background: rgba(0, 0, 0, .6);
+}
+.icon-svn-pop .ct span,
+.icon-svn-pop .ct i
+{
+    display: inline-block;
+    margin-right: 10px;
+}
+.icon-svn-pop .ct i {
+    font-size: 16px;
+}
+.icon-svn-pop a {
+    margin-left: 80px;
+    display: inline-block;
+    color: #a0a0a0;
+}
+.icon-svn-pop a:hover {
+    color: #fff;
+}
+
+
+.side-bar {
+    position: fixed;
+    top: 50%;
+    right: 170px;
+    font-size: 20px;
+}
+.side-bar li {
+    margin-bottom: 6px;
+    width: 48px;
+    height: 48px;
+    border: 2px solid #fff;
+    border-radius: 50%;
+    background: #ffbe3d;
+    text-align: center;
+    line-height: 48px;
+}
+.side-bar li:hover {
+    border: 2px solid rgba(255, 255, 255, .4);
+}
+.side-bar a {
+    display: block;
+    color: #fff;
+    vertical-align: top;
+}
+.side-bar .side-bar-c2 { background: #46db84;}
+.side-bar .side-bar-c3 { background: #80b9fb;}
+.side-bar .side-bar-c4 { background: #c394fd;}
+.side-bar .side-bar-c5 { background: #dddddd;}

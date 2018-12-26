@@ -1,0 +1,123 @@
+
+.wid-percent6 { width: 6%;}
+.wid-percent8 { width: 8%;}
+
+
+.head-v3-logo img {
+    height: 32px;
+}
+
+.index-container,
+.resource-list-container,
+.project-edit-container
+{
+    padding: 0 30px;
+    height: 100%;
+    /*background: #eff2f7;*/
+    overflow: auto;
+}
+
+.resource-list-container .pagination {
+    margin-bottom: 30px;
+}
+
+/* 首页-S */
+.index-container .resource-list { margin-top: 30px; width: 100%; overflow: hidden;}
+.index-container .resource-list a {
+    display: block;
+    width: 100%;
+    height: 100%;
+    color: #fff;
+}
+.index-container .resource-list .sysfont {
+    margin: 60px 0 5px 0;
+    font-size: 66px;
+}
+.index-container .resource-list li {
+    float: left;
+    min-height: 310px;
+    height: 250px;
+    text-align: center;
+}
+.index-container .resource-list .list-1 { background: #1fded7;}
+.index-container .resource-list .list-2 { background: #47b0ff;}
+.index-container .resource-list .list-3 { background: #fdbd29;}
+.index-container .resource-list .list-4 { background: #39d47e;}
+.index-container .resource-list .list-5 { background: #b084ec;}
+.index-container .resource-list .list-6 { background: #f76969;}
+
+.index-container .resource-list span {
+    display: block;
+    font-size: 24px;
+    font-weight: bold;
+}
+.index-container .resource-list .num {
+    margin: 20px auto 0;
+    padding: 20px 0;
+    width: 80%;
+    font-size: 38px;
+    line-height: 38px;
+    border-top: 1px solid rgba(255,255,255,.5);
+}
+.echarts-content {
+    margin-top: 30px;
+}
+/* 首页-E */
+
+
+/* 资源管理-S */
+.inp-long-box input {
+    background: #eff2f7;
+}
+.resource-list-container .daq-crumb span {
+    display: inline-block;
+    vertical-align: middle;
+    font-size: 12px;
+    color: #8590a0;
+}
+/*.resource-list-container .buttons .daq-btn {*/
+    /*padding: 9px 16px;*/
+/*}*/
+.resource-list-container .audit-content {
+    padding: 10px;
+    width: auto;
+    max-width: 1280px;
+    min-height: 34px;
+    border: 1px solid #d2d8e3;
+    border-radius: 3px;
+    background-color: #fff;
+}
+.resource-list-container .audit-cover {
+    width: 178px;
+    height: 135px;
+}
+.resource-list-container .audit-cover img {
+    height: 100%;
+}
+.resource-list-container .audit-content {
+    font-size: 12px;
+}
+.resource-list-container .audit-content p {
+    line-height: 24px;
+}
+/* 资源管理-E */
+
+.project-edit-container .daq-date {
+    background-color: #fff;
+}
+.project-edit-container .crumb-sign {
+    font-size: 14px;
+}
+
+.uploader-list .img-box {
+    width: 148px;
+    height: 148px;
+    text-align: center;
+}
+.uploader-list .img-box img {
+    max-width: none;
+    height: 100%;
+}
+.message-box-main {
+    overflow-y: hidden!important;
+}
